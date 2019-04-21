@@ -1,7 +1,6 @@
-package raft
-package algebra
+package raft.algebra.io
 
-import raft.model.{ AppendRequest, AppendResponse, VoteRequest, VoteResponse }
+import raft.model.{AppendRequest, AppendResponse, VoteRequest, VoteResponse}
 
 trait NetworkIO[F[_], Log] {
   def sendAppendRequest(nodeID: String, appendReq: AppendRequest[Log]): F[AppendResponse]

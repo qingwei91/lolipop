@@ -7,7 +7,7 @@ case class AppendRequest[Log](
   leaderId: String,
   prevLogIdx: Option[Int],
   prevLogTerm: Option[Int],
-  entries: Vector[Log],
+  entries: Seq[Log],
   leaderCommit: Int
 )
 case class AppendResponse(term: Int, success: Boolean)

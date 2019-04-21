@@ -86,28 +86,29 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
 
   private def handleReq(state: Persistent[Log], req: AppendRequest[Log], follower: Follower): F[AppendResponse] = {
     import state._
-    val leaderOutdated  = req.term < currentTerm
-    val prevLogMisMatch = !checkPrevLogsConsistency(logs, req)
+    val leaderOutdated = req.term < currentTerm
 
-    true match {
-      case `leaderOutdated` =>
-        logger.error("Leader outdated, rejecting request")
-        rejectAppend(currentTerm).pure[F]
+    checkPrevLogsConsistency(req).flatMap { isConsistent =>
+      val prevLogMisMatch = !isConsistent
+      true match {
+        case `leaderOutdated` =>
+          logger.error("Leader outdated, rejecting request")
+          rejectAppend(currentTerm).pure[F]
 
-      case `prevLogMisMatch` =>
-        rejectAppend(currentTerm).pure[F]
+        case `prevLogMisMatch` =>
+          rejectAppend(currentTerm).pure[F]
 
-      case _ =>
-        reconcileLogs(req.entries, logs) *>
-          commitAndExecCmd(req.leaderCommit, req.entries, follower)
-            .as {
-              if (req.entries.nonEmpty) {
-                logger.info(s"Append accepted ${req.entries} from ${req.leaderId}")
+        case _ =>
+          allState.logs.overwrite(req.entries) *>
+            commitAndExecCmd(req.leaderCommit, req.entries, follower)
+              .as {
+                if (req.entries.nonEmpty) {
+                  logger.info(s"Append accepted ${req.entries} from ${req.leaderId}")
+                }
+                acceptAppend(currentTerm)
               }
-              acceptAppend(currentTerm)
-            }
+      }
     }
-
   }
 
   private def rejectAppend(term: Int) = AppendResponse(term, false)
@@ -124,25 +125,33 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   }
 
   // This reflect log matching property, it's determined by induction
-  private def checkPrevLogsConsistency(logs: Seq[Log], request: AppendRequest[Log]): Boolean = {
+  private def checkPrevLogsConsistency(request: AppendRequest[Log]): F[Boolean] = {
     val prevIdx  = request.prevLogIdx
     val prevTerm = request.prevLogTerm
     (prevIdx, prevTerm) match {
       case (Some(idx), Some(term)) =>
-        logs
-          .collectFirst {
-            case log if log.idx == idx => log.term == term
-          }
-          .getOrElse(false)
-      case (None, None) =>
-        val r = logs.isEmpty
-        if (!r) {
-          logger.error(s"Unexpected case, leader ${request.leaderId} thought follower does not have log but $logs")
+        for {
+          target <- allState.logs.getByIdx(idx)
+        } yield {
+          target.exists(_.term == term)
         }
-        r
+
+      case (None, None) =>
+        for {
+          last <- allState.logs.lastLog
+        } yield {
+
+          val r = last.isEmpty
+          if (!r) {
+            logger.error(
+              s"Unexpected case, leader ${request.leaderId} thought follower does not have log but last log is $last"
+            )
+          }
+          r
+        }
       case other =>
         logger.error(s"Broken constraint, prevIdx and prevTerm should be both absent or present, instead got $other")
-        false
+        false.pure
     }
   }
 
@@ -151,36 +160,18 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     * logs when idx conflict, maintains logs order by idx
     */
   private def reconcileLogs(leaderLogs: Vector[Log], serverLog: Vector[Log]): F[Unit] = {
-
-    // Todo: copying all logs might be too slow
-    // It might be solved by log compaction or we need better algebra to
-    // describe remove and append
-
-    leaderLogs.toList match {
-      case firstNew :: _ =>
-        // only keep local logs that's not included in server logs
-        val trimmedServerLog = serverLog.takeWhile(_.idx != firstNew.idx)
-        allState.persistent.update { st =>
-          st.copy(logs = trimmedServerLog ++ leaderLogs)
-        }
-      case Nil =>
-        logger.debug("Received leader heartbeat")
-        F.unit
-    }
+    allState.logs.overwrite(leaderLogs)
   }
 
   private def commitAndExecCmd(leaderCommit: Int, newEntries: Seq[Log], follower: Follower): F[Unit] = {
     logger.debug(s"Attempt to commit from leader $leaderCommit -- $newEntries")
     if (leaderCommit > follower.commitIdx) {
 
-      val newCommitIdxF = allState.persistent.get
-        .map { persist =>
-          val localLogs = persist.logs
-          val latestLocalIdx = localLogs.lastOption.map { lastLog =>
-            math.min(lastLog.idx, leaderCommit)
-          }
-          latestLocalIdx
-        }
+      val newCommitIdxF = for {
+        last <- allState.logs.lastLog
+      } yield {
+        last.map(x => math.min(x.idx, leaderCommit))
+      }
 
       for {
         maybeNewIdx <- newCommitIdxF
@@ -206,8 +197,8 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
       F.unit
     } else {
       for {
-        logs <- allState.persistent.get.map(_.logs)
-        Some(log) = logs.find(_.idx == idxToApply)
+        maybLog <- allState.logs.getByIdx(idxToApply)
+        Some(log) = maybLog
         _    <- stateMachine.execute(log.command)
         time <- Timer[F].clock.realTime(MILLISECONDS)
         _    <- allState.serverTpe.set(follower.copy(lastApplied = log.idx, lastRPCTimeMillis = time))

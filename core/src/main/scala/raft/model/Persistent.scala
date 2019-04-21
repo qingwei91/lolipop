@@ -1,12 +1,11 @@
 package raft
 package model
 
-case class Persistent[Log](currentTerm: Int, votedFor: Option[String], logs: Vector[Log])
+case class Persistent(currentTerm: Int, votedFor: Option[String])
 
 object Persistent {
-  def init[Log] = Persistent(
+  def init = Persistent(
     0,
-    None,
-    Vector.empty[Log]
+    None
   )
 }
