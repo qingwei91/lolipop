@@ -1,3 +1,3 @@
-package raft.algebra.event class RaftEvent {
+package raft.algebra.event
 
-}
+sealed trait RaftEvent

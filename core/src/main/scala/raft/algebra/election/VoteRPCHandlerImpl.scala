@@ -24,13 +24,14 @@ class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
               case c: Candidate => c.copy(lastRPCTimeMillis = time)
               case l: Leader => l
             }
-        pState <- allState.persistent.get
+        pState  <- allState.persistent.get
+        lastLog <- allState.logs.lastLog
 
         currentTerm  = pState.currentTerm
         sameTerm     = req.term == currentTerm
         higherTerm   = req.term > currentTerm
         hasVote      = (sameTerm && voteAvailable(pState.votedFor, req.candidateID)) || higherTerm
-        canGrantVote = hasVote && candidateUpToDate(req, pState.logs)
+        canGrantVote = hasVote && candidateUpToDate(req, lastLog)
 
         res = if (canGrantVote) {
           logger.info(s"Granting vote to ${req.candidateID} of term ${req.term}")
@@ -58,8 +59,8 @@ class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
     votedFor.isEmpty || votedFor.contains(candidateId)
   }
 
-  def candidateUpToDate(req: VoteRequest, localLogs: Seq[Log]): Boolean = {
-    (localLogs.lastOption, req.lastLogIdx, req.lastLogTerm) match {
+  def candidateUpToDate(req: VoteRequest, lastLog: Option[Log]): Boolean = {
+    (lastLog, req.lastLogIdx, req.lastLogTerm) match {
 
       case (Some(latestLocal), Some(lastLogIdx), Some(lastLogTerm)) =>
         val candidateHigherTerm = lastLogTerm > latestLocal.term

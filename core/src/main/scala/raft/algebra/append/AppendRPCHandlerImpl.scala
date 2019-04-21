@@ -84,7 +84,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     } yield r
   }
 
-  private def handleReq(state: Persistent[Log], req: AppendRequest[Log], follower: Follower): F[AppendResponse] = {
+  private def handleReq(state: Persistent, req: AppendRequest[Log], follower: Follower): F[AppendResponse] = {
     import state._
     val leaderOutdated = req.term < currentTerm
 
@@ -151,16 +151,8 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
         }
       case other =>
         logger.error(s"Broken constraint, prevIdx and prevTerm should be both absent or present, instead got $other")
-        false.pure
+        false.pure[F]
     }
-  }
-
-  /**
-    * Merge logs from leader with local logs by idx favor leader
-    * logs when idx conflict, maintains logs order by idx
-    */
-  private def reconcileLogs(leaderLogs: Vector[Log], serverLog: Vector[Log]): F[Unit] = {
-    allState.logs.overwrite(leaderLogs)
   }
 
   private def commitAndExecCmd(leaderCommit: Int, newEntries: Seq[Log], follower: Follower): F[Unit] = {

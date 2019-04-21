@@ -1,12 +1,13 @@
 package raft
 package algebra.append
 
-import cats.{ MonadError, Parallel }
 import cats.effect.{ ContextShift, Timer }
+import cats.{ MonadError, Parallel }
 import fs2.concurrent.Topic
 import org.slf4j.{ Logger, LoggerFactory }
-import raft.algebra.{ NetworkIO, StateMachine }
-import raft.model.{ AppendRequest, AppendResponse, Follower, Leader, RaftLog, RaftNodeState }
+import raft.algebra.StateMachine
+import raft.algebra.io.NetworkIO
+import raft.model._
 
 import scala.concurrent.duration.MILLISECONDS
 
@@ -40,25 +41,26 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
   }
 
   private def prepareRequest(leader: Leader): F[Map[String, AppendRequest[Log]]] = {
+
     for {
       persistent <- allState.persistent.get
-    } yield {
-      leader.nextIndices.map {
-        case (nodeId, nextIdx) =>
-          val logsToSend = persistent.logs.dropWhile(_.idx < nextIdx)
-          val prevLog = persistent.logs.collectFirst {
-            case l if l.idx == nextIdx - 1 => l
-          }
-          nodeId -> AppendRequest(
-            term         = persistent.currentTerm,
-            leaderId     = allState.config.nodeId,
-            prevLogIdx   = prevLog.map(_.idx),
-            prevLogTerm  = prevLog.map(_.term),
-            entries      = logsToSend,
-            leaderCommit = leader.commitIdx
-          )
-      }
-    }
+      requests <- leader.nextIndices.toList.traverse {
+                   case (nodeId, nextIdx) =>
+                     for {
+                       logsToSend <- allState.logs.takeFrom(nextIdx)
+                       prevLog    <- allState.logs.getByIdx(nextIdx - 1)
+                     } yield {
+                       nodeId -> AppendRequest(
+                         term         = persistent.currentTerm,
+                         leaderId     = allState.config.nodeId,
+                         prevLogIdx   = prevLog.map(_.idx),
+                         prevLogTerm  = prevLog.map(_.term),
+                         entries      = logsToSend,
+                         leaderCommit = leader.commitIdx
+                       )
+                     }
+                 }
+    } yield requests.toMap
   }
 
   type LoR = Either[Unit, Unit]
@@ -98,11 +100,6 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
     def updateState: F[LoR] = {
       for {
         res <- networkManager.sendAppendRequest(nodeId, req)
-        s   <- allState.persistent.get
-        _ = {
-          if (s.logs.nonEmpty)
-            logger.info(s"Req to $nodeId with ${s.currentTerm}/${s.logs}")
-        }
         r <- allState.serverTpeMutex {
               for {
                 state <- allState.serverTpe.get
@@ -145,8 +142,8 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
     if (canCommit) {
       logger.info(s"Prepare to commit ${leader.commitIdx + 1}")
       for {
+        maybeLog   <- allState.logs.getByIdx(leader.commitIdx + 1)
         persistent <- allState.persistent.get
-        maybeLog = persistent.logs.find(_.idx == leader.commitIdx + 1)
         _ <- maybeLog match {
               case Some(log) =>
                 val termMatched = log.term == persistent.currentTerm

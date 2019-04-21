@@ -53,11 +53,13 @@ class ClientIncomingImpl[F[_]: Concurrent, Cmd: Eq](
     } yield res
   }
 
-  private def appendToLocalLog(cmd: Cmd): F[Unit] = {
-    allState.persistent.update { p =>
-      val last = p.logs.lastOption.map(_.idx + 1).getOrElse(1)
-      val next = RaftLog(last, p.currentTerm, cmd)
-      p.copy(logs = p.logs :+ next)
-    }
+  private def appendToLocalLog(cmd: Cmd): F[Unit] = allState.serverTpeMutex {
+    for {
+      persistent <- allState.persistent.get
+      lastLog    <- allState.logs.lastLog
+      nextIdx = lastLog.map(_.idx + 1).getOrElse(1)
+      next    = RaftLog(nextIdx, persistent.currentTerm, cmd)
+      _ <- allState.logs.append(next)
+    } yield ()
   }
 }

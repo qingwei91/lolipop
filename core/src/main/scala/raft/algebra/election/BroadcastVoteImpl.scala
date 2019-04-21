@@ -4,7 +4,7 @@ package algebra.election
 import cats.effect.{ ContextShift, Timer }
 import cats.{ MonadError, Parallel }
 import org.slf4j.LoggerFactory
-import raft.algebra.NetworkIO
+import raft.algebra.io.NetworkIO
 import raft.model._
 
 class BroadcastVoteImpl[F[_]: Timer: ContextShift, FF[_], Cmd](
@@ -28,7 +28,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift, FF[_], Cmd](
     val nodeId = allState.config.nodeId
     for {
       persistent <- allState.persistent.get
-      last    = persistent.logs.lastOption
+      last       <- allState.logs.lastLog
       voteReq = VoteRequest(persistent.currentTerm, nodeId, last.map(_.idx), last.map(_.term))
       _ <- allState.config.peersId.toList.parTraverse { id =>
             sendReq(id, voteReq)
@@ -61,7 +61,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift, FF[_], Cmd](
                          case other => other -> None
                        }
       persistent <- allState.persistent.get
-      lastLog = persistent.logs.lastOption
+      lastLog    <- allState.logs.lastLog
 
       // should we wrap this in critical region??
       // in theory we dont have to as the changes is convergent
