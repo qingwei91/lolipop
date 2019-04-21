@@ -10,7 +10,7 @@ import raft.algebra.append.BroadcastAppend
 import raft.algebra.election.BroadcastVote
 import raft.model.{ Candidate, Follower, Leader, NonLeader, RaftNodeState }
 
-import scala.concurrent.duration.MILLISECONDS
+import scala.concurrent.duration._
 import scala.util.Random
 
 class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd](
