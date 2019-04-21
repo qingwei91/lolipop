@@ -4,9 +4,9 @@ import cats.Monad
 import cats.effect.ContextShift
 import cats.implicits._
 import org.slf4j.LoggerFactory
-import raft.algebra.NetworkIO
 import raft.algebra.append.AppendRPCHandler
 import raft.algebra.election.VoteRPCHandlerImpl
+import raft.algebra.io.NetworkIO
 import raft.model._
 
 class InMemNetwork[F[_]: ContextShift: Monad, State](

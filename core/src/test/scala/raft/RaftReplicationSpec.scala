@@ -44,15 +44,15 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
         responses <- request.timeout(timeToReplication * 2)
         _         <- tm.sleep(timeToReplication)
         allLogs <- statesOfAllNode.parTraverse { state =>
-                    state.persistent.get.map(_.logs)
+                    state.logs.lastLog
                   }
         commitIndices <- statesOfAllNode.parTraverse { state =>
                           state.serverTpe.get.map(_.commitIdx)
                         }
       } yield {
-        val logReplicated = allLogs
-          .map(_.size must_=== n + 1)
-          .reduce
+        val logReplicated = allLogs.map { a =>
+          a.map(_.idx) must_=== Some(n + 1)
+        }.reduce
 
         val logCommittedByAll = commitIndices.map(_ must_=== n + 1).reduce
         val elected           = NonEmptyList.fromListUnsafe(responses).map(_ must_!== NoLeader).reduce
@@ -61,7 +61,7 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
       }
     }
 
-    checkLogCommitted.unsafeRunTimed(10.seconds).get
+    checkLogCommitted.unsafeRunTimed(timeToReplication * 5).get
   }
 
   def replicateIfMoreThanHalf: Result = {
@@ -85,7 +85,7 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
         clientRes <- clientResIO
         _         <- tm.sleep(timeToReplication)
         allLogs <- statesOfAllNode.parTraverse { state =>
-                    state.persistent.get.map(_.logs)
+                    state.logs.lastLog
                   }
         commitIndices <- statesOfAllNode.parTraverse { state =>
                           state.serverTpe.get.map(_.commitIdx)
@@ -135,8 +135,8 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
 
       for {
         clientRes <- clientResIO
-        allLogs <- statesOfAllNode.parTraverse { f =>
-                    f.persistent.get.map(_.logs)
+        allLogs <- statesOfAllNode.parTraverse { state =>
+                    state.logs.lastLog
                   }
         commitIndices <- statesOfAllNode.parTraverse { f =>
                           f.serverTpe.get.map(_.commitIdx)

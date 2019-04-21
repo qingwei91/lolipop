@@ -39,10 +39,10 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
         clusterConf = ClusterConfig(i, clientIds - i)
         committedStream <- Topic[IO, String]("")
         clientReqQueue  <- Queue.bounded[IO, IO[Unit]](100)
-        persist         <- Ref.of[IO, Persistent[RaftLog[String]]](Persistent.init)
+        persist         <- Ref.of[IO, Persistent](Persistent.init)
         servTpe         <- Ref.of[IO, ServerType](tpe)
         lock            <- MVar[IO].of(())
-        counter         <- Ref.of[IO, Int](0)
+        baseLog         <- Ref.of[IO, Seq[RaftLog[String]]](Seq.empty)
       } yield {
         val stateMachine = new TestStateMachine[IO]
         val state = TestState(
@@ -50,7 +50,7 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
           persist,
           servTpe,
           lock,
-          counter
+          new TestLogsIO(baseLog)
         )
 
         val allState = AllState(stateMachine, state, committedStream, clientReqQueue)

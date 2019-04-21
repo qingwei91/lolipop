@@ -3,7 +3,7 @@ package raft.setup
 import java.io.IOException
 
 import cats.MonadError
-import raft.algebra.NetworkIO
+import raft.algebra.io.NetworkIO
 import raft.model._
 
 class UnreliableNetwork[F[_]](inner: NetworkIO[F, RaftLog[String]], shouldFail: (String, String) => Boolean)(
