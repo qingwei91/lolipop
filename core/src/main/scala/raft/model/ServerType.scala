@@ -1,4 +1,5 @@
-package raft.model
+package raft
+package model
 
 sealed trait ServerType {
   def commitIdx: Int

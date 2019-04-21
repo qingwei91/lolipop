@@ -1,7 +1,7 @@
-package raft.model
+package raft
+package model
 
 import cats.Monad
-import cats.implicits._
 import cats.effect.concurrent.{ MVar, Ref }
 
 trait RaftNodeState[F[_], Cmd] {

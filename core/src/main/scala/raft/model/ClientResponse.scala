@@ -1,4 +1,5 @@
-package raft.model
+package raft
+package model
 
 sealed trait ClientResponse
 case object CommandCommitted          extends ClientResponse

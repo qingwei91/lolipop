@@ -1,4 +1,5 @@
-package raft.model
+package raft
+package model
 
 case class VoteRequest(term: Int, candidateID: String, lastLogIdx: Option[Int], lastLogTerm: Option[Int])
 case class AppendRequest[Log](

@@ -1,4 +1,5 @@
-package raft.model
+package raft
+package model
 
 case class Persistent[Log](currentTerm: Int, votedFor: Option[String], logs: Vector[Log])
 
