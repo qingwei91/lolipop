@@ -1,7 +1,7 @@
-package raft.util
+package raft
+package util
 
 import cats.Monad
-import cats.implicits._
 import cats.effect.{ ContextShift, Timer }
 
 import scala.concurrent.duration.FiniteDuration
@@ -16,7 +16,7 @@ object Retry {
       CS.shift *>
       fa.flatMap {
         case Left(_) if n > 0 => T.sleep(backoff) *> retry(n - 1, backoff * 2)
-        case r                => F.pure(r)
+        case r => F.pure(r)
       }
     }
   }
