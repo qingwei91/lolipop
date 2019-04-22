@@ -93,7 +93,7 @@ lazy val coreDeps = Seq(
   "com.github.mpilquist" %% "simulacrum"          % "0.12.0",
   "org.typelevel"        %% "cats-mtl-core"       % "0.4.0",
   "org.typelevel"        %% "cats-tagless-macros" % "0.1.0",
-  "co.fs2"               %% "fs2-core"            % "1.0.1",
+  "co.fs2"               %% "fs2-core"            % "1.0.4",
   "com.olegpy"           %% "meow-mtl"            % "0.2.0",
   "ch.qos.logback"       % "logback-classic"      % "1.2.3",
   "ch.qos.logback"       % "logback-core"         % "1.2.3",

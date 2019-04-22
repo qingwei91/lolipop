@@ -4,7 +4,6 @@ import cats.data._
 import cats.effect.IO
 import cats.effect.concurrent.{ MVar, Ref }
 import fs2.concurrent.{ Queue, Topic }
-import raft.algebra._
 import raft.algebra.append._
 import raft.algebra.client._
 import raft.algebra.election._
@@ -34,9 +33,8 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
   val tasksIO: IO[NonEmptyList[RaftTestComponents]] = clientIds.toNonEmptyList
     .traverse { i =>
       for {
-        monotime <- tm.clock.realTime(MILLISECONDS)
-        tpe         = Follower(0, 0, monotime, None)
-        clusterConf = ClusterConfig(i, clientIds - i)
+        time <- tm.clock.realTime(MILLISECONDS)
+        tpe = Follower(0, 0, time, None)
         committedStream <- Topic[IO, String]("")
         clientReqQueue  <- Queue.bounded[IO, IO[Unit]](100)
         persist         <- Ref.of[IO, Persistent](Persistent.init)
@@ -44,6 +42,7 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
         lock            <- MVar[IO].of(())
         baseLog         <- Ref.of[IO, Seq[RaftLog[String]]](Seq.empty)
       } yield {
+        val clusterConf  = ClusterConfig(i, clientIds - i)
         val stateMachine = new TestStateMachine[IO]
         val state = TestState(
           clusterConf,
@@ -62,7 +61,7 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
         (i, vote, allState, append)
       }
     }
-    .map { data =>
+    .flatMap { data =>
       val appendResponders = data.map { case (i, _, _, append) => i -> append }.toNem
       val voteResponders   = data.map { case (i, vote, _, _) => i   -> vote }.toNem
 
@@ -71,28 +70,26 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
         shouldFail
       )
 
-      data.map(_._3).map {
-        case AllState(stateMachine, allState, committed, replicationTasks) =>
-          val append = new BroadcastAppendImpl(
-            network,
-            stateMachine,
-            allState,
-            committed
-          )
-          val vote = new BroadcastVoteImpl[IO, IO.Par, String](
-            allState,
-            network
-          )
-          val poller = new RaftPollerImpl[IO, String](allState, append, vote, replicationTasks)
-          val proc   = new RaftProcessImpl[IO](poller, replicationTasks)
-          val client = new ClientIncomingImpl(allState, append, committed, replicationTasks)
-          RaftTestComponents(proc, client, allState)
+      data.traverse {
+        case (_, voteHandler, AllState(stateMachine, allState, _, _), appendHandler) =>
+          for {
+            proc <- RaftProcess(
+                     stateMachine,
+                     allState,
+                     network,
+                     appendHandler,
+                     voteHandler,
+                     ""
+                   )
+          } yield {
+            RaftTestComponents(proc, proc.api, allState)
+          }
       }
     }
 }
 
 case class RaftTestComponents(
-  proc: RaftProcess[IO],
+  proc: RaftProcess[IO, String],
   clientIncoming: ClientIncoming[IO, String],
   state: RaftNodeState[IO, String]
 )
