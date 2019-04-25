@@ -2,6 +2,7 @@ package raft.http
 
 import cats._
 import cats.effect._
+import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.Stream
 import io.circe.generic.auto._
@@ -14,6 +15,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
+import raft.algebra.io.LogIO
 import raft.model._
 import raft.{ RaftApi, RaftProcess }
 
@@ -23,6 +25,7 @@ trait RaftHttpServer[F[_]] {
   def start: fs2.Stream[F, ExitCode]
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.Any"))
 object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
   def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, FF[_], Cmd: Decoder: Encoder: Eq, State](
@@ -30,6 +33,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
     networkMapping: Map[String, Uri],
     stateMachineF: F[StateMachine[F, Cmd, State]],
     httpDSL: Http4sDsl[F],
+    logsIO: F[LogIO[F, Cmd]],
     initCmd: Cmd
   )(implicit P: Parallel[F, FF]): RaftHttpServer[F] = {
     import httpDSL._
@@ -65,13 +69,16 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
     val raftProcess: Stream[F, RaftProcess[F, Cmd]] = for {
       client <- BlazeClientBuilder.apply[F](global).stream
       network = new HttpNetwork[F, Log](networkMapping, client)
-      stateM <- Stream.eval(stateMachineF)
+      stateM     <- Stream.eval(stateMachineF)
+      persistent <- Stream.eval(Ref.of[F, Persistent](Persistent.init))
+      log <- Stream.eval(logsIO)
       proc <- Stream.eval(
                RaftProcess.simple(
                  stateM,
                  config,
-                 ???,
+                 log,
                  network,
+                 persistent,
                  initCmd
                )
              )

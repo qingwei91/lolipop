@@ -34,18 +34,18 @@ object RaftProcess {
     clusterConfig: ClusterConfig,
     logIO: LogIO[F, Cmd],
     networkIO: NetworkIO[F, RaftLog[Cmd]],
+    persistentIO: Ref[F, Persistent],
     initialCmd: Cmd
   )(implicit FParallel: Parallel[F, FF]): F[RaftProcess[F, Cmd]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
       initFollower = Follower(0, 0, time, None)
-      persistRef   <- Ref.of[F, Persistent](Persistent.init)
       serverTpeRef <- Ref.of[F, ServerType](initFollower)
       lock         <- MVar[F].of(())
       state = new RaftNodeState[F, Cmd] {
         override def config: ClusterConfig = clusterConfig
 
-        override def persistent: Ref[F, Persistent] = persistRef
+        override def persistent: Ref[F, Persistent] = persistentIO
 
         override def serverTpe: Ref[F, ServerType] = serverTpeRef
 

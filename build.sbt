@@ -25,7 +25,8 @@ lazy val httpExample = project
       "io.circe"              %% "circe-core"          % circeVersion,
       "io.circe"              %% "circe-generic"       % circeVersion,
       "io.circe"              %% "circe-parser"        % circeVersion,
-      "com.github.pureconfig" %% "pureconfig"          % "0.10.2"
+      "com.github.pureconfig" %% "pureconfig"          % "0.10.2",
+      "io.swaydb"             %% "swaydb"              % "0.8-beta.7"
     )
   )
 
