@@ -1,13 +1,13 @@
 package raft
 package algebra.election
 
-import cats.effect.{ ContextShift, Timer }
+import cats.effect._
 import cats.{ MonadError, Parallel }
 import org.slf4j.LoggerFactory
 import raft.algebra.io.NetworkIO
 import raft.model._
 
-class BroadcastVoteImpl[F[_]: Timer: ContextShift, FF[_], Cmd](
+class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
   allState: RaftNodeState[F, Cmd],
   networkManager: NetworkIO[F, RaftLog[Cmd]]
 )(implicit Par: Parallel[F, FF], ME: MonadError[F, Throwable])
