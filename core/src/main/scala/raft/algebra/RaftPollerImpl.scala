@@ -4,11 +4,10 @@ package algebra
 import cats.Monad
 import cats.effect.{ Concurrent, Timer }
 import fs2.Stream
-import fs2.concurrent.Queue
 import org.slf4j.LoggerFactory
 import raft.algebra.append.BroadcastAppend
 import raft.algebra.election.BroadcastVote
-import raft.model.{ Candidate, Follower, Leader, NonLeader, RaftNodeState }
+import raft.model._
 
 import scala.concurrent.duration._
 import scala.util.Random
@@ -16,25 +15,21 @@ import scala.util.Random
 class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd](
   allState: RaftNodeState[F, Cmd],
   broadcastAppend: BroadcastAppend[F],
-  broadcastVote: BroadcastVote[F],
-  replicationTask: Queue[F, F[Unit]]
+  broadcastVote: BroadcastVote[F]
 )(implicit timer: Timer[F])
     extends RaftPoller[F] {
   val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
-  val ConF = Concurrent[F]
-  val F    = Monad[F]
-
-  val timeoutBase = 100
-  def start: Stream[F, Unit] = {
+  val timeoutBase = 50
+  def start: Stream[F, Map[String, F[Unit]]] = {
     Stream
       .awakeEvery[F](timeoutBase.millis)
-      .evalMap[F, Unit] { _ =>
-        replicationTask.enqueue1(tick)
+      .evalMap[F, Map[String, F[Unit]]] { _ =>
+        tick
       }
   }
 
-  private def tick: F[Unit] = {
+  private def tick: F[Map[String, F[Unit]]] = {
     for {
       serverTpe <- allState.serverTpe.get
       x <- serverTpe match {
@@ -44,45 +39,42 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd](
     } yield x
   }
 
-  private def leaderTick: F[Unit] = broadcastAppend.replicateLogs
+  private def leaderTick: F[Map[String, F[Unit]]] = broadcastAppend.replicateLogs
 
-  private def electionTick: F[Unit] = {
+  private def electionTick: F[Map[String, F[Unit]]] = {
     for {
       serverTpe <- allState.serverTpe.get
-      _ <- serverTpe match {
-            case f: Follower =>
-              if (f.leaderId.isEmpty) {
-                startElection(f)
-              } else F.unit
-            case c: Candidate => startElection(c)
-            case _ => F.unit
-          }
-    } yield ()
+      tasksMap <- serverTpe match {
+                   case f: Follower if f.leaderId.isEmpty => startElection(f)
+                   case c: Candidate => startElection(c)
+                   case _ => Map.empty[String, F[Unit]].pure[F]
+                 }
+    } yield tasksMap
   }
-  private def startElection(nonLeader: NonLeader): F[Unit] = {
+  private def startElection(nonLeader: NonLeader): F[Map[String, F[Unit]]] = {
     for {
       timeInMillis <- timer.clock.realTime(MILLISECONDS)
       timeout        = Random.nextInt(timeoutBase * 3) + (timeoutBase * 2)
       timeoutReached = (timeInMillis - nonLeader.lastRPCTimeMillis) > timeout
 
-      _ <- if (timeoutReached) {
-            val newServerTpe = Candidate(nonLeader.commitIdx, nonLeader.lastApplied, timeInMillis, Map.empty)
-            val selfId       = allState.config.nodeId
+      votingReq <- if (timeoutReached) {
+                    val newServerTpe = Candidate(nonLeader.commitIdx, nonLeader.lastApplied, timeInMillis, Map.empty)
+                    val selfId       = allState.config.nodeId
 
-            for {
-              _ <- allState.serverTpe.set(newServerTpe)
-              updatedP <- allState.persistent.modify { p =>
-                           val updated = p.copy(p.currentTerm + 1, votedFor = Some(selfId))
-                           updated -> updated
-                         }
-              _ = logger.info(s"""
+                    for {
+                      _ <- allState.serverTpe.set(newServerTpe)
+                      updatedP <- allState.persistent.modify { p =>
+                                   val updated = p.copy(p.currentTerm + 1, votedFor = Some(selfId))
+                                   updated -> updated
+                                 }
+                      _ = logger.info(s"""
                              | Start new term ${updatedP.currentTerm}
                              | LastRPC = ${nonLeader.lastRPCTimeMillis}
                      """.stripMargin)
-              _ <- broadcastVote.requestVotes
-            } yield ()
-          } else F.unit
-    } yield {}
+                      reqs <- broadcastVote.requestVotes
+                    } yield reqs
+                  } else Map.empty[String, F[Unit]].pure[F]
+    } yield votingReq
 
   }
 }

@@ -5,20 +5,22 @@ import cats.MonadError
 import cats.effect.Timer
 import org.slf4j.LoggerFactory
 import raft.algebra._
+import raft.algebra.event.EventLogger
 import raft.model._
 
 import scala.concurrent.duration._
 
 class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   val stateMachine: StateMachine[F, Cmd, State],
-  val allState: RaftNodeState[F, Cmd]
+  val allState: RaftNodeState[F, Cmd],
+  elogger: EventLogger[F, Cmd, State]
 )(implicit F: MonadError[F, Throwable])
-    extends AppendRPCHandler[F, RaftLog[Cmd]] {
+    extends AppendRPCHandler[F, Cmd] {
   type Log = RaftLog[Cmd]
 
   private val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
-  override def requestAppend(req: AppendRequest[RaftLog[Cmd]]): F[AppendResponse] = {
+  override def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse] = allState.serverTpeMutex {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
       serverType <- allState.serverTpe.modify[ServerType] {
@@ -39,19 +41,13 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     } yield res
   }
 
-  private def followerServeAppend(req: AppendRequest[Log], follower: Follower): F[AppendResponse] = {
+  private def followerServeAppend(req: AppendRequest[Cmd], follower: Follower): F[AppendResponse] = {
     for {
-      res <- allState.serverTpeMutex(
-              for {
-                persistent <- allState.persistent.get
-                r          <- handleReq(persistent, req, follower)
-              } yield r
-            )
-    } yield {
-      res
-    }
+      persistent <- allState.persistent.get
+      r          <- handleReq(persistent, req, follower)
+    } yield r
   }
-  private def candidateServeAppend(req: AppendRequest[Log]): F[AppendResponse] = {
+  private def candidateServeAppend(req: AppendRequest[Cmd]): F[AppendResponse] = {
     for {
       persistent <- allState.persistent.get
       currentTerm = persistent.currentTerm
@@ -67,7 +63,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     } yield r
   }
 
-  private def leaderServeAppend(req: AppendRequest[Log]): F[AppendResponse] = {
+  private def leaderServeAppend(req: AppendRequest[Cmd]): F[AppendResponse] = {
     for {
       persistent <- allState.persistent.get
       currentTerm = persistent.currentTerm
@@ -84,7 +80,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     } yield r
   }
 
-  private def handleReq(state: Persistent, req: AppendRequest[Log], follower: Follower): F[AppendResponse] = {
+  private def handleReq(state: Persistent, req: AppendRequest[Cmd], follower: Follower): F[AppendResponse] = {
     import state._
     val leaderOutdated = req.term < currentTerm
 
@@ -92,21 +88,15 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
       val prevLogMisMatch = !isConsistent
       true match {
         case `leaderOutdated` =>
-          logger.error("Leader outdated, rejecting request")
-          rejectAppend(currentTerm).pure[F]
+          elogger.rejectedLog(req, allState).as(rejectAppend(currentTerm))
 
         case `prevLogMisMatch` =>
-          rejectAppend(currentTerm).pure[F]
+          elogger.rejectedLog(req, allState).as(rejectAppend(currentTerm))
 
         case _ =>
           allState.logs.overwrite(req.entries) *>
-            commitAndExecCmd(req.leaderCommit, req.entries, follower)
-              .as {
-                if (req.entries.nonEmpty) {
-                  logger.info(s"Append accepted ${req.entries} from ${req.leaderId}")
-                }
-                acceptAppend(currentTerm)
-              }
+            commitAndExecCmd(req.leaderCommit, follower) *>
+            elogger.acceptedLog(req, allState).as(acceptAppend(currentTerm))
       }
     }
   }
@@ -125,7 +115,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   }
 
   // This reflect log matching property, it's determined by induction
-  private def checkPrevLogsConsistency(request: AppendRequest[Log]): F[Boolean] = {
+  private def checkPrevLogsConsistency(request: AppendRequest[Cmd]): F[Boolean] = {
     val prevIdx  = request.prevLogIdx
     val prevTerm = request.prevLogTerm
     (prevIdx, prevTerm) match {
@@ -155,8 +145,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     }
   }
 
-  private def commitAndExecCmd(leaderCommit: Int, newEntries: Seq[Log], follower: Follower): F[Unit] = {
-    logger.debug(s"Attempt to commit from leader $leaderCommit -- $newEntries")
+  private def commitAndExecCmd(leaderCommit: Int, follower: Follower): F[Unit] = {
     if (leaderCommit > follower.commitIdx) {
 
       val newCommitIdxF = for {
@@ -174,9 +163,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
                   updatedFollower = follower.copy(commitIdx = newCommitIdx, lastRPCTimeMillis = time)
                   _ <- allState.serverTpe.set(updatedFollower)
                   _ <- applyLatestCmd(newCommitIdx, updatedFollower)
-                } yield {
-                  logger.info(s"Applied idx=$newCommitIdx")
-                }
+                } yield ()
               case None => F.unit
             }
       } yield ()

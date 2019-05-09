@@ -8,6 +8,7 @@ import fs2.concurrent.{ Queue, Topic }
 import raft.algebra.append._
 import raft.algebra.client.ClientIncomingImpl
 import raft.algebra.election._
+import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
 import raft.algebra.io.{ LogIO, NetworkIO }
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
@@ -33,9 +34,10 @@ object RaftProcess {
     stateMachine: StateMachine[F, Cmd, State],
     clusterConfig: ClusterConfig,
     logIO: LogIO[F, Cmd],
-    networkIO: NetworkIO[F, RaftLog[Cmd]],
+    networkIO: NetworkIO[F, Cmd],
     persistentIO: Ref[F, Persistent],
-    initialCmd: Cmd
+    initialCmd: Cmd,
+    eventLogger: EventLogger[F, Cmd, State]
   )(implicit FParallel: Parallel[F, FF]): F[RaftProcess[F, Cmd]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
@@ -55,10 +57,11 @@ object RaftProcess {
       }
       appendHandler = new AppendRPCHandlerImpl(
         stateMachine,
-        state
+        state,
+        eventLogger
       )
-      voteHandler = new VoteRPCHandlerImpl(state)
-      proc <- RaftProcess.apply(stateMachine, state, networkIO, appendHandler, voteHandler, initialCmd)
+      voteHandler = new VoteRPCHandlerImpl(state, eventLogger)
+      proc <- RaftProcess.apply(stateMachine, state, networkIO, appendHandler, voteHandler, initialCmd, eventLogger)
     } yield {
       proc
     }
@@ -67,26 +70,52 @@ object RaftProcess {
   def apply[F[_]: Concurrent: Timer: ContextShift, FF[_], Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
     state: RaftNodeState[F, Cmd],
-    networkIO: NetworkIO[F, RaftLog[Cmd]],
-    appendHandler: AppendRPCHandler[F, RaftLog[Cmd]],
+    networkIO: NetworkIO[F, Cmd],
+    appendHandler: AppendRPCHandler[F, Cmd],
     voteHandler: VoteRPCHandler[F],
-    initialCmd: Cmd
+    initialCmd: Cmd,
+    eventLogger: EventLogger[F, Cmd, State]
   )(implicit P: Parallel[F, FF]): F[RaftProcess[F, Cmd]] = {
+    val peers = state.config.peersId.toList
     for {
-      committedTopic       <- Topic[F, Cmd](initialCmd)
-      logsReplicationTasks <- Queue.bounded[F, F[Unit]](100)
+      committedTopic <- Topic[F, Cmd](initialCmd)
+      taskQueue <- peers
+                    .traverse { nodeId =>
+                      Queue
+                        .bounded[F, F[Unit]](100)
+                        .map(nodeId -> _)
+                    }
+                    .map(_.toMap)
+      scheduler = RPCTaskScheduler(taskQueue)
     } yield {
 
-      val appendInitiator = new BroadcastAppendImpl[F, FF, Cmd, State](networkIO, stateMachine, state, committedTopic)
+      val appendInitiator = new BroadcastAppendImpl(networkIO, stateMachine, state, committedTopic, eventLogger)
 
-      val voteInitiator = new BroadcastVoteImpl[F, FF, Cmd](state, networkIO)
+      val voteInitiator = new BroadcastVoteImpl(state, networkIO, eventLogger)
 
-      val poller         = new RaftPollerImpl(state, appendInitiator, voteInitiator, logsReplicationTasks)
-      val clientIncoming = new ClientIncomingImpl(state, appendInitiator, committedTopic, logsReplicationTasks)
+      val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator)
+
+      val clientIncoming = new ClientIncomingImpl(state, appendInitiator, committedTopic, scheduler, eventLogger)
+
       new RaftProcess[F, Cmd] {
         override def startRaft: Stream[F, Unit] = {
-          val replicationTask = logsReplicationTasks.dequeue.evalMap(identity)
-          poller.start.concurrently[F, Unit](replicationTask)
+          // this is messy and potentially incorrect due to mixing
+          // immutable data structure with concurrent queue
+
+          val rpcTasks = Stream(
+            taskQueue.map {
+              case (_, queue) =>
+                queue.dequeue.evalMap(identity)
+            }.toList: _*
+          ).parJoin(peers.size + 5)
+
+          poller.start
+            .evalMap { tasks =>
+              tasks.toList.traverse_ {
+                case (nodeId, task) => scheduler.register(nodeId, task)
+              }
+            }
+            .concurrently(rpcTasks)
         }
 
         override def api: RaftApi[F, Cmd] = new RaftApi[F, Cmd] {
@@ -94,7 +123,7 @@ object RaftProcess {
 
           override def requestVote(req: VoteRequest): F[VoteResponse] = voteHandler.requestVote(req)
 
-          override def requestAppend(req: AppendRequest[RaftLog[Cmd]]): F[AppendResponse] =
+          override def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse] =
             appendHandler.requestAppend(req)
         }
       }

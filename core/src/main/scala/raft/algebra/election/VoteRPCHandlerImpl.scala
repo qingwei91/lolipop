@@ -3,17 +3,16 @@ package algebra.election
 
 import cats.Monad
 import cats.effect.Timer
-import org.slf4j.LoggerFactory
+import raft.algebra.event.EventLogger
 import raft.model._
 
 import scala.concurrent.duration._
 
 class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
-  allState: RaftNodeState[F, Cmd]
+  allState: RaftNodeState[F, Cmd],
+  eventLogger: EventLogger[F, Cmd, _]
 ) extends VoteRPCHandler[F] {
   type Log = RaftLog[Cmd]
-
-  private val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
   override def requestVote(req: VoteRequest): F[VoteResponse] = {
     allState.serverTpeMutex {
@@ -33,12 +32,11 @@ class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
         hasVote      = (sameTerm && voteAvailable(pState.votedFor, req.candidateID)) || higherTerm
         canGrantVote = hasVote && candidateUpToDate(req, lastLog)
 
-        res = if (canGrantVote) {
-          logger.info(s"Granting vote to ${req.candidateID} of term ${req.term}")
-          VoteResponse(currentTerm, true)
-        } else {
-          VoteResponse(currentTerm, false)
-        }
+        res <- if (canGrantVote) {
+                eventLogger.grantedVote(req).as(VoteResponse(currentTerm, voteGranted = true))
+              } else {
+                VoteResponse(currentTerm, voteGranted = false).pure[F]
+              }
 
         _ <- if (res.voteGranted) {
               for {

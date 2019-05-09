@@ -1,46 +1,45 @@
 package raft
 package algebra.append
 
+import cats.MonadError
 import cats.effect.{ ContextShift, Timer }
-import cats.{ MonadError, Parallel }
 import fs2.concurrent.Topic
 import org.slf4j.{ Logger, LoggerFactory }
 import raft.algebra.StateMachine
+import raft.algebra.event.EventLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
 
 import scala.concurrent.duration.MILLISECONDS
 
-class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
-  networkManager: NetworkIO[F, RaftLog[Cmd]],
+class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
+  networkManager: NetworkIO[F, Cmd],
   stateMachine: StateMachine[F, Cmd, State],
   allState: RaftNodeState[F, Cmd],
-  committedTopic: Topic[F, Cmd]
-)(implicit parallel: Parallel[F, FA], F: MonadError[F, Throwable])
+  committedTopic: Topic[F, Cmd],
+  eLogger: EventLogger[F, Cmd, State]
+)(implicit F: MonadError[F, Throwable])
     extends BroadcastAppend[F] {
   type Log = RaftLog[Cmd]
 
-  // todo: try monadic pure logger
   private val logger: Logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
-  override def replicateLogs: F[Unit] = {
+  override def replicateLogs: F[Map[String, F[Unit]]] = {
     for {
-      // 1. Get state and prepare req
       serverType <- allState.serverTpe.get
       reqs <- serverType match {
                case l: Leader => prepareRequest(l)
-               case _ => Map.empty[String, AppendRequest[Log]].pure[F]
+               case _ => Map.empty[String, AppendRequest[Cmd]].pure[F]
              }
-      // 2. Get State and send request
-      _ <- reqs.toList.parTraverse {
-            case (nodeId, req) => syncWithFollower(nodeId, req)
-          }
 
-    } yield ()
-
+    } yield {
+      reqs.map {
+        case (nodeId, req) => nodeId -> syncWithFollower(nodeId, req)
+      }
+    }
   }
 
-  private def prepareRequest(leader: Leader): F[Map[String, AppendRequest[Log]]] = {
+  private def prepareRequest(leader: Leader): F[Map[String, AppendRequest[Cmd]]] = {
 
     for {
       persistent <- allState.persistent.get
@@ -64,7 +63,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
   }
 
   type LoR = Either[Unit, Unit]
-  private def syncWithFollower(nodeId: String, req: AppendRequest[Log]): F[Unit] = {
+  private def syncWithFollower(followerId: String, req: AppendRequest[Cmd]): F[Unit] = {
 
     // todo: we should not assume leader is still up-to-date
     // need to handle where term does not match
@@ -72,9 +71,9 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
       case AppendResponse(_, true) =>
         val updatedSt = req.entries.lastOption match {
           case Some(lastAppended) =>
-            logger.error(s"Successfully sync to $nodeId up to ${lastAppended.idx}")
-            val updated = updateLeaderState(nodeId, lastAppended)(leader)
+            val updated = updateLeaderState(followerId, lastAppended)(leader)
 
+            eLogger.leaderAppendSucceeded(req, followerId) *>
             allState.serverTpe.set(updated).as(updated)
 
           case None => leader.pure[F]
@@ -92,14 +91,15 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
           r <- if (currentT < nodeTerm) {
                 convertToFollow(nodeTerm).as[LoR](Right(()))
               } else {
-                appendFailed(nodeId, leader).as[LoR](Left(()))
+                eLogger.leaderAppendRejected(req, followerId) *>
+                appendFailed(followerId, leader).as[LoR](Left(()))
               }
         } yield r
     }
 
     def updateState: F[LoR] = {
       for {
-        res <- networkManager.sendAppendRequest(nodeId, req)
+        res <- networkManager.sendAppendRequest(followerId, req)
         r <- allState.serverTpeMutex {
               for {
                 state <- allState.serverTpe.get
@@ -112,11 +112,8 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
       } yield r
     }
 
-    updateState.attempt
-      .map {
-        case Left(_) => logger.info(s"Failed to append log for $nodeId")
-        case Right(_) => ()
-      }
+    // todo: Perform retry
+    updateState.as(())
   }
 
   private def updateLeaderState(nodeId: String, lastAppended: Log)(
@@ -140,7 +137,6 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
     val canCommit = (replicatedNode.size + 1) * 2 > matchIdx.size + 1
 
     if (canCommit) {
-      logger.info(s"Prepare to commit ${leader.commitIdx + 1}")
       for {
         maybeLog   <- allState.logs.getByIdx(leader.commitIdx + 1)
         persistent <- allState.persistent.get
@@ -169,9 +165,8 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, FA[_], Cmd, State](
       _ <- allState.serverTpe.set(leader.copy(commitIdx = newlyCommited.idx))
       _ <- stateMachine.execute(newlyCommited.command)
       _ <- committedTopic.publish1(newlyCommited.command)
-    } yield {
-      logger.error(s"Committed... $newlyCommited")
-    }
+      _ <- eLogger.logCommitted(newlyCommited.idx)
+    } yield ()
   }
 
   private def appendFailed(nodeId: String, leader: Leader): F[Unit] = {

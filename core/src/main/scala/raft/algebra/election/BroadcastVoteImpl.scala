@@ -1,61 +1,60 @@
 package raft
 package algebra.election
 
+import cats.MonadError
 import cats.effect._
-import cats.{ MonadError, Parallel }
-import org.slf4j.LoggerFactory
+import raft.algebra.event.EventLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
 
 class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
   allState: RaftNodeState[F, Cmd],
-  networkManager: NetworkIO[F, RaftLog[Cmd]]
-)(implicit Par: Parallel[F, FF], ME: MonadError[F, Throwable])
+  networkManager: NetworkIO[F, Cmd],
+  eventLogger: EventLogger[F, Cmd, _]
+)(implicit F: MonadError[F, Throwable])
     extends BroadcastVote[F] {
-  private val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
-  override def requestVotes: F[Unit] = {
+  override def requestVotes: F[Map[String, F[Unit]]] = {
     for {
       tpe <- allState.serverTpe.get
-      _ <- tpe match {
-            case _: Candidate => broadcastVoteReq
-            case _ => ME.unit
-          }
-    } yield ()
+      taskMap <- tpe match {
+                  case _: Candidate => broadcastVoteReq
+                  case _ => Map.empty[String, F[Unit]].pure[F]
+                }
+    } yield taskMap
   }
 
-  private def broadcastVoteReq: F[Unit] = {
+  private def broadcastVoteReq: F[Map[String, F[Unit]]] = {
     val nodeId = allState.config.nodeId
     for {
       persistent <- allState.persistent.get
       last       <- allState.logs.lastLog
       voteReq = VoteRequest(persistent.currentTerm, nodeId, last.map(_.idx), last.map(_.term))
-      _ <- allState.config.peersId.toList.parTraverse { id =>
-            sendReq(id, voteReq)
-          }
-    } yield ()
+    } yield {
+      allState.config.peersId.map { target =>
+        target -> sendReq(target, voteReq)
+      }.toMap
+    }
   }
 
   private def sendReq(id: String, request: VoteRequest): F[Unit] = {
     (for {
       res <- networkManager.sendVoteRequest(id, request)
       _   <- processVote(id, res, request)
-    } yield ()).attempt
-      .map {
-        case Left(_) => logger.info(s"Failed to request vote from $id")
-        case Right(_) => ()
-      }
+    } yield ()).recoverWith {
+      case _ => eventLogger.candidateVoteRejected(request, id)
+    }
+
   }
 
   private def processVote(id: String, res: VoteResponse, req: VoteRequest): F[Unit] = allState.serverTpeMutex {
     val conf = allState.config
     for {
+      _ <- if (res.voteGranted) {
+            eventLogger.candidateReceivedVote(req, id)
+          } else F.unit
       maybeCandidate <- allState.serverTpe.modify {
                          case c: Candidate =>
-                           if (res.voteGranted) {
-                             logger.error(s"Received vote from $id (term: ${res.term}) for ${req.term}")
-                           }
-
                            val nState = c.copy(receivedVotes = c.receivedVotes.updated(id, res.voteGranted))
                            nState -> Some(nState)
                          case other => other -> None
@@ -74,7 +73,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
               }
               val enoughVotes = (totalVotes + 1) * 2 > conf.peersId.size + 1
               if (enoughVotes) {
-                logger.error(s"Enough votes, converting to Leader for term ${persistent.currentTerm}")
+                eventLogger.elected(persistent.currentTerm, lastLog.map(_.idx)) *>
                 allState.serverTpe.update {
                   case c: Candidate =>
                     val nextLogIdx = lastLog.map(_.idx).getOrElse(0) + 1
@@ -87,9 +86,9 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
                   case other => other
                 }
               } else {
-                ME.unit
+                F.unit
               }
-            case None => ME.unit
+            case None => F.unit
           }
     } yield r
   }
