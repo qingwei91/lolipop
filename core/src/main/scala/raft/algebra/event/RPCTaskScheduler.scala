@@ -2,7 +2,6 @@ package raft
 package algebra.event
 
 import cats.Monad
-import cats.effect.Concurrent
 import fs2.concurrent.Queue
 
 /**
@@ -14,7 +13,7 @@ trait RPCTaskScheduler[F[_]] {
 }
 
 object RPCTaskScheduler {
-  def apply[F[_]: Monad: Concurrent](tasksQueue: Map[String, Queue[F, F[Unit]]]): RPCTaskScheduler[F] = {
+  def apply[F[_]: Monad](tasksQueue: Map[String, Queue[F, F[Unit]]]): RPCTaskScheduler[F] = {
     new RPCTaskScheduler[F] {
       override def register(nodeId: String, task: F[Unit]): F[Unit] = {
         tasksQueue

@@ -37,28 +37,31 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
     }
   }
 
-  private def sendReq(id: String, request: VoteRequest): F[Unit] = {
+  private def sendReq(targetPeer: String, request: VoteRequest): F[Unit] = {
     (for {
-      res <- networkManager.sendVoteRequest(id, request)
-      _   <- processVote(id, res, request)
+      res <- networkManager.sendVoteRequest(targetPeer, request)
+      _   <- processVote(targetPeer, res, request)
     } yield ()).recoverWith {
-      case _ => eventLogger.candidateVoteRejected(request, id)
+      case _ => eventLogger.candidateVoteRejected(request, targetPeer)
     }
 
   }
 
-  private def processVote(id: String, res: VoteResponse, req: VoteRequest): F[Unit] = allState.serverTpeMutex {
+  private def processVote(targetPeer: String, res: VoteResponse, req: VoteRequest): F[Unit] = allState.serverTpeMutex {
     val conf = allState.config
     for {
-      _ <- if (res.voteGranted) {
-            eventLogger.candidateReceivedVote(req, id)
-          } else F.unit
+
       maybeCandidate <- allState.serverTpe.modify {
                          case c: Candidate =>
-                           val nState = c.copy(receivedVotes = c.receivedVotes.updated(id, res.voteGranted))
+                           val nState = c.copy(receivedVotes = c.receivedVotes.updated(targetPeer, res.voteGranted))
                            nState -> Some(nState)
                          case other => other -> None
                        }
+      _ <- if (res.voteGranted) {
+            eventLogger.candidateReceivedVote(req, targetPeer)
+          } else {
+            F.unit
+          }
       persistent <- allState.persistent.get
       lastLog    <- allState.logs.lastLog
 

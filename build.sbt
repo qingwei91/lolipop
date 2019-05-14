@@ -84,6 +84,7 @@ lazy val commmon = Def.settings(
     "-Ywarn-value-discard" // Warn when non-Unit expression results are unused.
   ),
   scalacOptions in Test ++= Seq("-Yrangepos"),
+  testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "failtrace"),
   wartremoverErrors ++= Warts.unsafe,
   addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M11").cross(CrossVersion.full)),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.0")

@@ -14,7 +14,7 @@ object TestClient {
   )(nodeId: String, cmd: Cmd): F[ClientResponse] = {
     clients(nodeId).incoming(cmd).flatMap {
       case RedirectTo(leaderId) =>
-        Timer[F].sleep(100.millis) *> untilCommitted(clients)(leaderId, cmd)
+        Timer[F].sleep(1000.millis) *> untilCommitted(clients)(leaderId, cmd)
       case CommandCommitted => Monad[F].pure(CommandCommitted)
       case NoLeader =>
         val total   = clients.size
@@ -23,7 +23,7 @@ object TestClient {
         val nextIdx = (currIdx + 1) % total
         val nextId  = keyList(nextIdx)
 
-        Timer[F].sleep(100.millis) *> untilCommitted(clients)(nextId, cmd)
+        Timer[F].sleep(1000.millis) *> untilCommitted(clients)(nextId, cmd)
     }
   }
 }

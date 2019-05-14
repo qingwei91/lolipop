@@ -5,7 +5,6 @@ import cats.effect.Concurrent
 import cats._
 import fs2.Stream
 import fs2.concurrent.Topic
-import org.slf4j.LoggerFactory
 import raft.algebra.append.BroadcastAppend
 import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
 import raft.model._
@@ -20,8 +19,6 @@ class ClientIncomingImpl[F[_]: Concurrent, FF[_], Cmd: Eq](
 )(implicit F: MonadError[F, Throwable], P: Parallel[F, FF])
     extends ClientIncoming[F, Cmd] {
 
-  private val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
-
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent
   // Cons: this will push the responsibility of replying to client else where
@@ -32,7 +29,7 @@ class ClientIncomingImpl[F[_]: Concurrent, FF[_], Cmd: Eq](
       res <- serverTpe match {
               case _: Leader =>
                 val dispatchReq: F[Unit] = for {
-                  _ <- appendToLocalLog(cmd)
+                  _          <- appendToLocalLog(cmd)
                   reqPerNode <- broadcast.replicateLogs
                   _ <- reqPerNode.toList.parTraverse {
                         case (nodeId, task) => rpcScheduler.register(nodeId, task)

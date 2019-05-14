@@ -25,55 +25,39 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
   private val logger: Logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
   override def replicateLogs: F[Map[String, F[Unit]]] = {
-    for {
-      serverType <- allState.serverTpe.get
-      reqs <- serverType match {
-               case l: Leader => prepareRequest(l)
-               case _ => Map.empty[String, AppendRequest[Cmd]].pure[F]
-             }
+    allState.config.peersId
+      .map { pId =>
+        pId -> taskPerPeer(pId)
+      }
+      .toMap
+      .pure[F]
+  }
 
-    } yield {
-      reqs.map {
-        case (nodeId, req) => nodeId -> syncWithFollower(nodeId, req)
+  private def taskPerPeer(peerId: String): F[Unit] = {
+    def prepReq(l: Leader) = {
+      for {
+        persistent <- allState.persistent.get
+        nextIdx = l.nextIndices(peerId)
+        logsToSend <- allState.logs.takeFrom(nextIdx)
+        prevLog    <- allState.logs.getByIdx(nextIdx - 1)
+      } yield {
+        AppendRequest(
+          term         = persistent.currentTerm,
+          leaderId     = allState.config.nodeId,
+          prevLogIdx   = prevLog.map(_.idx),
+          prevLogTerm  = prevLog.map(_.term),
+          entries      = logsToSend,
+          leaderCommit = l.commitIdx
+        )
       }
     }
-  }
-
-  private def prepareRequest(leader: Leader): F[Map[String, AppendRequest[Cmd]]] = {
-
-    for {
-      persistent <- allState.persistent.get
-      requests <- leader.nextIndices.toList.traverse {
-                   case (nodeId, nextIdx) =>
-                     for {
-                       logsToSend <- allState.logs.takeFrom(nextIdx)
-                       prevLog    <- allState.logs.getByIdx(nextIdx - 1)
-                     } yield {
-                       nodeId -> AppendRequest(
-                         term         = persistent.currentTerm,
-                         leaderId     = allState.config.nodeId,
-                         prevLogIdx   = prevLog.map(_.idx),
-                         prevLogTerm  = prevLog.map(_.term),
-                         entries      = logsToSend,
-                         leaderCommit = leader.commitIdx
-                       )
-                     }
-                 }
-    } yield requests.toMap
-  }
-
-  type LoR = Either[Unit, Unit]
-  private def syncWithFollower(followerId: String, req: AppendRequest[Cmd]): F[Unit] = {
-
-    // todo: we should not assume leader is still up-to-date
-    // need to handle where term does not match
-    def handleResponse(res: AppendResponse, leader: Leader): F[LoR] = res match {
+    def handleResponse(res: AppendResponse, leader: Leader, req: AppendRequest[Cmd]): F[Unit] = res match {
       case AppendResponse(_, true) =>
         val updatedSt = req.entries.lastOption match {
           case Some(lastAppended) =>
-            val updated = updateLeaderState(followerId, lastAppended)(leader)
+            val updated = updateLeaderState(peerId, lastAppended)(leader)
 
-            eLogger.leaderAppendSucceeded(req, followerId) *>
+            eLogger.leaderAppendSucceeded(req, peerId) *>
             allState.serverTpe.set(updated).as(updated)
 
           case None => leader.pure[F]
@@ -82,38 +66,41 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
         for {
           updated <- updatedSt
           _       <- findIdxToCommit(updated)
-        } yield Either.right(())
+        } yield ()
 
       case AppendResponse(nodeTerm, false) =>
         for {
           persistent <- allState.persistent.get
           currentT = persistent.currentTerm
           r <- if (currentT < nodeTerm) {
-                convertToFollow(nodeTerm).as[LoR](Right(()))
+                convertToFollow(nodeTerm)
               } else {
-                eLogger.leaderAppendRejected(req, followerId) *>
-                appendFailed(followerId, leader).as[LoR](Left(()))
+                eLogger.leaderAppendRejected(req, peerId) *>
+                appendFailed(peerId, leader)
               }
         } yield r
     }
 
-    def updateState: F[LoR] = {
-      for {
-        res <- networkManager.sendAppendRequest(followerId, req)
-        r <- allState.serverTpeMutex {
+    for {
+      serverType <- allState.serverTpe.get
+      _ <- serverType match {
+            case l: Leader =>
               for {
-                state <- allState.serverTpe.get
-                result <- state match {
-                           case l: Leader => handleResponse(res, l)
-                           case _ => F.unit.map(_.asRight[Unit])
-                         }
-              } yield result
-            }
-      } yield r
-    }
-
-    // todo: Perform retry
-    updateState.as(())
+                req <- prepReq(l)
+                res <- networkManager.sendAppendRequest(peerId, req)
+                r <- allState.serverTpeMutex {
+                      for {
+                        state <- allState.serverTpe.get
+                        result <- state match {
+                                   case l: Leader => handleResponse(res, l, req)
+                                   case _ => F.unit
+                                 }
+                      } yield result
+                    }
+              } yield r
+            case _ => F.unit
+          }
+    } yield {}
   }
 
   private def updateLeaderState(nodeId: String, lastAppended: Log)(

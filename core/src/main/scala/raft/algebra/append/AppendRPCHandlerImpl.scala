@@ -10,6 +10,7 @@ import raft.model._
 
 import scala.concurrent.duration._
 
+@SuppressWarnings(Array("org.wartremover.warts.Throw"))
 class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   val stateMachine: StateMachine[F, Cmd, State],
   val allState: RaftNodeState[F, Cmd],

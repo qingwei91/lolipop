@@ -102,12 +102,9 @@ object RaftProcess {
           // this is messy and potentially incorrect due to mixing
           // immutable data structure with concurrent queue
 
-          val rpcTasks = Stream(
-            taskQueue.map {
-              case (_, queue) =>
-                queue.dequeue.evalMap(identity)
-            }.toList: _*
-          ).parJoin(peers.size + 5)
+          val rpcTasks = taskQueue.values.foldLeft(Stream[F, Unit]()) {
+            case (merged, queue) => merged.merge(queue.dequeue.evalMap(f => f))
+          }
 
           poller.start
             .evalMap { tasks =>

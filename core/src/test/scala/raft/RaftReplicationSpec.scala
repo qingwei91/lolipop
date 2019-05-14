@@ -1,13 +1,16 @@
 package raft
 
+import java.io.{ File, PrintWriter }
+
 import cats.Semigroup
 import cats.data._
 import cats.effect._
+import org.scalacheck.Prop
 import org.specs2.execute.Result
 import org.specs2.matcher.MatchResult
+import org.specs2.scalacheck.Parameters
 import org.specs2.specification.core.SpecStructure
 import org.specs2.{ ScalaCheck, Specification }
-import raft.algebra.client.ClientIncoming
 import raft.model._
 import raft.setup.TestClient
 
@@ -16,53 +19,91 @@ import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 class RaftReplicationSpec extends Specification with ScalaCheck {
+
+  override implicit def defaultParameters: Parameters = Parameters(minTestsOk = 3, minSize = 3, maxSize = 3)
   override def is: SpecStructure =
     s2"""
         Raft
           should
           - replicate logs and commit ${eventuallyReplicated(3)}
-          - replicate logs when less than half failed - $replicateIfMoreThanHalf
-          - not replicate if more than half failed - $dontReplicateIfLessThanHalf
+          - replicate logs when less than half failed -
+          - not replicate if more than half failed -
       """
 
   private val timeToReplication = 3.seconds
+  implicit val ioCS             = IO.contextShift(global)
+  implicit val ioTM             = IO.timer(global)
 
-  def eventuallyReplicated(n: Int = 1): Result = {
-    val deps = new RaftTestDeps(global)
-    import deps._
+  def eventuallyReplicated(n: Int = 1): Prop =
+    prop { _: Int =>
+      val deps = new RaftTestDeps[IO, IO.Par]()
+      import deps._
 
-    val checkLogCommitted = withServer(tasksIO) { testData =>
-      val statesOfAllNode = testData.map(_._2)
-      val clients = testData.map {
-        case (clientIncoming, state) =>
-          state.config.nodeId -> clientIncoming
-      }.toNem
-      val request = (0 to n).toList.parTraverse { i =>
-        TestClient.untilCommitted(clients.toSortedMap)("0", s"Cmd$i")
+      val checkLogCommitted = withServer(tasksIO) { testData =>
+        val statesOfAllNode = testData.map(_.state)
+        val clients = testData.map { components =>
+          components.state.config.nodeId -> components.clientIncoming
+        }.toNem
+        val request = (0 to n).toList.parTraverse { i =>
+          TestClient.untilCommitted(clients.toSortedMap)("0", s"Cmd$i")
+        }
+        val loggerIO = testData.map(_.eventLogger)
+
+        val ioAssertion = for {
+          responses <- request.timeout(timeToReplication * 2)
+          _         <- ioTM.sleep(timeToReplication)
+          allLogs <- statesOfAllNode.parTraverse { state =>
+                      state.logs.lastLog
+                    }
+          commitIndices <- statesOfAllNode.parTraverse { state =>
+                            state.serverTpe.get.map(_.commitIdx)
+                          }
+
+        } yield {
+          val logReplicated = allLogs.map { a =>
+            a.map(_.idx) must_=== Some(n + 1)
+          }.reduce
+
+          val logCommittedByAll = commitIndices.map(_ must_=== n + 1).reduce
+          val elected           = NonEmptyList.fromListUnsafe(responses).map(_ must_!== NoLeader).reduce
+
+          val assertion = logCommittedByAll and elected and logReplicated
+          if (assertion.isSuccess) {
+            assertion
+          } else {
+            assertion
+          }
+        }
+
+        val debugLog = for {
+          pair <- loggerIO.traverse { logger =>
+                   logger.logs.get.map(_ -> logger.nodeId)
+                 }
+        } yield {
+          pair.map {
+            case (str, idx) =>
+              val pw = new PrintWriter(new File(s"logs-$idx.log"))
+              pw.println(str.toString)
+              pw.close()
+          }
+        }
+
+        ioAssertion
+          .onError {
+            case _: Throwable => debugLog.as(())
+          }
+          .flatMap { assertion =>
+            if (assertion.isSuccess) {
+              IO.pure(assertion)
+            } else {
+              debugLog *> IO.pure(assertion)
+            }
+
+          }
       }
-      for {
-        responses <- request.timeout(timeToReplication * 2)
-        _         <- tm.sleep(timeToReplication)
-        allLogs <- statesOfAllNode.parTraverse { state =>
-                    state.logs.lastLog
-                  }
-        commitIndices <- statesOfAllNode.parTraverse { state =>
-                          state.serverTpe.get.map(_.commitIdx)
-                        }
-      } yield {
-        val logReplicated = allLogs.map { a =>
-          a.map(_.idx) must_=== Some(n + 1)
-        }.reduce
 
-        val logCommittedByAll = commitIndices.map(_ must_=== n + 1).reduce
-        val elected           = NonEmptyList.fromListUnsafe(responses).map(_ must_!== NoLeader).reduce
-
-        logCommittedByAll and elected and logReplicated
-      }
+      checkLogCommitted.unsafeRunTimed(timeToReplication * 5).get
     }
-
-    checkLogCommitted.unsafeRunTimed(timeToReplication * 5).get
-  }
 
   def replicateIfMoreThanHalf: Result = {
     def isEven(i: Int): Boolean = i % 2 == 0
@@ -70,20 +111,19 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
       isEven(from.toInt) != isEven(to.toInt)
     }
 
-    val deps = new RaftTestDeps(global, shouldFail = splitbrain)
+    val deps = new RaftTestDeps[IO, IO.Par](shouldFail = splitbrain)
     import deps._
 
     val checkLogCommitted = withServer(tasksIO) { testData =>
-      val statesOfAllNode = testData.map(_._2)
-      val clients = testData.map {
-        case (clientIncoming, state) =>
-          state.config.nodeId -> clientIncoming
+      val statesOfAllNode = testData.map(_.state)
+      val clients = testData.map { components =>
+        components.state.config.nodeId -> components.clientIncoming
       }.toNem
-      val clientResIO = TestClient.untilCommitted(clients.toSortedMap)("0", "Cmd1").timeout(timeToReplication * 2)
+      val clientResIO = TestClient.untilCommitted(clients.toSortedMap)("0", "Cmd1")
 
       for {
-        clientRes <- clientResIO
-        _         <- tm.sleep(timeToReplication)
+        clientRes <- clientResIO.timeout(timeToReplication * 2)
+        _         <- ioTM.sleep(timeToReplication)
         allLogs <- statesOfAllNode.parTraverse { state =>
                     state.logs.lastLog
                   }
@@ -116,19 +156,18 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
       Set(from.toInt, to.toInt) != Set(1, 2)
     }
 
-    val deps = new RaftTestDeps(global, shouldFail = moreThanHalfDown)
+    val deps = new RaftTestDeps[IO, IO.Par](shouldFail = moreThanHalfDown)
     import deps._
 
     val checkLogCommitted = withServer(tasksIO) { testData =>
-      val statesOfAllNode = testData.map(_._2)
-      val clients = testData.map {
-        case (clientIncoming, state) =>
-          state.config.nodeId -> clientIncoming
+      val statesOfAllNode = testData.map(_.state)
+      val clients = testData.map { components =>
+        components.state.config.nodeId -> components.clientIncoming
       }.toNem
 
       val clientResIO = IO
         .race(
-          tm.sleep(timeToReplication).as(NoLeader),
+          ioTM.sleep(timeToReplication).as(NoLeader),
           TestClient.untilCommitted(clients.toSortedMap)("0", "Cmd")
         )
         .map(_.merge)
@@ -156,10 +195,8 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
   }
 
   private def withServer[A](
-    tasks: IO[NonEmptyList[RaftTestComponents]]
-  )(
-    f: NonEmptyList[(ClientIncoming[IO, String], RaftNodeState[IO, String])] => IO[A]
-  )(implicit CS: ContextShift[IO]): IO[A] = {
+    tasks: IO[NonEmptyList[RaftTestComponents[IO]]]
+  )(f: NonEmptyList[RaftTestComponents[IO]] => IO[A]): IO[A] = {
     tasks.flatMap { ts =>
       ts.parTraverse { components =>
           val startedPoller = components.proc.startRaft.compile.drain.start
@@ -170,7 +207,7 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
         }
         .bracket { all =>
           val resourcesToExpose = all.map {
-            case (RaftTestComponents(_, client, state), _) => client -> state
+            case (components, _) => components
           }
           f(resourcesToExpose)
         }(_.parTraverse_(_._2.cancel))

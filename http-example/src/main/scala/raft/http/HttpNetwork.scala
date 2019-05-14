@@ -11,12 +11,12 @@ import org.http4s.client.dsl.Http4sClientDsl
 import raft.algebra.io.NetworkIO
 import raft.model._
 
-class HttpNetwork[F[_]: Sync, Log: Encoder](networkConfig: Map[String, Uri], client: Client[F])
-    extends NetworkIO[F, Log]
+class HttpNetwork[F[_]: Sync, Cmd: Encoder](networkConfig: Map[String, Uri], client: Client[F])
+    extends NetworkIO[F, Cmd]
     with Http4sClientDsl[F]
     with CirceEntityEncoder
     with CirceEntityDecoder {
-  override def sendAppendRequest(nodeID: String, appendReq: AppendRequest[Log]): F[AppendResponse] = {
+  override def sendAppendRequest(nodeID: String, appendReq: AppendRequest[Cmd]): F[AppendResponse] = {
 
     val uri = networkConfig(nodeID) / "append"
 

@@ -10,11 +10,10 @@ object VoteRequest {
   implicit val showReq: Show[VoteRequest] = new Show[VoteRequest] {
     override def show(t: VoteRequest): String =
       s"""Vote Request
-         |term        = ${t.term}
-         |candidate   = ${t.candidateID}
-         |lastLogIdx  = ${t.lastLogIdx.orNull}
-         |lastLogTerm = ${t.lastLogTerm.orNull}
-       """.stripMargin
+         |  term        = ${t.term}
+         |  candidate   = ${t.candidateID}
+         |  lastLogIdx  = ${t.lastLogIdx.orNull}
+         |  lastLogTerm = ${t.lastLogTerm.orNull}""".stripMargin
   }
 }
 
@@ -36,14 +35,13 @@ object AppendRequest {
     Show.show[AppendRequest[Cmd]] { req =>
       import req._
       s"""
-         |Req
-         |term          = $term
-         |leaderId      = $leaderId
-         |prevLogIdx    = ${prevLogIdx.orNull}
-         |prevLogTerm   = ${prevLogTerm.orNull}
-         |entries       = ${entries.map(_.show).mkString("\n")}
-         |leaderCommit  = $leaderCommit
-       """.stripMargin
+         |AppendReq
+         |  term          = $term
+         |  leaderId      = $leaderId
+         |  prevLogIdx    = ${prevLogIdx.orNull}
+         |  prevLogTerm   = ${prevLogTerm.orNull}
+         |  entries       = ${entries.map(_.show).mkString("\n")}
+         |  leaderCommit  = $leaderCommit""".stripMargin
     }
   }
 }

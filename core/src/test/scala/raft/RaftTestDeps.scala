@@ -1,49 +1,46 @@
 package raft
 
+import cats.Parallel
 import cats.data._
-import cats.effect.IO
 import cats.effect.concurrent.{ MVar, Ref }
+import cats.effect.{ Concurrent, ContextShift, Timer }
 import fs2.concurrent.{ Queue, Topic }
 import raft.algebra.append._
 import raft.algebra.client._
 import raft.algebra.election._
+import raft.algebra.event.InMemEventLogger
 import raft.model._
 import raft.setup._
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
-class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean = (_, _) => false) {
+class RaftTestDeps[F[_], FF[_]](shouldFail: (String, String) => Boolean = (_, _) => false)(
+  implicit cs: ContextShift[F],
+  tm: Timer[F],
+  con: Concurrent[F],
+  P: Parallel[F, FF]
+) {
 
-  implicit val cs = IO.contextShift(ec)
-  implicit val tm = IO.timer(ec)
-
-  val clientIds = {
+  private val clientIds = {
     NonEmptySet.of(0, 1 to 4: _*).map(_.toString)
   }
 
-  case class AllState(
-    stateMachine: TestStateMachine[IO],
-    state: RaftNodeState[IO, String],
-    committed: Topic[IO, String],
-    clientReq: Queue[IO, IO[Unit]]
-  )
-
-  val tasksIO: IO[NonEmptyList[RaftTestComponents]] = clientIds.toNonEmptyList
+  val tasksIO: F[NonEmptyList[RaftTestComponents[F]]] = clientIds.toNonEmptyList
     .traverse { i =>
       for {
         time <- tm.clock.realTime(MILLISECONDS)
         tpe = Follower(0, 0, time, None)
-        committedStream <- Topic[IO, String]("")
-        clientReqQueue  <- Queue.bounded[IO, IO[Unit]](100)
-        persist         <- Ref.of[IO, Persistent](Persistent.init)
-        servTpe         <- Ref.of[IO, ServerType](tpe)
-        lock            <- MVar[IO].of(())
-        baseLog         <- Ref.of[IO, Seq[RaftLog[String]]](Seq.empty)
+        committedStream <- Topic[F, String]("")
+        clientReqQueue  <- Queue.bounded[F, F[Unit]](100)
+        persist         <- Ref.of[F, Persistent](Persistent.init)
+        servTpe         <- Ref.of[F, ServerType](tpe)
+        lock            <- MVar[F].of(())
+        baseLog         <- Ref.of[F, Seq[RaftLog[String]]](Seq.empty)
+        logAcc          <- Ref[F].of(new StringBuffer(10000))
       } yield {
         val clusterConf  = ClusterConfig(i, clientIds - i)
-        val stateMachine = new TestStateMachine[IO]
+        val stateMachine = new TestStateMachine[F]
         val state = TestState(
           clusterConf,
           persist,
@@ -52,18 +49,20 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
           new TestLogsIO(baseLog)
         )
 
-        val allState = AllState(stateMachine, state, committedStream, clientReqQueue)
+        val eventLogger = new InMemEventLogger[F, String, String](i, logAcc)
+        val allState    = AllState(stateMachine, state, committedStream, clientReqQueue)
         val append = new AppendRPCHandlerImpl(
           stateMachine,
-          state
+          state,
+          eventLogger
         )
-        val vote = new VoteRPCHandlerImpl(state)
-        (i, vote, allState, append)
+        val vote = new VoteRPCHandlerImpl(state, eventLogger)
+        (i, vote, allState, append, eventLogger)
       }
     }
     .flatMap { data =>
-      val appendResponders = data.map { case (i, _, _, append) => i -> append }.toNem
-      val voteResponders   = data.map { case (i, vote, _, _) => i   -> vote }.toNem
+      val appendResponders = data.map { case (i, _, _, append, _) => i -> append }.toNem
+      val voteResponders   = data.map { case (i, vote, _, _, _) => i   -> vote }.toNem
 
       val network = new UnreliableNetwork(
         new InMemNetwork(appendResponders.toSortedMap, voteResponders.toSortedMap),
@@ -71,7 +70,7 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
       )
 
       data.traverse {
-        case (_, voteHandler, AllState(stateMachine, allState, _, _), appendHandler) =>
+        case (_, voteHandler, AllState(stateMachine, allState, _, _), appendHandler, eventLogger) =>
           for {
             proc <- RaftProcess(
                      stateMachine,
@@ -79,17 +78,25 @@ class RaftTestDeps(ec: ExecutionContext, shouldFail: (String, String) => Boolean
                      network,
                      appendHandler,
                      voteHandler,
-                     ""
+                     "",
+                     eventLogger
                    )
           } yield {
-            RaftTestComponents(proc, proc.api, allState)
+            RaftTestComponents(proc, proc.api, allState, eventLogger)
           }
       }
     }
 }
 
-case class RaftTestComponents(
-  proc: RaftProcess[IO, String],
-  clientIncoming: ClientIncoming[IO, String],
-  state: RaftNodeState[IO, String]
+case class AllState[F[_]](
+  stateMachine: TestStateMachine[F],
+  state: RaftNodeState[F, String],
+  committed: Topic[F, String],
+  clientReq: Queue[F, F[Unit]]
+)
+case class RaftTestComponents[F[_]](
+  proc: RaftProcess[F, String],
+  clientIncoming: ClientIncoming[F, String],
+  state: RaftNodeState[F, String],
+  eventLogger: InMemEventLogger[F, String, String]
 )

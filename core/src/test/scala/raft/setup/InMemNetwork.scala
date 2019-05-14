@@ -10,13 +10,13 @@ import raft.algebra.io.NetworkIO
 import raft.model._
 
 class InMemNetwork[F[_]: ContextShift: Monad, State](
-  appendResponders: Map[String, AppendRPCHandler[F, RaftLog[String]]],
+  appendResponders: Map[String, AppendRPCHandler[F, String]],
   voteResponders: Map[String, VoteRPCHandlerImpl[F, String]]
-) extends NetworkIO[F, RaftLog[String]] {
+) extends NetworkIO[F, String] {
 
   val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}")
 
-  override def sendAppendRequest(nodeID: String, appendReq: AppendRequest[RaftLog[String]]): F[AppendResponse] = {
+  override def sendAppendRequest(nodeID: String, appendReq: AppendRequest[String]): F[AppendResponse] = {
     ContextShift[F].shift *> appendResponders(nodeID).requestAppend(appendReq)
   }
 
