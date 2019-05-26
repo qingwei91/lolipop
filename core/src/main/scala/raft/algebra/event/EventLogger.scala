@@ -1,9 +1,12 @@
 package raft.algebra.event
 
-import raft.model.{AppendRequest, RaftNodeState, VoteRequest}
+import raft.model.{ AppendRequest, ClientResponse, RaftNodeState, VoteRequest }
 
 trait EventLogger[F[_], Cmd, State] {
   def receivedClientReq(cmd: Cmd): F[Unit]
+  def adhocDebug(s: String): F[Unit]
+  def replyClientReq(req: Cmd, res: ClientResponse): F[Unit]
+
   def electionStarted(term: Int, lastLogIdx: Int): F[Unit]
 
   def candidateReceivedVote(voteRequest: VoteRequest, peerId: String): F[Unit]
@@ -23,6 +26,6 @@ trait EventLogger[F[_], Cmd, State] {
 
   def rejectedLog(appendRequest: AppendRequest[Cmd], state: RaftNodeState[F, Cmd]): F[Unit]
 
-  def logCommitted(idx: Int): F[Unit]
+  def logCommitted(idx: Int, cmd: Cmd): F[Unit]
   def stateUpdated(state: State): F[Unit]
 }

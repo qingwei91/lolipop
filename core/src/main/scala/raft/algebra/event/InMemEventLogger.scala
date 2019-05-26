@@ -1,19 +1,26 @@
 package raft
 package algebra.event
 
+import java.time.LocalTime
 import cats.effect.concurrent.Ref
 import cats.{ Applicative, Show }
-import raft.model.{ AppendRequest, RaftNodeState, VoteRequest }
+import raft.model.{ AppendRequest, ClientResponse, RaftNodeState, VoteRequest }
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))
 class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: String, val logs: Ref[F, StringBuffer])
     extends EventLogger[F, Cmd, State] {
 
-  private def add(s: String): F[Unit] = logs.update(_.append(s"\nNode-$nodeId: $s"))
+  private def add(s: String): F[Unit] = {
+    logs.update(_.append(s"\n${LocalTime.now()} Node-$nodeId: $s"))
+  }
 
   override def receivedClientReq(cmd: Cmd): F[Unit] = {
     add(s"Received ${cmd.show} from client")
   }
+  override def replyClientReq(req: Cmd, res: ClientResponse): F[Unit] = {
+    add(s"Reply $res to client for $req")
+  }
+  override def adhocDebug(s: String): F[Unit] = add(s)
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     add(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")
@@ -45,7 +52,7 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
   override def rejectedLog(appendRequest: AppendRequest[Cmd], state: RaftNodeState[F, Cmd]): F[Unit] =
     add(s"Rejected log from ${appendRequest.show}")
 
-  override def logCommitted(idx: Int): F[Unit] = add(s"Committed idx=$idx")
+  override def logCommitted(idx: Int, cmd: Cmd): F[Unit] = add(s"Committed idx=$idx, cmd=$cmd")
 
   override def stateUpdated(state: State): F[Unit] = add(s"State updated to ${state.show}")
 }

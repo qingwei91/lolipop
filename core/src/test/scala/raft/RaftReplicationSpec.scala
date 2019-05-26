@@ -1,6 +1,7 @@
 package raft
 
 import java.io.{ File, PrintWriter }
+import java.util.concurrent.Executors
 
 import cats.Semigroup
 import cats.data._
@@ -14,29 +15,35 @@ import org.specs2.{ ScalaCheck, Specification }
 import raft.model._
 import raft.setup.TestClient
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.util.Random
+
+import RaftReplicationSpec._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 class RaftReplicationSpec extends Specification with ScalaCheck {
 
-  override implicit def defaultParameters: Parameters = Parameters(minTestsOk = 3, minSize = 3, maxSize = 3)
+  implicit val params: Parameters = Parameters(minTestsOk = 20, workers = 4).verbose
   override def is: SpecStructure =
     s2"""
         Raft
           should
           - replicate logs and commit ${eventuallyReplicated(3)}
-          - replicate logs when less than half failed -
-          - not replicate if more than half failed -
+          - replicate logs when less than half failed - $replicateIfMoreThanHalf
+          - not replicate if more than half failed - $dontReplicateIfLessThanHalf
       """
 
   private val timeToReplication = 3.seconds
-  implicit val ioCS             = IO.contextShift(global)
-  implicit val ioTM             = IO.timer(global)
 
   def eventuallyReplicated(n: Int = 1): Prop =
     prop { _: Int =>
-      val deps = new RaftTestDeps[IO, IO.Par]()
+      val ecToUse       = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
+      implicit val ioCS = IO.contextShift(ecToUse)
+      implicit val ioTM = IO.timer(ecToUse)
+
+      val deps = new RaftTestDeps[IO]()
       import deps._
 
       val checkLogCommitted = withServer(tasksIO) { testData =>
@@ -50,22 +57,25 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
         val loggerIO = testData.map(_.eventLogger)
 
         val ioAssertion = for {
+          _         <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
           responses <- request.timeout(timeToReplication * 2)
-          _         <- ioTM.sleep(timeToReplication)
-          allLogs <- statesOfAllNode.parTraverse { state =>
-                      state.logs.lastLog
-                    }
+          allLogs   <- statesOfAllNode.parTraverse(_.logs.lastLog)
           commitIndices <- statesOfAllNode.parTraverse { state =>
-                            state.serverTpe.get.map(_.commitIdx)
+                            state.serverTpe.get.map {
+                              case l: Leader => Some(l.commitIdx)
+                              case _ => None
+                            }
                           }
 
         } yield {
-          val logReplicated = allLogs.map { a =>
-            a.map(_.idx) must_=== Some(n + 1)
-          }.reduce
+          val logReplicated = allLogs.collect {
+            case Some(a) if a.idx == n + 1 =>
+              a
+          }.size must be_>=(3)
 
-          val logCommittedByAll = commitIndices.map(_ must_=== n + 1).reduce
-          val elected           = NonEmptyList.fromListUnsafe(responses).map(_ must_!== NoLeader).reduce
+          val logCommittedByAll = commitIndices.collectFirst { case Some(x) => x } must_=== Some(n + 1)
+
+          val elected = NonEmptyList.fromListUnsafe(responses).map(_ must_!== NoLeader).reduce
 
           val assertion = logCommittedByAll and elected and logReplicated
           if (assertion.isSuccess) {
@@ -80,9 +90,10 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
                    logger.logs.get.map(_ -> logger.nodeId)
                  }
         } yield {
+          val rand = Random.nextInt(1000000)
           pair.map {
             case (str, idx) =>
-              val pw = new PrintWriter(new File(s"logs-$idx.log"))
+              val pw = new PrintWriter(new File(s"logs-$rand-$idx.log"))
               pw.println(str.toString)
               pw.close()
           }
@@ -101,17 +112,27 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
 
           }
       }
-
-      checkLogCommitted.unsafeRunTimed(timeToReplication * 5).get
+      try {
+        checkLogCommitted
+          .unsafeRunTimed(timeToReplication * 5)
+          .getOrElse(
+            0 must_== 1
+          )
+      } catch {
+        case _: Throwable => 0 must_== 1
+      }
     }
 
   def replicateIfMoreThanHalf: Result = {
+    implicit val ioCS = IO.contextShift(global)
+    implicit val ioTM = IO.timer(global)
+
     def isEven(i: Int): Boolean = i % 2 == 0
     val splitbrain = (from: String, to: String) => {
       isEven(from.toInt) != isEven(to.toInt)
     }
 
-    val deps = new RaftTestDeps[IO, IO.Par](shouldFail = splitbrain)
+    val deps = new RaftTestDeps[IO](shouldFail = splitbrain)
     import deps._
 
     val checkLogCommitted = withServer(tasksIO) { testData =>
@@ -151,12 +172,13 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
   }
 
   def dontReplicateIfLessThanHalf: Result = {
-
+    implicit val ioCS = IO.contextShift(global)
+    implicit val ioTM = IO.timer(global)
     val moreThanHalfDown = (from: String, to: String) => {
       Set(from.toInt, to.toInt) != Set(1, 2)
     }
 
-    val deps = new RaftTestDeps[IO, IO.Par](shouldFail = moreThanHalfDown)
+    val deps = new RaftTestDeps[IO](shouldFail = moreThanHalfDown)
     import deps._
 
     val checkLogCommitted = withServer(tasksIO) { testData =>
@@ -194,9 +216,18 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
       .get
   }
 
-  private def withServer[A](
+  implicit def resultSemigroup[A]: Semigroup[MatchResult[A]] = new Semigroup[MatchResult[A]] {
+    override def combine(x: MatchResult[A], y: MatchResult[A]): MatchResult[A] = {
+      x and y
+    }
+  }
+}
+
+object RaftReplicationSpec {
+  @SuppressWarnings(Array("org.wartremover.warts.All"))
+  def withServer[A](
     tasks: IO[NonEmptyList[RaftTestComponents[IO]]]
-  )(f: NonEmptyList[RaftTestComponents[IO]] => IO[A]): IO[A] = {
+  )(f: NonEmptyList[RaftTestComponents[IO]] => IO[A])(implicit CS: ContextShift[IO]): IO[A] = {
     tasks.flatMap { ts =>
       ts.parTraverse { components =>
           val startedPoller = components.proc.startRaft.compile.drain.start
@@ -211,12 +242,6 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
           }
           f(resourcesToExpose)
         }(_.parTraverse_(_._2.cancel))
-    }
-  }
-
-  implicit def resultSemigroup[A]: Semigroup[MatchResult[A]] = new Semigroup[MatchResult[A]] {
-    override def combine(x: MatchResult[A], y: MatchResult[A]): MatchResult[A] = {
-      x and y
     }
   }
 }

@@ -3,7 +3,6 @@ package algebra.append
 
 import cats.MonadError
 import cats.effect.{ ContextShift, Timer }
-import fs2.concurrent.Topic
 import org.slf4j.{ Logger, LoggerFactory }
 import raft.algebra.StateMachine
 import raft.algebra.event.EventLogger
@@ -16,7 +15,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
   networkManager: NetworkIO[F, Cmd],
   stateMachine: StateMachine[F, Cmd, State],
   allState: RaftNodeState[F, Cmd],
-  committedTopic: Topic[F, Cmd],
+  publishCommittedEvent: Cmd => F[Unit],
   eLogger: EventLogger[F, Cmd, State]
 )(implicit F: MonadError[F, Throwable])
     extends BroadcastAppend[F] {
@@ -51,6 +50,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
         )
       }
     }
+
     def handleResponse(res: AppendResponse, leader: Leader, req: AppendRequest[Cmd]): F[Unit] = res match {
       case AppendResponse(_, true) =>
         val updatedSt = req.entries.lastOption match {
@@ -100,7 +100,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
               } yield r
             case _ => F.unit
           }
-    } yield {}
+    } yield ()
   }
 
   private def updateLeaderState(nodeId: String, lastAppended: Log)(
@@ -151,8 +151,8 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
     for {
       _ <- allState.serverTpe.set(leader.copy(commitIdx = newlyCommited.idx))
       _ <- stateMachine.execute(newlyCommited.command)
-      _ <- committedTopic.publish1(newlyCommited.command)
-      _ <- eLogger.logCommitted(newlyCommited.idx)
+      _ <- publishCommittedEvent(newlyCommited.command)
+      _ <- eLogger.logCommitted(newlyCommited.idx, newlyCommited.command)
     } yield ()
   }
 

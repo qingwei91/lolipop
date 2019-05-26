@@ -1,6 +1,5 @@
 package raft
 
-import cats.Parallel
 import cats.data._
 import cats.effect.concurrent.{ MVar, Ref }
 import cats.effect.{ Concurrent, ContextShift, Timer }
@@ -15,11 +14,10 @@ import raft.setup._
 import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
-class RaftTestDeps[F[_], FF[_]](shouldFail: (String, String) => Boolean = (_, _) => false)(
+class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => false)(
   implicit cs: ContextShift[F],
   tm: Timer[F],
-  con: Concurrent[F],
-  P: Parallel[F, FF]
+  con: Concurrent[F]
 ) {
 
   private val clientIds = {

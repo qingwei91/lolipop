@@ -4,7 +4,7 @@ import cats._
 import cats.effect.concurrent.{ MVar, Ref }
 import cats.effect.{ Concurrent, ContextShift, Timer }
 import fs2.Stream
-import fs2.concurrent.{ Queue, Topic }
+import fs2.concurrent._
 import raft.algebra.append._
 import raft.algebra.client.ClientIncomingImpl
 import raft.algebra.election._
@@ -30,7 +30,7 @@ object RaftProcess {
   // `initialCmd` is needed due to how fs2.concurrent.Topic work
   // todo: remove initialCmd by re-model the Topic to use
   //  Option[A]
-  def simple[F[_]: Timer: Concurrent: ContextShift, FF[_], Cmd: Eq, State](
+  def simple[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
     clusterConfig: ClusterConfig,
     logIO: LogIO[F, Cmd],
@@ -38,7 +38,7 @@ object RaftProcess {
     persistentIO: Ref[F, Persistent],
     initialCmd: Cmd,
     eventLogger: EventLogger[F, Cmd, State]
-  )(implicit FParallel: Parallel[F, FF]): F[RaftProcess[F, Cmd]] = {
+  ): F[RaftProcess[F, Cmd]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
       initFollower = Follower(0, 0, time, None)
@@ -67,7 +67,7 @@ object RaftProcess {
     }
   }
 
-  def apply[F[_]: Concurrent: Timer: ContextShift, FF[_], Cmd: Eq, State](
+  def apply[F[_]: Concurrent: Timer: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
     state: RaftNodeState[F, Cmd],
     networkIO: NetworkIO[F, Cmd],
@@ -75,10 +75,10 @@ object RaftProcess {
     voteHandler: VoteRPCHandler[F],
     initialCmd: Cmd,
     eventLogger: EventLogger[F, Cmd, State]
-  )(implicit P: Parallel[F, FF]): F[RaftProcess[F, Cmd]] = {
+  ): F[RaftProcess[F, Cmd]] = {
     val peers = state.config.peersId.toList
     for {
-      committedTopic <- Topic[F, Cmd](initialCmd)
+      committedTopic <- CustomTopics[F, Cmd](initialCmd)
       taskQueue <- peers
                     .traverse { nodeId =>
                       Queue
@@ -86,16 +86,23 @@ object RaftProcess {
                         .map(nodeId -> _)
                     }
                     .map(_.toMap)
-      scheduler = RPCTaskScheduler(taskQueue)
     } yield {
 
-      val appendInitiator = new BroadcastAppendImpl(networkIO, stateMachine, state, committedTopic, eventLogger)
+      val scheduler = RPCTaskScheduler(taskQueue)
+      val appendInitiator =
+        new BroadcastAppendImpl(networkIO, stateMachine, state, committedTopic.publish1, eventLogger)
 
       val voteInitiator = new BroadcastVoteImpl(state, networkIO, eventLogger)
 
       val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator)
 
-      val clientIncoming = new ClientIncomingImpl(state, appendInitiator, committedTopic, scheduler, eventLogger)
+      val clientIncoming = new ClientIncomingImpl[F, Cmd](
+        state,
+        appendInitiator,
+        () => committedTopic.subscribe(100),
+        scheduler,
+        eventLogger
+      )
 
       new RaftProcess[F, Cmd] {
         override def startRaft: Stream[F, Unit] = {
@@ -126,4 +133,56 @@ object RaftProcess {
       }
     }
   }
+}
+
+/**
+  * We are using a custom interface because the one from fs2 is not able to
+  * express the act of subscribing the topic without consuming the message
+  *
+  * ie. subscribe method from fs2.concurrent.Topic return Stream[F, A] instead
+  * of F[Stream[F, A]
+  */
+trait CustomTopics[F[_], A] {
+  def publish1(a: A): F[Unit]
+  def subscribe(maxQueued: Int): F[fs2.Stream[F, A]]
+}
+
+object CustomTopics {
+  import cats.effect.concurrent.Ref
+
+  @SuppressWarnings(Array("org.wartremover.warts.All"))
+  def apply[F[_], A](initial: A)(implicit F: Concurrent[F]): F[CustomTopics[F, A]] =
+    Ref
+      .of[F, List[fs2.concurrent.Queue[F, A]]](List.empty)
+      .map(
+        cache =>
+          new CustomTopics[F, A] {
+
+            override def publish1(a: A): F[Unit] =
+              cache.get.flatMap { subscribers =>
+                subscribers.traverse { q =>
+                  q.enqueue1(a)
+                }.void
+              }
+
+            override def subscribe(maxQueued: Int): F[fs2.Stream[F, A]] = {
+              def emptyQueue(maxQueued: Int): F[fs2.concurrent.Queue[F, A]] = {
+                fs2.Stream
+                  .bracket(fs2.concurrent.Queue.bounded[F, A](maxQueued))(
+                    queue => cache.update(_.filter(_ ne queue))
+                  )
+                  .compile
+                  .lastOrError
+              }
+
+              for {
+                q <- emptyQueue(maxQueued)
+                _ <- q.enqueue1(initial)
+                _ <- cache.update(_ :+ q)
+              } yield {
+                q.dequeue
+              }
+            }
+        }
+      )
 }
