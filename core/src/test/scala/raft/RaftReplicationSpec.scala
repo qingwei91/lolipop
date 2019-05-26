@@ -39,7 +39,8 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
 
   def eventuallyReplicated(n: Int = 1): Prop =
     prop { _: Int =>
-      val ecToUse       = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
+      val executor      = Executors.newFixedThreadPool(4)
+      val ecToUse       = ExecutionContext.fromExecutor(executor)
       implicit val ioCS = IO.contextShift(ecToUse)
       implicit val ioTM = IO.timer(ecToUse)
 
@@ -120,6 +121,8 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
           )
       } catch {
         case _: Throwable => 0 must_== 1
+      } finally {
+        executor.shutdown()
       }
     }
 
@@ -140,9 +143,11 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
       val clients = testData.map { components =>
         components.state.config.nodeId -> components.clientIncoming
       }.toNem
+
       val clientResIO = TestClient.untilCommitted(clients.toSortedMap)("0", "Cmd1")
 
       for {
+        _         <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
         clientRes <- clientResIO.timeout(timeToReplication * 2)
         _         <- ioTM.sleep(timeToReplication)
         allLogs <- statesOfAllNode.parTraverse { state =>
@@ -195,6 +200,7 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
         .map(_.merge)
 
       for {
+        _         <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
         clientRes <- clientResIO
         allLogs <- statesOfAllNode.parTraverse { state =>
                     state.logs.lastLog
