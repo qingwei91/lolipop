@@ -20,7 +20,6 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
   override def replyClientReq(req: Cmd, res: ClientResponse): F[Unit] = {
     add(s"Reply $res to client for $req")
   }
-  override def adhocDebug(s: String): F[Unit] = add(s)
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     add(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")
@@ -55,4 +54,6 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
   override def logCommitted(idx: Int, cmd: Cmd): F[Unit] = add(s"Committed idx=$idx, cmd=$cmd")
 
   override def stateUpdated(state: State): F[Unit] = add(s"State updated to ${state.show}")
+
+  override def errorLogs(message: String): F[Unit] = add(message)
 }

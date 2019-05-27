@@ -109,9 +109,18 @@ object RaftProcess {
           // this is messy and potentially incorrect due to mixing
           // immutable data structure with concurrent queue
 
-          val rpcTasks = taskQueue.values.foldLeft(Stream[F, Unit]()) {
-            case (merged, queue) => merged.merge(queue.dequeue.evalMap(f => f))
-          }
+          val rpcTasks = taskQueue.values
+            .foldLeft(Stream[F, Unit]()) {
+              case (merged, queue) =>
+                merged.merge(
+                  queue.dequeue.evalMap(
+                    _.recoverWith {
+                      case err =>
+                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: ${err.getMessage}")
+                    }
+                  )
+                )
+            }
 
           poller.start
             .evalMap { tasks =>
@@ -120,6 +129,12 @@ object RaftProcess {
               }
             }
             .concurrently(rpcTasks)
+            .recoverWith {
+              case err =>
+                Stream.eval(
+                  eventLogger.errorLogs(s"Unexpected error on RaftProc: ${err.getMessage}")
+                )
+            }
         }
 
         override def api: RaftApi[F, Cmd] = new RaftApi[F, Cmd] {

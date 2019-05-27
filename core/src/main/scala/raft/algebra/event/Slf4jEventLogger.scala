@@ -13,7 +13,6 @@ class Slf4jEventLogger[F[_]: Applicative, Cmd: Show, State: Show](nodeId: String
   override def receivedClientReq(cmd: Cmd): F[Unit] = logger.info(s"Received ${cmd.show} from client")
 
   override def replyClientReq(req: Cmd, res: ClientResponse): F[Unit] = logger.info(s"Reply $res to client for $req")
-  override def adhocDebug(s: String): F[Unit]                = logger.info(s)
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     logger.info(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")
@@ -48,4 +47,6 @@ class Slf4jEventLogger[F[_]: Applicative, Cmd: Show, State: Show](nodeId: String
   override def logCommitted(idx: Int, cmd: Cmd): F[Unit] = logger.warn(s"Committed idx=$idx, cmd=$cmd")
 
   override def stateUpdated(state: State): F[Unit] = logger.warn(s"State updated to ${state.show}")
+
+  override def errorLogs(message: String): F[Unit] = logger.error(message)
 }

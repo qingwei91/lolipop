@@ -5,7 +5,6 @@ import cats.effect.concurrent.{ MVar, Ref }
 import cats.effect.{ Concurrent, ContextShift, Timer }
 import fs2.concurrent.{ Queue, Topic }
 import raft.algebra.append._
-import raft.algebra.client._
 import raft.algebra.election._
 import raft.algebra.event.InMemEventLogger
 import raft.model._
@@ -85,16 +84,3 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
       }
     }
 }
-
-case class AllState[F[_]](
-  stateMachine: TestStateMachine[F],
-  state: RaftNodeState[F, String],
-  committed: Topic[F, String],
-  clientReq: Queue[F, F[Unit]]
-)
-case class RaftTestComponents[F[_]](
-  proc: RaftProcess[F, String],
-  clientIncoming: ClientIncoming[F, String],
-  state: RaftNodeState[F, String],
-  eventLogger: InMemEventLogger[F, String, String]
-)

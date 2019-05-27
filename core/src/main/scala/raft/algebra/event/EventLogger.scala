@@ -4,7 +4,6 @@ import raft.model.{ AppendRequest, ClientResponse, RaftNodeState, VoteRequest }
 
 trait EventLogger[F[_], Cmd, State] {
   def receivedClientReq(cmd: Cmd): F[Unit]
-  def adhocDebug(s: String): F[Unit]
   def replyClientReq(req: Cmd, res: ClientResponse): F[Unit]
 
   def electionStarted(term: Int, lastLogIdx: Int): F[Unit]
@@ -28,4 +27,6 @@ trait EventLogger[F[_], Cmd, State] {
 
   def logCommitted(idx: Int, cmd: Cmd): F[Unit]
   def stateUpdated(state: State): F[Unit]
+
+  def errorLogs(message: String): F[Unit]
 }
