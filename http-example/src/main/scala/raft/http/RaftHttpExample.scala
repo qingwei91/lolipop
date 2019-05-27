@@ -98,7 +98,7 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
   override def run(args: List[String]): IO[ExitCode] = {
     implicit val cmdEq = Eq.fromUniversalEquals[ChangeCount]
 
-    RaftHttpServer[IO, IO.Par, ChangeCount, Int](
+    RaftHttpServer[IO, ChangeCount, Int](
       nodeId,
       networkConfs,
       counter,

@@ -15,6 +15,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
+import raft.algebra.event.Slf4jEventLogger
 import raft.algebra.io.LogIO
 import raft.model._
 import raft.{ RaftApi, RaftProcess }
@@ -28,24 +29,22 @@ trait RaftHttpServer[F[_]] {
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
 object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
-  def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, FF[_], Cmd: Decoder: Encoder: Eq, State](
+  def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, Cmd: Decoder: Encoder: Eq: Show, State: Show](
     nodeID: String,
     networkMapping: Map[String, Uri],
     stateMachineF: F[StateMachine[F, Cmd, State]],
     httpDSL: Http4sDsl[F],
-    logsIO: F[LogIO[F, Cmd]],
+    logIOF: F[LogIO[F, Cmd]],
     initCmd: Cmd
-  )(implicit P: Parallel[F, FF]): RaftHttpServer[F] = {
+  ): RaftHttpServer[F] = {
     import httpDSL._
-
-    type Log = RaftLog[Cmd]
 
     def raftProtocol(api: RaftApi[F, Cmd]): HttpRoutes[F] =
       HttpRoutes
         .of[F] {
           case req @ POST -> Root / "append" =>
             for {
-              app   <- req.as[AppendRequest[Log]]
+              app   <- req.as[AppendRequest[Cmd]]
               reply <- api.requestAppend(app)
               res   <- Ok(reply.asJson)
             } yield res
@@ -68,18 +67,20 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
     val raftProcess: Stream[F, RaftProcess[F, Cmd]] = for {
       client <- BlazeClientBuilder.apply[F](global).stream
-      network = new HttpNetwork[F, Log](networkMapping, client)
+      network = new HttpNetwork[F, Cmd](networkMapping, client)
       stateM     <- Stream.eval(stateMachineF)
       persistent <- Stream.eval(Ref.of[F, Persistent](Persistent.init))
-      log <- Stream.eval(logsIO)
+      logIO      <- Stream.eval(logIOF)
+      eventLogger = new Slf4jEventLogger[F, Cmd, State](nodeID)
       proc <- Stream.eval(
                RaftProcess.simple(
                  stateM,
                  config,
-                 log,
+                 logIO,
                  network,
                  persistent,
-                 initCmd
+                 initCmd,
+                 eventLogger
                )
              )
     } yield proc
