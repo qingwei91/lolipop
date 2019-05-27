@@ -93,8 +93,7 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
   }
 
   def replicateIfMoreThanHalf: Result = {
-    val executor                        = Executors.newFixedThreadPool(4)
-    val ecToUse                         = ExecutionContext.fromExecutor(executor)
+    val ecToUse                         = global
     implicit val ioCS: ContextShift[IO] = IO.contextShift(ecToUse)
     implicit val ioTM: Timer[IO]        = IO.timer(ecToUse)
 
@@ -134,11 +133,8 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
         logCommitted and elected and logReplicated
       }
     }
-    try {
-      checkLogCommitted.unsafeRunSync()
-    } finally {
-      executor.shutdown()
-    }
+
+    checkLogCommitted.unsafeRunSync()
   }
 
   def dontReplicateIfLessThanHalf: Result = {
