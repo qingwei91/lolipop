@@ -2,6 +2,16 @@ import sbt.Keys.scalaVersion
 
 lazy val raft = project
   .in(file("."))
+  .settings(
+    name := "raft-scala",
+    description := "Pure functional Raft implementation using cats and fs2",
+    organizationName := "io.github.qingwei91",
+    micrositeGithubOwner := "qingwei91",
+    micrositeGithubRepo := "raft-scala",
+    micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
+    micrositeCompilingDocsTool := WithMdoc
+  )
+  .enablePlugins(MicrositesPlugin)
   .dependsOn(core, httpExample)
   .aggregate(core, httpExample)
 
@@ -90,16 +100,12 @@ lazy val commmon = Def.settings(
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.0")
 )
 lazy val coreDeps = Seq(
-  "org.typelevel"        %% "cats-core"           % "1.6.0",
-  "org.typelevel"        %% "cats-effect"         % "1.2.0",
-  "com.github.mpilquist" %% "simulacrum"          % "0.12.0",
-  "org.typelevel"        %% "cats-mtl-core"       % "0.4.0",
-  "org.typelevel"        %% "cats-tagless-macros" % "0.1.0",
-  "co.fs2"               %% "fs2-core"            % "1.0.4",
-  "com.olegpy"           %% "meow-mtl"            % "0.2.0",
-  "ch.qos.logback"       % "logback-classic"      % "1.2.3",
-  "ch.qos.logback"       % "logback-core"         % "1.2.3",
-  "org.slf4j"            % "slf4j-api"            % "1.7.25",
-  "org.specs2"           %% "specs2-core"         % "4.3.4" % Test,
-  "org.specs2"           %% "specs2-scalacheck"   % "4.3.4" % Test
+  "org.typelevel"  %% "cats-core"         % "1.6.0",
+  "org.typelevel"  %% "cats-effect"       % "1.2.0",
+  "co.fs2"         %% "fs2-core"          % "1.0.4",
+  "ch.qos.logback" % "logback-classic"    % "1.2.3",
+  "ch.qos.logback" % "logback-core"       % "1.2.3",
+  "org.slf4j"      % "slf4j-api"          % "1.7.25",
+  "org.specs2"     %% "specs2-core"       % "4.3.4" % Test,
+  "org.specs2"     %% "specs2-scalacheck" % "4.3.4" % Test
 )

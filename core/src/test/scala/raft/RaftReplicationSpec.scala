@@ -6,12 +6,10 @@ import java.util.concurrent.Executors
 import cats.Semigroup
 import cats.data._
 import cats.effect._
-import org.scalacheck.Prop
+import org.specs2.Specification
 import org.specs2.execute.Result
 import org.specs2.matcher.MatchResult
-import org.specs2.scalacheck.Parameters
 import org.specs2.specification.core.SpecStructure
-import org.specs2.{ ScalaCheck, Specification }
 import raft.RaftReplicationSpec._
 import raft.model._
 import raft.setup._
@@ -22,9 +20,8 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
-class RaftReplicationSpec extends Specification with ScalaCheck {
+class RaftReplicationSpec extends Specification {
 
-  implicit val params: Parameters = Parameters(minTestsOk = 20, workers = 4).verbose
   override def is: SpecStructure =
     s2"""
         Raft
@@ -34,14 +31,13 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
           - not replicate if more than half failed - $dontReplicateIfLessThanHalf
       """
 
-  def eventuallyReplicated(n: Int = 1): Prop =
-    prop { _: Int =>
-      val executor = Executors.newFixedThreadPool(4)
-      val ecToUse  = ExecutionContext.fromExecutor(executor)
+  def eventuallyReplicated(n: Int = 1): Result = {
+    val executor                        = Executors.newFixedThreadPool(4)
+    val ecToUse                         = ExecutionContext.fromExecutor(executor)
+    implicit val ioCS: ContextShift[IO] = IO.contextShift(ecToUse)
+    implicit val ioTM: Timer[IO]        = IO.timer(ecToUse)
 
-      implicit val ioCS: ContextShift[IO] = IO.contextShift(ecToUse)
-      implicit val ioTM: Timer[IO]        = IO.timer(ecToUse)
-
+    val allResults = NonEmptyList.of(0, (1 to 20).toList).parTraverse { _ =>
       val deps = new RaftTestDeps[IO]()
       import deps._
 
@@ -77,15 +73,17 @@ class RaftReplicationSpec extends Specification with ScalaCheck {
           logCommittedBySome and elected and logReplicated
         }
       }
-
-      try {
-        check_logs_replicated.unsafeRunSync(): Result
-      } catch {
-        case t: Throwable => failure(s"Unexpected failure ${t.getMessage}")
-      } finally {
-        executor.shutdown()
-      }
+      check_logs_replicated
     }
+
+    try {
+      allResults.unsafeRunSync().reduce
+    } catch {
+      case t: Throwable => failure(s"Unexpected failure ${t.getMessage}")
+    } finally {
+      executor.shutdown()
+    }
+  }
 
   def isEven(i: Int): Boolean = i % 2 == 0
   val splitbrain = (from: String, to: String) => {
