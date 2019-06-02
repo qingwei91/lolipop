@@ -4,8 +4,8 @@ package algebra.event
 import java.time.LocalTime
 
 import cats.effect.concurrent.Ref
-import cats.{ Applicative, Show }
-import raft.model.{ AppendRequest, RaftNodeState, VoteRequest, WriteResponse }
+import cats.{Applicative, Show}
+import raft.model.{AppendRequest, RaftNodeState, ReadResponse, VoteRequest, WriteResponse}
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))
 class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: String, val logs: Ref[F, StringBuffer])
@@ -15,12 +15,15 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
     logs.update(_.append(s"\n${LocalTime.now()} Node-$nodeId: $s"))
   }
 
-  override def receivedClientReq(cmd: Cmd): F[Unit] = {
+  override def receivedClientCmd(cmd: Cmd): F[Unit] = {
     add(s"Received ${cmd.show} from client")
   }
   override def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit] = {
     add(s"Reply $res to client for $req")
   }
+
+  override def receivedClientRead: F[Unit] = add(s"Client tries to read state")
+  override def replyClientRead(res: ReadResponse[State]): F[Unit] = add(s"Return $res to client for read")
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     add(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")

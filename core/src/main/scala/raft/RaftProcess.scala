@@ -99,7 +99,7 @@ object RaftProcess {
         eventLogger
       )
 
-      val clientRead = new ClientReadImpl[F, State](stateMachine, state)
+      val clientRead = new ClientReadImpl[F, State](stateMachine, state, eventLogger)
 
       new RaftProcess[F, Cmd, State] {
         override def startRaft: Stream[F, Unit] = {

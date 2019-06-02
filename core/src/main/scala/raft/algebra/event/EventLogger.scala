@@ -3,8 +3,11 @@ package raft.algebra.event
 import raft.model._
 
 trait EventLogger[F[_], Cmd, State] {
-  def receivedClientReq(cmd: Cmd): F[Unit]
+  def receivedClientCmd(cmd: Cmd): F[Unit]
   def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit]
+
+  def receivedClientRead: F[Unit]
+  def replyClientRead(res: ReadResponse[State]): F[Unit]
 
   def electionStarted(term: Int, lastLogIdx: Int): F[Unit]
 

@@ -35,9 +35,10 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
         lock            <- MVar[F].of(())
         baseLog         <- Ref.of[F, Seq[RaftLog[String]]](Seq.empty)
         logAcc          <- Ref[F].of(new StringBuffer(10000))
+        testState       <- Ref[F].of("")
       } yield {
         val clusterConf  = ClusterConfig(i, clientIds - i)
-        val stateMachine = new TestStateMachine[F]
+        val stateMachine = new TestStateMachine[F](testState)
         val state = TestState(
           clusterConf,
           persist,

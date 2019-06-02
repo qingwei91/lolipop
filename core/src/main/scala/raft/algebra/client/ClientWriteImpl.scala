@@ -21,7 +21,7 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
   // Cons: this will push the responsibility of replying to client else where
   def write(cmd: Cmd): F[WriteResponse] = {
     for {
-      _         <- eventLogger.receivedClientReq(cmd)
+      _         <- eventLogger.receivedClientCmd(cmd)
       serverTpe <- allState.serverTpe.get
       res <- serverTpe match {
               case _: Leader =>

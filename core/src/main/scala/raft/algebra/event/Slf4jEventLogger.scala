@@ -10,10 +10,13 @@ class Slf4jEventLogger[F[_]: Applicative, Cmd: Show, State: Show](nodeId: String
   private implicit def liftToF(a: Unit): F[Unit] = a.pure[F]
   private val logger                             = LoggerFactory.getLogger(s"Slf4jEventLogger-$nodeId")
 
-  override def receivedClientReq(cmd: Cmd): F[Unit] = logger.info(s"Received ${cmd.show} from client")
+  override def receivedClientCmd(cmd: Cmd): F[Unit] = logger.info(s"Received ${cmd.show} from client")
 
   override def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit] =
     logger.info(s"Reply $res to client for $req")
+
+  override def receivedClientRead: F[Unit]                        = logger.info("Client tries to read")
+  override def replyClientRead(res: ReadResponse[State]): F[Unit] = logger.info(s"Return $res to client")
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     logger.info(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")

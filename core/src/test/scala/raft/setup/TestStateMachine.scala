@@ -6,21 +6,15 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import raft.algebra.StateMachine
 
-class TestStateMachine[F[_]: Monad: Sync] extends StateMachine[F, String, String] {
-  val state = Ref.of[F, String]("")
+class TestStateMachine[F[_]: Monad: Sync](state: Ref[F, String]) extends StateMachine[F, String, String] {
   override def execute(cmd: String): F[String] = {
     for {
-      st <- state
-      updated <- st.modify { s =>
+      updated <- state.modify { s =>
                   val newSt = s + cmd
                   newSt -> newSt
                 }
     } yield updated
   }
 
-  override def getCurrent: F[String] = state.flatMap(_.get)
-}
-
-object TestStateMachine {
-  def init[F[_]: Monad: Sync]: F[Ref[F, TestStateMachine[F]]] = Ref.of[F, TestStateMachine[F]](new TestStateMachine[F])
+  override def getCurrent: F[String] = state.get
 }

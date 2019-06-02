@@ -46,14 +46,19 @@ class RaftReplicationSpec extends Specification {
         val clients = raftComponents.map { components =>
           components.state.config.nodeId -> components.api
         }.toNem
-        val writeRequests = (0 to n).toList.parTraverse { i =>
-          TestClient.writeToLeader(clients.toSortedMap)("0", s"Cmd$i")
+
+        val commands = NonEmptyList.fromListUnsafe((0 to n).map(i => s"Cmd$i").toList)
+
+        val writeRequests = commands.parTraverse { cmd =>
+          TestClient.writeToLeader(clients.toSortedMap)("0", cmd)
         }
+        val readReq = TestClient.readFromLeader(clients.toSortedMap)("0")
 
         for {
-          _         <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
-          responses <- writeRequests.timeout(timeToReplication * 2)
-          allLogs   <- statesOfAllNode.parTraverse(_.logs.lastLog)
+          _        <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
+          writeRes <- writeRequests.timeout(timeToReplication * 2)
+          readRes  <- readReq
+          allLogs  <- statesOfAllNode.parTraverse(_.logs.lastLog)
           commitIndices <- statesOfAllNode.parTraverse { state =>
                             state.serverTpe.get.map {
                               case l: Leader => Some(l.commitIdx)
@@ -68,9 +73,20 @@ class RaftReplicationSpec extends Specification {
 
           val logCommittedBySome = commitIndices.collectFirst { case Some(x) => x } must beSome(n + 1)
 
-          val elected = NonEmptyList.fromListUnsafe(responses).map(_ must_!== NoLeader).reduce
+          val elected = writeRes.map(_ must_!== NoLeader).reduce
 
-          logCommittedBySome and elected and logReplicated
+          val finalState = readRes.asInstanceOf[Read[String]].state
+
+          val stateContainsAllCommands = commands.map(cmd => finalState must contain(cmd)).reduce
+
+          NonEmptyList
+            .of(
+              logCommittedBySome,
+              elected,
+              logReplicated,
+              stateContainsAllCommands
+            )
+            .reduce
         }
       }
       check_logs_replicated
