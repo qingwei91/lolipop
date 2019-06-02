@@ -4,14 +4,14 @@ package setup
 import java.io.{ File, PrintWriter }
 
 import cats.Monad
-import raft.algebra.client.ClientIncoming
+import raft.algebra.client.ClientWrite
 import raft.algebra.event.InMemEventLogger
 import raft.model.RaftNodeState
 
 // A class to hold things needed in test cases
 case class RaftTestComponents[F[_]](
-  proc: RaftProcess[F, String],
-  clientIncoming: ClientIncoming[F, String],
+  proc: RaftProcess[F, String, String],
+  clientIncoming: ClientWrite[F, String],
   state: RaftNodeState[F, String],
   eventLogger: InMemEventLogger[F, String, String]
 ) {

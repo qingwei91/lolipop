@@ -6,16 +6,16 @@ import cats.effect.{ Concurrent, ContextShift, Timer }
 import fs2.Stream
 import fs2.concurrent._
 import raft.algebra.append._
-import raft.algebra.client.ClientIncomingImpl
+import raft.algebra.client.ClientWriteImpl
 import raft.algebra.election._
 import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
 import raft.algebra.io.{ LogIO, NetworkIO }
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 
-trait RaftProcess[F[_], Cmd] {
+trait RaftProcess[F[_], Cmd, State] {
   def startRaft: Stream[F, Unit]
-  def api: RaftApi[F, Cmd]
+  def api: RaftApi[F, Cmd, State]
 }
 
 import scala.concurrent.duration._
@@ -33,7 +33,7 @@ object RaftProcess {
     logIO: LogIO[F, Cmd],
     networkIO: NetworkIO[F, Cmd],
     eventLogger: EventLogger[F, Cmd, State]
-  ): F[RaftProcess[F, Cmd]] = {
+  ): F[RaftProcess[F, Cmd, State]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
       initFollower = Follower(0, 0, time, None)
@@ -70,7 +70,7 @@ object RaftProcess {
     appendHandler: AppendRPCHandler[F, Cmd],
     voteHandler: VoteRPCHandler[F],
     eventLogger: EventLogger[F, Cmd, State]
-  ): F[RaftProcess[F, Cmd]] = {
+  ): F[RaftProcess[F, Cmd, State]] = {
     val peers = state.config.peersId.toList
     for {
       committedTopic <- CustomTopics[F, Cmd]
@@ -91,7 +91,7 @@ object RaftProcess {
 
       val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator)
 
-      val clientIncoming = new ClientIncomingImpl[F, Cmd](
+      val clientIncoming = new ClientWriteImpl[F, Cmd](
         state,
         appendInitiator,
         () => committedTopic.subscribe(100),
@@ -99,7 +99,7 @@ object RaftProcess {
         eventLogger
       )
 
-      new RaftProcess[F, Cmd] {
+      new RaftProcess[F, Cmd, State] {
         override def startRaft: Stream[F, Unit] = {
           // this is messy and potentially incorrect due to mixing
           // immutable data structure with concurrent queue
@@ -132,8 +132,10 @@ object RaftProcess {
             }
         }
 
-        override def api: RaftApi[F, Cmd] = new RaftApi[F, Cmd] {
+        override def api: RaftApi[F, Cmd, State] = new RaftApi[F, Cmd, State] {
           override def write(cmd: Cmd): F[ClientResponse] = clientIncoming.write(cmd)
+
+          override def read: F[State] = stateMachine.getCurrent
 
           override def requestVote(req: VoteRequest): F[VoteResponse] = voteHandler.requestVote(req)
 

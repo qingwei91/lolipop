@@ -28,7 +28,7 @@ trait RaftHttpServer[F[_]] {
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
 object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
-  def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, Cmd: Decoder: Encoder: Eq: Show, State: Show](
+  def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, Cmd: Decoder: Encoder: Eq: Show, State: Show: Encoder](
     nodeID: String,
     networkMapping: Map[String, Uri],
     stateMachineF: F[StateMachine[F, Cmd, State]],
@@ -37,7 +37,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
   ): RaftHttpServer[F] = {
     import httpDSL._
 
-    def raftProtocol(api: RaftApi[F, Cmd]): HttpRoutes[F] =
+    def raftProtocol(api: RaftApi[F, Cmd, State]): HttpRoutes[F] =
       HttpRoutes
         .of[F] {
           case req @ POST -> Root / "append" =>
@@ -59,11 +59,16 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
               reply  <- api.write(change)
               res    <- Ok(reply.asJson)
             } yield res
+          case GET -> Root / "state" =>
+            for {
+              reply <- api.read
+              res   <- Ok(reply.asJson)
+            } yield res
         }
 
     val config = ClusterConfig(nodeID, networkMapping.keySet - nodeID)
 
-    val raftProcess: Stream[F, RaftProcess[F, Cmd]] = for {
+    val raftProcess: Stream[F, RaftProcess[F, Cmd, State]] = for {
       client <- BlazeClientBuilder.apply[F](global).stream
       network = new HttpNetwork[F, Cmd](networkMapping, client)
       stateM <- Stream.eval(stateMachineF)

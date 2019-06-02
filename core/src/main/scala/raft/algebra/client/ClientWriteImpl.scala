@@ -9,13 +9,13 @@ import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
 import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
-class ClientIncomingImpl[F[_]: Concurrent, Cmd: Eq](
+class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
   allState: RaftNodeState[F, Cmd],
   broadcast: BroadcastAppend[F],
   getCommittedStream: () => F[Stream[F, Cmd]],
   rpcScheduler: RPCTaskScheduler[F],
   eventLogger: EventLogger[F, Cmd, _]
-) extends ClientIncoming[F, Cmd] {
+) extends ClientWrite[F, Cmd] {
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent
   // Cons: this will push the responsibility of replying to client else where

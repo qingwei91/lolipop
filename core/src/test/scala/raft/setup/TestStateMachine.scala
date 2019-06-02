@@ -12,11 +12,13 @@ class TestStateMachine[F[_]: Monad: Sync] extends StateMachine[F, String, String
     for {
       st <- state
       updated <- st.modify { s =>
-        val newSt = s + cmd
-        newSt -> newSt
-      }
+                  val newSt = s + cmd
+                  newSt -> newSt
+                }
     } yield updated
   }
+
+  override def getCurrent: F[String] = state.flatMap(_.get)
 }
 
 object TestStateMachine {

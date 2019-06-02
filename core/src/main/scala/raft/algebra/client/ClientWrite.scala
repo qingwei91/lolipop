@@ -3,6 +3,6 @@ package algebra.client
 
 import raft.model._
 
-trait ClientIncoming[F[_], Cmd] {
+trait ClientWrite[F[_], Cmd] {
   def write(cmd: Cmd): F[ClientResponse]
 }

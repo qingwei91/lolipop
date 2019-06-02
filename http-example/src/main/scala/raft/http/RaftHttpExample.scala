@@ -69,6 +69,8 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
           j -> j
         }
       }
+
+      override def getCurrent: IO[Int] = state.get
     }
   }
 
