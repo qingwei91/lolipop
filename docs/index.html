@@ -30,6 +30,7 @@
         <span class="n">j</span> <span class="o">-&gt;</span> <span class="n">j</span>
       <span class="o">}</span>
     <span class="o">}</span>
+    <span class="k">override</span> <span class="k">def</span> <span class="n">getCurrent</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span>
   <span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div></div>
@@ -141,7 +142,7 @@ val proc = RaftProcess.simple(
   <li>Start the Raft Server, modelled by <code class="highlighter-rouge">def startRaft: Stream[F, Unit]</code></li>
   <li>Receive AppendLog Request from peer nodes</li>
   <li>Receive Vote Request from peer nodes</li>
-  <li>Receive Command from clients</li>
+  <li>Receive requests from clients (both Read and Write)</li>
 </ol>
 
 <ul>
@@ -176,11 +177,16 @@ val proc = RaftProcess.simple(
               <span class="n">reply</span>  <span class="k">&lt;-</span> <span class="n">api</span><span class="o">.</span><span class="n">incoming</span><span class="o">(</span><span class="n">change</span><span class="o">)</span>
               <span class="n">res</span>    <span class="k">&lt;-</span> <span class="nc">Ok</span><span class="o">(</span><span class="n">reply</span><span class="o">.</span><span class="n">asJson</span><span class="o">)</span>
             <span class="o">}</span> <span class="k">yield</span> <span class="n">res</span>
+          <span class="k">case</span> <span class="nc">GET</span> <span class="o">-&gt;</span> <span class="nc">Root</span> <span class="o">/</span> <span class="s">"state"</span> <span class="k">=&gt;</span>
+            <span class="k">for</span> <span class="o">{</span>
+              <span class="n">reply</span> <span class="k">&lt;-</span> <span class="n">api</span><span class="o">.</span><span class="n">read</span>
+              <span class="n">res</span>   <span class="k">&lt;-</span> <span class="nc">Ok</span><span class="o">(</span><span class="n">reply</span><span class="o">.</span><span class="n">asJson</span><span class="o">)</span>
+            <span class="o">}</span> <span class="k">yield</span> <span class="n">res</span>
         <span class="o">}</span>
         
     <span class="k">val</span> <span class="n">server</span> <span class="k">=</span> <span class="nc">BlazeServerBuilder</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span>
         <span class="o">.</span><span class="n">bindHttp</span><span class="o">(</span><span class="mi">9000</span><span class="o">,</span><span class="s">"localhost"</span><span class="o">)</span>
-        <span class="c1">// This is how you hook api to HTTP4S
+        <span class="c1">// hook api to HTTP4S
 </span>        <span class="o">.</span><span class="n">withHttpApp</span><span class="o">(</span><span class="n">raftProtocol</span><span class="o">(</span><span class="n">raftProc</span><span class="o">.</span><span class="n">api</span><span class="o">).</span><span class="n">orNotFound</span><span class="o">)</span> 
         <span class="o">.</span><span class="n">serve</span>
 </code></pre></div></div>
