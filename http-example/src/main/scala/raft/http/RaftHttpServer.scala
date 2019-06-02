@@ -56,7 +56,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
           case req @ POST -> Root / "cmd" =>
             for {
               change <- req.as[Cmd]
-              reply  <- api.incoming(change)
+              reply  <- api.write(change)
               res    <- Ok(reply.asJson)
             } yield res
         }

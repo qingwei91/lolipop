@@ -133,7 +133,7 @@ object RaftProcess {
         }
 
         override def api: RaftApi[F, Cmd] = new RaftApi[F, Cmd] {
-          override def incoming(cmd: Cmd): F[ClientResponse] = clientIncoming.incoming(cmd)
+          override def write(cmd: Cmd): F[ClientResponse] = clientIncoming.write(cmd)
 
           override def requestVote(req: VoteRequest): F[VoteResponse] = voteHandler.requestVote(req)
 

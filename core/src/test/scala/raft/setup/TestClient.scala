@@ -12,7 +12,7 @@ object TestClient {
   def untilCommitted[F[_]: Monad: Timer, Cmd](
     clients: Map[String, ClientIncoming[F, Cmd]]
   )(nodeId: String, cmd: Cmd): F[ClientResponse] = {
-    clients(nodeId).incoming(cmd).flatMap {
+    clients(nodeId).write(cmd).flatMap {
       case RedirectTo(leaderId) =>
         Timer[F].sleep(300.millis) *> untilCommitted(clients)(leaderId, cmd)
       case CommandCommitted => Monad[F].pure(CommandCommitted)

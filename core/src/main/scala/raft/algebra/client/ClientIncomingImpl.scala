@@ -19,7 +19,7 @@ class ClientIncomingImpl[F[_]: Concurrent, Cmd: Eq](
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent
   // Cons: this will push the responsibility of replying to client else where
-  def incoming(cmd: Cmd): F[ClientResponse] = {
+  def write(cmd: Cmd): F[ClientResponse] = {
     for {
       _         <- eventLogger.receivedClientReq(cmd)
       serverTpe <- allState.serverTpe.get
