@@ -19,7 +19,7 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent
   // Cons: this will push the responsibility of replying to client else where
-  def write(cmd: Cmd): F[ClientResponse] = {
+  def write(cmd: Cmd): F[WriteResponse] = {
     for {
       _         <- eventLogger.receivedClientReq(cmd)
       serverTpe <- allState.serverTpe.get
@@ -40,15 +40,15 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
                         .find(_ === cmd)
                         .compile
                         .lastOrError
-                } yield CommandCommitted: ClientResponse
+                } yield CommandCommitted: WriteResponse
 
-              case _: Candidate => Monad[F].pure[ClientResponse](NoLeader)
+              case _: Candidate => Monad[F].pure[WriteResponse](NoLeader)
               case f: Follower =>
                 f.leaderId
-                  .fold[ClientResponse](NoLeader)(RedirectTo)
+                  .fold[WriteResponse](NoLeader)(RedirectTo)
                   .pure[F]
             }
-      _ <- eventLogger.replyClientReq(cmd, res)
+      _ <- eventLogger.replyClientWriteReq(cmd, res)
     } yield res
   }
 

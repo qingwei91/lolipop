@@ -78,7 +78,7 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
                      eventLogger
                    )
           } yield {
-            RaftTestComponents(proc, proc.api, allState, eventLogger)
+            RaftTestComponents(proc, allState, eventLogger)
           }
       }
     }

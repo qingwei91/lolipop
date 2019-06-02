@@ -3,7 +3,7 @@ package algebra.event
 
 import cats.{ Applicative, Show }
 import org.slf4j.LoggerFactory
-import raft.model.{ AppendRequest, ClientResponse, RaftNodeState, VoteRequest }
+import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))
 class Slf4jEventLogger[F[_]: Applicative, Cmd: Show, State: Show](nodeId: String) extends EventLogger[F, Cmd, State] {
@@ -12,7 +12,8 @@ class Slf4jEventLogger[F[_]: Applicative, Cmd: Show, State: Show](nodeId: String
 
   override def receivedClientReq(cmd: Cmd): F[Unit] = logger.info(s"Received ${cmd.show} from client")
 
-  override def replyClientReq(req: Cmd, res: ClientResponse): F[Unit] = logger.info(s"Reply $res to client for $req")
+  override def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit] =
+    logger.info(s"Reply $res to client for $req")
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     logger.info(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")

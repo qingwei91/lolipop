@@ -1,7 +1,3 @@
-package raft
-package algebra
+package raft.algebra
 
-trait StateMachine[F[_], Cmd, State] {
-  def execute(cmd: Cmd): F[State]
-  def getCurrent: F[State]
-}
+trait StateMachine[F[_], Cmd, State] extends ChangeState[F, Cmd, State] with QueryState[F, State]

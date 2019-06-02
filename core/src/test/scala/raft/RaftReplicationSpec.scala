@@ -44,15 +44,15 @@ class RaftReplicationSpec extends Specification {
       val check_logs_replicated = assertWithServers(tasksIO) { raftComponents =>
         val statesOfAllNode = raftComponents.map(_.state)
         val clients = raftComponents.map { components =>
-          components.state.config.nodeId -> components.clientIncoming
+          components.state.config.nodeId -> components.api
         }.toNem
-        val request = (0 to n).toList.parTraverse { i =>
-          TestClient.untilCommitted(clients.toSortedMap)("0", s"Cmd$i")
+        val writeRequests = (0 to n).toList.parTraverse { i =>
+          TestClient.writeToLeader(clients.toSortedMap)("0", s"Cmd$i")
         }
 
         for {
           _         <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
-          responses <- request.timeout(timeToReplication * 2)
+          responses <- writeRequests.timeout(timeToReplication * 2)
           allLogs   <- statesOfAllNode.parTraverse(_.logs.lastLog)
           commitIndices <- statesOfAllNode.parTraverse { state =>
                             state.serverTpe.get.map {
@@ -101,10 +101,10 @@ class RaftReplicationSpec extends Specification {
     val checkLogCommitted = assertWithServers(tasksIO) { testData =>
       val statesOfAllNode = testData.map(_.state)
       val clients = testData.map { components =>
-        components.state.config.nodeId -> components.clientIncoming
+        components.state.config.nodeId -> components.api
       }.toNem
 
-      val clientResIO = TestClient.untilCommitted(clients.toSortedMap)("0", "Cmd1")
+      val clientResIO = TestClient.writeToLeader(clients.toSortedMap)("0", "Cmd1")
 
       for {
         // allow time for election to avoid contention
@@ -148,13 +148,13 @@ class RaftReplicationSpec extends Specification {
     val checkLogCommitted = assertWithServers(tasksIO) { testData =>
       val statesOfAllNode = testData.map(_.state)
       val clients = testData.map { components =>
-        components.state.config.nodeId -> components.clientIncoming
+        components.state.config.nodeId -> components.api
       }.toNem
 
       val clientResIO = IO
         .race(
           ioTM.sleep(timeToReplication).as(NoLeader),
-          TestClient.untilCommitted(clients.toSortedMap)("0", "Cmd")
+          TestClient.writeToLeader(clients.toSortedMap)("0", "Cmd")
         )
         .map(_.merge)
 

@@ -1,10 +1,10 @@
 package raft.algebra.event
 
-import raft.model.{ AppendRequest, ClientResponse, RaftNodeState, VoteRequest }
+import raft.model._
 
 trait EventLogger[F[_], Cmd, State] {
   def receivedClientReq(cmd: Cmd): F[Unit]
-  def replyClientReq(req: Cmd, res: ClientResponse): F[Unit]
+  def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit]
 
   def electionStarted(term: Int, lastLogIdx: Int): F[Unit]
 

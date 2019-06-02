@@ -11,7 +11,7 @@ import org.http4s.circe._
 import org.http4s.{ Uri, dsl }
 import pureconfig.ConfigReader
 import pureconfig.generic.auto._
-import raft.algebra.StateMachine
+import raft.algebra._
 import raft.model.RaftLog
 import swaydb.data
 import swaydb.data.io.{ FutureTransformer, Wrap }

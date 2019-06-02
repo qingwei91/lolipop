@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.Throw"))
 class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
-  val stateMachine: StateMachine[F, Cmd, State],
+  val stateMachine: ChangeState[F, Cmd, State],
   val allState: RaftNodeState[F, Cmd],
   elogger: EventLogger[F, Cmd, State]
 )(implicit F: MonadError[F, Throwable])

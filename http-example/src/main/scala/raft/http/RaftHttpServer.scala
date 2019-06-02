@@ -33,7 +33,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
     networkMapping: Map[String, Uri],
     stateMachineF: F[StateMachine[F, Cmd, State]],
     httpDSL: Http4sDsl[F],
-    logIOF: F[LogIO[F, Cmd]],
+    logIOF: F[LogIO[F, Cmd]]
   ): RaftHttpServer[F] = {
     import httpDSL._
 

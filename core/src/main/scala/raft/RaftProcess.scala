@@ -6,7 +6,7 @@ import cats.effect.{ Concurrent, ContextShift, Timer }
 import fs2.Stream
 import fs2.concurrent._
 import raft.algebra.append._
-import raft.algebra.client.ClientWriteImpl
+import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
 import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
 import raft.algebra.io.{ LogIO, NetworkIO }
@@ -91,13 +91,15 @@ object RaftProcess {
 
       val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator)
 
-      val clientIncoming = new ClientWriteImpl[F, Cmd](
+      val clientWrite = new ClientWriteImpl[F, Cmd](
         state,
         appendInitiator,
         () => committedTopic.subscribe(100),
         scheduler,
         eventLogger
       )
+
+      val clientRead = new ClientReadImpl[F, State](stateMachine, state)
 
       new RaftProcess[F, Cmd, State] {
         override def startRaft: Stream[F, Unit] = {
@@ -133,9 +135,9 @@ object RaftProcess {
         }
 
         override def api: RaftApi[F, Cmd, State] = new RaftApi[F, Cmd, State] {
-          override def write(cmd: Cmd): F[ClientResponse] = clientIncoming.write(cmd)
+          override def write(cmd: Cmd): F[WriteResponse] = clientWrite.write(cmd)
 
-          override def read: F[State] = stateMachine.getCurrent
+          override def read: F[ReadResponse[State]] = clientRead.read
 
           override def requestVote(req: VoteRequest): F[VoteResponse] = voteHandler.requestVote(req)
 

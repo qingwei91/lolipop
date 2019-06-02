@@ -3,18 +3,18 @@ package raft.setup
 import cats.Monad
 import cats.effect.Timer
 import cats.implicits._
-import raft.algebra.client.ClientWrite
+import raft.algebra.client.{ ClientRead, ClientWrite }
 import raft.model._
 
 import scala.concurrent.duration._
 
 object TestClient {
-  def untilCommitted[F[_]: Monad: Timer, Cmd](
+  def writeToLeader[F[_]: Monad: Timer, Cmd](
     clients: Map[String, ClientWrite[F, Cmd]]
-  )(nodeId: String, cmd: Cmd): F[ClientResponse] = {
+  )(nodeId: String, cmd: Cmd): F[WriteResponse] = {
     clients(nodeId).write(cmd).flatMap {
       case RedirectTo(leaderId) =>
-        Timer[F].sleep(300.millis) *> untilCommitted(clients)(leaderId, cmd)
+        Timer[F].sleep(300.millis) *> writeToLeader(clients)(leaderId, cmd)
       case CommandCommitted => Monad[F].pure(CommandCommitted)
       case NoLeader =>
         val total   = clients.size
@@ -23,7 +23,26 @@ object TestClient {
         val nextIdx = (currIdx + 1) % total
         val nextId  = keyList(nextIdx)
 
-        Timer[F].sleep(300.millis) *> untilCommitted(clients)(nextId, cmd)
+        Timer[F].sleep(300.millis) *> writeToLeader(clients)(nextId, cmd)
     }
   }
+
+  def readFromLeader[F[_]: Monad: Timer, State](
+    clients: Map[String, ClientRead[F, State]]
+  )(nodeId: String): F[ReadResponse[State]] = {
+    clients(nodeId).read.flatMap {
+      case RedirectTo(leaderId) =>
+        Timer[F].sleep(300.millis) *> readFromLeader(clients)(leaderId)
+      case r @ Read(_) => Monad[F].pure(r)
+      case NoLeader =>
+        val total   = clients.size
+        val keyList = clients.keySet.toList
+        val currIdx = keyList.indexOf(nodeId)
+        val nextIdx = (currIdx + 1) % total
+        val nextId  = keyList(nextIdx)
+
+        Timer[F].sleep(300.millis) *> readFromLeader(clients)(nextId)
+    }
+  }
+
 }

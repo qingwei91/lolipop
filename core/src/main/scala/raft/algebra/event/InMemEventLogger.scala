@@ -2,9 +2,10 @@ package raft
 package algebra.event
 
 import java.time.LocalTime
+
 import cats.effect.concurrent.Ref
 import cats.{ Applicative, Show }
-import raft.model.{ AppendRequest, ClientResponse, RaftNodeState, VoteRequest }
+import raft.model.{ AppendRequest, RaftNodeState, VoteRequest, WriteResponse }
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))
 class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: String, val logs: Ref[F, StringBuffer])
@@ -17,7 +18,7 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
   override def receivedClientReq(cmd: Cmd): F[Unit] = {
     add(s"Received ${cmd.show} from client")
   }
-  override def replyClientReq(req: Cmd, res: ClientResponse): F[Unit] = {
+  override def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit] = {
     add(s"Reply $res to client for $req")
   }
 

@@ -4,7 +4,7 @@ package algebra.append
 import cats.MonadError
 import cats.effect.{ ContextShift, Timer }
 import org.slf4j.{ Logger, LoggerFactory }
-import raft.algebra.StateMachine
+import raft.algebra.ChangeState
 import raft.algebra.event.EventLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
@@ -13,7 +13,7 @@ import scala.concurrent.duration.MILLISECONDS
 
 class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
   networkManager: NetworkIO[F, Cmd],
-  stateMachine: StateMachine[F, Cmd, State],
+  stateMachine: ChangeState[F, Cmd, State],
   allState: RaftNodeState[F, Cmd],
   publishCommittedEvent: Cmd => F[Unit],
   eLogger: EventLogger[F, Cmd, State]
