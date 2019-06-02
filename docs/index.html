@@ -1,0 +1,202 @@
+<html><head><title>lolipop: Usage</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="io.github.qingwei91" /><meta name="description" content="Purely functional Raft implementation" /><meta name="og:image" content="/img/poster.png" /><meta name="image" property="og:image" content="/img/poster.png" /><meta name="og:title" content="lolipop: Usage" /><meta name="title" property="og:title" content="lolipop: Usage" /><meta name="og:site_name" content="lolipop" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Purely functional Raft implementation" /><link rel="icon" type="image/png" href="/img/favicon.png" /><meta name="twitter:title" content="lolipop: Usage" /><meta name="twitter:image" content="/img/poster.png" /><meta name="twitter:description" content="Purely functional Raft implementation" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/highlight/styles/default.css" /><link rel="stylesheet" href="/css/style.css" /><link rel="stylesheet" href="/css/palette.css" /><link rel="stylesheet" href="/css/codemirror.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/" class="brand"><div class="brand-wrapper"><span>lolipop</span></div></a></li> <li><a href="/docs/usage.html" class=" active ">Usage</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/qingwei91/lolipop"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/qingwei91/lolipop"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('lolipop Purely functional Raft implementation');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('lolipop Purely functional Raft implementation');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="qingwei91" data-github-repo="lolipop"><div class="content-wrapper"><section><h1 id="lolipop---purely-functional-raft-implementation">Lolipop - purely functional Raft implementation</h1>
+
+<p><strong>Lolipop</strong> is a basic implementation of Raft algorithm using a purely functional approach. It is effect agnostic meaning user can choose your own effect type (eg. cats IO, Future, ZIO)</p>
+
+<p>It does not support</p>
+
+<ul>
+  <li>Dynamic membership</li>
+  <li>Log compaction</li>
+</ul>
+
+<h2 id="usage">Usage</h2>
+
+<p><strong>Lolipop</strong> is rather minimal, thus user need to provide a few dependencies and deal with the wiring.</p>
+
+<h3 id="1-define-statemachine">1. Define <code class="highlighter-rouge">StateMachine</code></h3>
+
+<p>StateMachine is application specific, it represents the State that we are trying to reach consensus for. It could be as simple as an Int, or it could be a collection of documents.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect._</span>
+<span class="k">import</span> <span class="nn">cats.implicits._</span>
+
+<span class="k">val</span> <span class="n">counter</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">StateMachine</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">ChangeCount</span>, <span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="k">for</span> <span class="o">{</span>
+  <span class="n">state</span> <span class="k">&lt;-</span> <span class="nc">Ref</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="n">of</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span>
+<span class="o">}</span> <span class="k">yield</span> <span class="o">{</span>
+  <span class="k">new</span> <span class="nc">StateMachine</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">ChangeCount</span>, <span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
+    <span class="k">override</span> <span class="k">def</span> <span class="n">execute</span><span class="o">(</span><span class="n">cmd</span><span class="k">:</span> <span class="kt">ChangeCount</span><span class="o">)</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+      <span class="n">state</span><span class="o">.</span><span class="n">modify</span> <span class="o">{</span> <span class="n">i</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="n">j</span> <span class="k">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">cmd</span><span class="o">.</span><span class="n">i</span>
+        <span class="n">j</span> <span class="o">-&gt;</span> <span class="n">j</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="2-define-logio">2. Define <code class="highlighter-rouge">LogIO</code></h3>
+
+<p><code class="highlighter-rouge">LogIO</code> represent the ability for the application to interact with log files, <strong>Lolipop</strong> allow user to implement this because there are different ways to persist logs (eg. file system, database)</p>
+
+<p>Below is an example implemented using <a href="http://www.swaydb.io/">SwayDB</a></p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect.IO</span>
+<span class="k">import</span> <span class="nn">raft.algebra.io.LogIO</span>
+<span class="k">import</span> <span class="nn">raft.model.RaftLog</span>
+
+<span class="k">class</span> <span class="nc">FileLogIO</span><span class="o">(</span><span class="n">db</span><span class="k">:</span> <span class="kt">swaydb.Map</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">RaftLog</span><span class="o">[</span><span class="kt">ChangeCount</span><span class="o">]</span>, <span class="kt">IO</span><span class="o">])</span> <span class="k">extends</span> <span class="nc">LogIO</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">ChangeCount</span><span class="o">]</span> <span class="o">{</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">getByIdx</span><span class="o">(</span><span class="n">idx</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Option</span><span class="o">[</span><span class="kt">Log</span><span class="o">]]</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">idx</span><span class="o">)</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">overwrite</span><span class="o">(</span><span class="n">logs</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Log</span><span class="o">])</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">put</span><span class="o">(</span><span class="n">logs</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">s</span> <span class="k">=&gt;</span> <span class="n">s</span><span class="o">.</span><span class="n">idx</span> <span class="o">-&gt;</span> <span class="n">s</span><span class="o">)).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="o">())</span>
+  <span class="o">}</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">lastLog</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Option</span><span class="o">[</span><span class="kt">Log</span><span class="o">]]</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">lastOption</span><span class="o">.</span><span class="n">map</span> <span class="o">{</span> <span class="n">opt</span> <span class="k">=&gt;</span>
+    <span class="n">opt</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="cm">/**
+    * @param idx - inclusive
+    */</span>
+  <span class="k">override</span> <span class="k">def</span> <span class="n">takeFrom</span><span class="o">(</span><span class="n">idx</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">Log</span><span class="o">]]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">fromOrAfter</span><span class="o">(</span><span class="n">idx</span><span class="o">).</span><span class="n">takeWhile</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="kc">true</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_2</span><span class="o">).</span><span class="n">materialize</span>
+  <span class="o">}</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">append</span><span class="o">(</span><span class="n">log</span><span class="k">:</span> <span class="kt">Log</span><span class="o">)</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">put</span><span class="o">(</span><span class="n">log</span><span class="o">.</span><span class="n">idx</span><span class="o">,</span> <span class="n">log</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="o">())</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="3-define-networkio">3. Define <code class="highlighter-rouge">NetworkIO</code></h3>
+
+<p><code class="highlighter-rouge">NetworkIO</code> represents the two kind of network communication in a Raft cluster, <code class="highlighter-rouge">AppendRequestRPC</code> and <code class="highlighter-rouge">VoteRequestRPC</code>.</p>
+
+<p>User has to provide their own implementations, here’s an example using http4s (Note: HTTP has relatively high overhead and thus is not recommended, this only serves as a reference)</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect.Sync</span>
+<span class="k">import</span> <span class="nn">io.circe.Encoder</span>
+<span class="k">import</span> <span class="nn">io.circe.generic.auto._</span>
+<span class="k">import</span> <span class="nn">org.http4s.Method._</span>
+<span class="k">import</span> <span class="nn">org.http4s._</span>
+<span class="k">import</span> <span class="nn">org.http4s.circe._</span>
+<span class="k">import</span> <span class="nn">org.http4s.client._</span>
+<span class="k">import</span> <span class="nn">org.http4s.client.dsl.Http4sClientDsl</span>
+<span class="k">import</span> <span class="nn">raft.algebra.io.NetworkIO</span>
+<span class="k">import</span> <span class="nn">raft.model._</span>
+
+<span class="k">class</span> <span class="nc">HttpNetwork</span><span class="o">[</span><span class="kt">F</span><span class="o">[</span><span class="k">_</span><span class="o">]</span><span class="kt">:</span> <span class="kt">Sync</span>, <span class="kt">Cmd:</span> <span class="kt">Encoder</span><span class="o">](</span><span class="n">networkConfig</span><span class="k">:</span> <span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Uri</span><span class="o">],</span> <span class="n">client</span><span class="k">:</span> <span class="kt">Client</span><span class="o">[</span><span class="kt">F</span><span class="o">])</span>
+    <span class="k">extends</span> <span class="nc">NetworkIO</span><span class="o">[</span><span class="kt">F</span>, <span class="kt">Cmd</span><span class="o">]</span>
+    <span class="k">with</span> <span class="nc">Http4sClientDsl</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span>
+    <span class="k">with</span> <span class="nc">CirceEntityEncoder</span>
+    <span class="k">with</span> <span class="nc">CirceEntityDecoder</span> <span class="o">{</span>
+  <span class="k">override</span> <span class="k">def</span> <span class="n">sendAppendRequest</span><span class="o">(</span><span class="n">nodeID</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">appendReq</span><span class="k">:</span> <span class="kt">AppendRequest</span><span class="o">[</span><span class="kt">Cmd</span><span class="o">])</span><span class="k">:</span> <span class="kt">F</span><span class="o">[</span><span class="kt">AppendResponse</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+
+    <span class="k">val</span> <span class="n">uri</span> <span class="k">=</span> <span class="n">networkConfig</span><span class="o">(</span><span class="n">nodeID</span><span class="o">)</span> <span class="o">/</span> <span class="s">"append"</span>
+
+    <span class="n">client</span><span class="o">.</span><span class="n">expect</span><span class="o">[</span><span class="kt">AppendResponse</span><span class="o">](</span><span class="nc">POST</span><span class="o">.</span><span class="n">apply</span><span class="o">(</span><span class="n">body</span> <span class="k">=</span> <span class="n">appendReq</span><span class="o">,</span> <span class="n">uri</span> <span class="k">=</span> <span class="n">uri</span><span class="o">))</span>
+  <span class="o">}</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">sendVoteRequest</span><span class="o">(</span><span class="n">nodeID</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">voteRq</span><span class="k">:</span> <span class="kt">VoteRequest</span><span class="o">)</span><span class="k">:</span> <span class="kt">F</span><span class="o">[</span><span class="kt">VoteResponse</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="n">uri</span> <span class="k">=</span> <span class="n">networkConfig</span><span class="o">(</span><span class="n">nodeID</span><span class="o">)</span> <span class="o">/</span> <span class="s">"vote"</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">expect</span><span class="o">[</span><span class="kt">VoteResponse</span><span class="o">](</span><span class="nc">POST</span><span class="o">.</span><span class="n">apply</span><span class="o">(</span><span class="n">body</span> <span class="k">=</span> <span class="n">voteRq</span><span class="o">,</span> <span class="n">uri</span> <span class="k">=</span> <span class="n">uri</span><span class="o">))</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="4-define-eventlogger">4. Define <code class="highlighter-rouge">EventLogger</code></h3>
+
+<p>EventLogger is useful for debugging, it is being used to record important events in a Raft process. There is a <code class="highlighter-rouge">Slf4jEventLogger</code> provided out of the box.</p>
+
+<h3 id="5-create-raftprocess">5. Create `RaftProcess</h3>
+
+<p>Once we have the above dependencies, we can build a RaftProcess</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import raft._
+
+val stateMachine = new StateMachine { .... }
+
+// config that represent cluster membership, so that a node knows about its peer node
+val myId = "node0"
+val clusterConfig = ClusterConfig(myId, Set("node1", "node2"))
+
+val logIO = new FileLogIO(...)
+val networkIO = new HttpNetwork(...)
+val eventLogger = new Slf4jEventLogger(myId)
+
+val proc = RaftProcess.simple(
+  stateMachine,
+  clusterConfig,
+  logIO,
+  networkIO,
+  eventLogger
+)
+
+</code></pre></div></div>
+
+<h3 id="6-expose-raft-api-to-the-network">6. Expose raft api to the network</h3>
+
+<p><code class="highlighter-rouge">RaftProcess</code> provides several abilities</p>
+
+<ol>
+  <li>Start the Raft Server, modelled by <code class="highlighter-rouge">def startRaft: Stream[F, Unit]</code></li>
+  <li>Receive AppendLog Request from peer nodes</li>
+  <li>Receive Vote Request from peer nodes</li>
+  <li>Receive Command from clients</li>
+</ol>
+
+<ul>
+  <li><code class="highlighter-rouge">Peer node</code> refers to the node in the same Raft cluster.</li>
+  <li><code class="highlighter-rouge">Client</code> refers to process that uses Raft algorithm to store state.</li>
+  <li>All api is grouped under <code class="highlighter-rouge">RaftApi</code> which is a field on <code class="highlighter-rouge">RaftProcess</code>, <code class="highlighter-rouge">def api: RaftApi[F, Cmd]</code></li>
+</ul>
+
+<p>We should expose the api to the network before we start the Raft Process, the integration depends on the networking protocol and library.</p>
+
+<p>Below is an example by using HTTP4S</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">def</span> <span class="n">raftProtocol</span><span class="o">(</span><span class="n">api</span><span class="k">:</span> <span class="kt">RaftApi</span><span class="o">[</span><span class="kt">F</span>, <span class="kt">Cmd</span><span class="o">])</span><span class="k">:</span> <span class="kt">HttpRoutes</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span> <span class="k">=</span>
+      <span class="nc">HttpRoutes</span>
+        <span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span> <span class="o">{</span>
+          <span class="k">case</span> <span class="n">req</span> <span class="k">@</span> <span class="nc">POST</span> <span class="o">-&gt;</span> <span class="nc">Root</span> <span class="o">/</span> <span class="s">"append"</span> <span class="k">=&gt;</span>
+            <span class="k">for</span> <span class="o">{</span>
+              <span class="n">app</span>   <span class="k">&lt;-</span> <span class="n">req</span><span class="o">.</span><span class="n">as</span><span class="o">[</span><span class="kt">AppendRequest</span><span class="o">[</span><span class="kt">Cmd</span><span class="o">]]</span>
+              <span class="n">reply</span> <span class="k">&lt;-</span> <span class="n">api</span><span class="o">.</span><span class="n">requestAppend</span><span class="o">(</span><span class="n">app</span><span class="o">)</span>
+              <span class="n">res</span>   <span class="k">&lt;-</span> <span class="nc">Ok</span><span class="o">(</span><span class="n">reply</span><span class="o">.</span><span class="n">asJson</span><span class="o">)</span>
+            <span class="o">}</span> <span class="k">yield</span> <span class="n">res</span>
+
+          <span class="k">case</span> <span class="n">req</span> <span class="k">@</span> <span class="nc">POST</span> <span class="o">-&gt;</span> <span class="nc">Root</span> <span class="o">/</span> <span class="s">"vote"</span> <span class="k">=&gt;</span>
+            <span class="k">for</span> <span class="o">{</span>
+              <span class="n">vote</span>  <span class="k">&lt;-</span> <span class="n">req</span><span class="o">.</span><span class="n">as</span><span class="o">[</span><span class="kt">VoteRequest</span><span class="o">]</span>
+              <span class="n">reply</span> <span class="k">&lt;-</span> <span class="n">api</span><span class="o">.</span><span class="n">requestVote</span><span class="o">(</span><span class="n">vote</span><span class="o">)</span>
+              <span class="n">res</span>   <span class="k">&lt;-</span> <span class="nc">Ok</span><span class="o">(</span><span class="n">reply</span><span class="o">.</span><span class="n">asJson</span><span class="o">)</span>
+            <span class="o">}</span> <span class="k">yield</span> <span class="n">res</span>
+          <span class="k">case</span> <span class="n">req</span> <span class="k">@</span> <span class="nc">POST</span> <span class="o">-&gt;</span> <span class="nc">Root</span> <span class="o">/</span> <span class="s">"cmd"</span> <span class="k">=&gt;</span>
+            <span class="k">for</span> <span class="o">{</span>
+              <span class="n">change</span> <span class="k">&lt;-</span> <span class="n">req</span><span class="o">.</span><span class="n">as</span><span class="o">[</span><span class="kt">Cmd</span><span class="o">]</span>
+              <span class="n">reply</span>  <span class="k">&lt;-</span> <span class="n">api</span><span class="o">.</span><span class="n">incoming</span><span class="o">(</span><span class="n">change</span><span class="o">)</span>
+              <span class="n">res</span>    <span class="k">&lt;-</span> <span class="nc">Ok</span><span class="o">(</span><span class="n">reply</span><span class="o">.</span><span class="n">asJson</span><span class="o">)</span>
+            <span class="o">}</span> <span class="k">yield</span> <span class="n">res</span>
+        <span class="o">}</span>
+        
+    <span class="k">val</span> <span class="n">server</span> <span class="k">=</span> <span class="nc">BlazeServerBuilder</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span>
+        <span class="o">.</span><span class="n">bindHttp</span><span class="o">(</span><span class="mi">9000</span><span class="o">,</span><span class="s">"localhost"</span><span class="o">)</span>
+        <span class="c1">// This is how you hook api to HTTP4S
+</span>        <span class="o">.</span><span class="n">withHttpApp</span><span class="o">(</span><span class="n">raftProtocol</span><span class="o">(</span><span class="n">raftProc</span><span class="o">.</span><span class="n">api</span><span class="o">).</span><span class="n">orNotFound</span><span class="o">)</span> 
+        <span class="o">.</span><span class="n">serve</span>
+</code></pre></div></div>
+
+<h3 id="7-start-the-raftprocess">7. Start the RaftProcess</h3>
+
+<p>RaftProcess is a logical long running process, it has 2 responsibilities:</p>
+
+<ol>
+  <li>Execute client’s request, eg. WriteCommand or ReadState</li>
+  <li>Periodically check the health of peer nodes</li>
+</ol>
+
+<p>It is modelled as a <code class="highlighter-rouge">fs2.Stream</code>, it is typically being invoked in your Main class.</p>
+
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
+hljs.initHighlighting();
+              </script><script>((window.gitter = {}).chat = {}).options = {
+room: 'qingwei91/lolipop'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/js/main.js"></script></body></html>
