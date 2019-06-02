@@ -10,7 +10,9 @@ lazy val lolipop = project
     micrositeGithubRepo := "lolipop",
     micrositeCompilingDocsTool := WithMdoc,
     micrositeDataDirectory := file("docs"),
-    micrositeDocumentationUrl := "docs"
+    micrositeBaseUrl := "/lolipop",
+    micrositeDocumentationUrl := "/lolipop/docs",
+    micrositeUrl := "https://qingwei91.github.io"
   )
   .enablePlugins(MicrositesPlugin)
   .dependsOn(core, httpExample)
