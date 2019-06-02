@@ -75,7 +75,6 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
                      network,
                      appendHandler,
                      voteHandler,
-                     "",
                      eventLogger
                    )
           } yield {

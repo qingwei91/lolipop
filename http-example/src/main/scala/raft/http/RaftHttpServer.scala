@@ -2,7 +2,6 @@ package raft.http
 
 import cats._
 import cats.effect._
-import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.Stream
 import io.circe.generic.auto._
@@ -35,7 +34,6 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
     stateMachineF: F[StateMachine[F, Cmd, State]],
     httpDSL: Http4sDsl[F],
     logIOF: F[LogIO[F, Cmd]],
-    initCmd: Cmd
   ): RaftHttpServer[F] = {
     import httpDSL._
 
@@ -68,9 +66,8 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
     val raftProcess: Stream[F, RaftProcess[F, Cmd]] = for {
       client <- BlazeClientBuilder.apply[F](global).stream
       network = new HttpNetwork[F, Cmd](networkMapping, client)
-      stateM     <- Stream.eval(stateMachineF)
-      persistent <- Stream.eval(Ref.of[F, Persistent](Persistent.init))
-      logIO      <- Stream.eval(logIOF)
+      stateM <- Stream.eval(stateMachineF)
+      logIO  <- Stream.eval(logIOF)
       eventLogger = new Slf4jEventLogger[F, Cmd, State](nodeID)
       proc <- Stream.eval(
                RaftProcess.simple(
@@ -78,8 +75,6 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
                  config,
                  logIO,
                  network,
-                 persistent,
-                 initCmd,
                  eventLogger
                )
              )

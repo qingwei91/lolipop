@@ -103,8 +103,7 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
       networkConfs,
       counter,
       dsl.io,
-      ioDB,
-      ChangeCount(0)
+      ioDB
     ).start
       .compile[IO, IO, ExitCode]
       .drain

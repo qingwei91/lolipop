@@ -1,15 +1,16 @@
 import sbt.Keys.scalaVersion
 
-lazy val raft = project
+lazy val lolipop = project
   .in(file("."))
   .settings(
-    name := "raft-scala",
-    description := "Pure functional Raft implementation using cats and fs2",
+    name := "lolipop",
+    description := "Purely functional Raft implementation",
     organizationName := "io.github.qingwei91",
     micrositeGithubOwner := "qingwei91",
-    micrositeGithubRepo := "raft-scala",
-    micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
-    micrositeCompilingDocsTool := WithMdoc
+    micrositeGithubRepo := "lolipop",
+    micrositeCompilingDocsTool := WithMdoc,
+    micrositeDataDirectory := file("docs"),
+    micrositeDocumentationUrl := "docs"
   )
   .enablePlugins(MicrositesPlugin)
   .dependsOn(core, httpExample)

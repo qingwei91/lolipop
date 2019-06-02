@@ -27,22 +27,18 @@ object RaftProcess {
   // the dependencies for you, the trade-off is that you have
   // less control over it, which is fine for prod server as it
   // is likely what you want
-  // `initialCmd` is needed due to how fs2.concurrent.Topic work
-  // todo: remove initialCmd by re-model the Topic to use
-  //  Option[A]
   def simple[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
     clusterConfig: ClusterConfig,
     logIO: LogIO[F, Cmd],
     networkIO: NetworkIO[F, Cmd],
-    persistentIO: Ref[F, Persistent],
-    initialCmd: Cmd,
     eventLogger: EventLogger[F, Cmd, State]
   ): F[RaftProcess[F, Cmd]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
       initFollower = Follower(0, 0, time, None)
       serverTpeRef <- Ref.of[F, ServerType](initFollower)
+      persistentIO <- Ref.of[F, Persistent](Persistent.init)
       lock         <- MVar[F].of(())
       state = new RaftNodeState[F, Cmd] {
         override def config: ClusterConfig = clusterConfig
@@ -61,7 +57,7 @@ object RaftProcess {
         eventLogger
       )
       voteHandler = new VoteRPCHandlerImpl(state, eventLogger)
-      proc <- RaftProcess.apply(stateMachine, state, networkIO, appendHandler, voteHandler, initialCmd, eventLogger)
+      proc <- RaftProcess.apply(stateMachine, state, networkIO, appendHandler, voteHandler, eventLogger)
     } yield {
       proc
     }
@@ -73,12 +69,11 @@ object RaftProcess {
     networkIO: NetworkIO[F, Cmd],
     appendHandler: AppendRPCHandler[F, Cmd],
     voteHandler: VoteRPCHandler[F],
-    initialCmd: Cmd,
     eventLogger: EventLogger[F, Cmd, State]
   ): F[RaftProcess[F, Cmd]] = {
     val peers = state.config.peersId.toList
     for {
-      committedTopic <- CustomTopics[F, Cmd](initialCmd)
+      committedTopic <- CustomTopics[F, Cmd]
       taskQueue <- peers
                     .traverse { nodeId =>
                       Queue
@@ -166,7 +161,7 @@ object CustomTopics {
   import cats.effect.concurrent.Ref
 
   @SuppressWarnings(Array("org.wartremover.warts.All"))
-  def apply[F[_], A](initial: A)(implicit F: Concurrent[F]): F[CustomTopics[F, A]] =
+  def apply[F[_], A](implicit F: Concurrent[F]): F[CustomTopics[F, A]] =
     Ref
       .of[F, List[fs2.concurrent.Queue[F, A]]](List.empty)
       .map(
@@ -192,7 +187,6 @@ object CustomTopics {
 
               for {
                 q <- emptyQueue(maxQueued)
-                _ <- q.enqueue1(initial)
                 _ <- cache.update(_ :+ q)
               } yield {
                 q.dequeue
