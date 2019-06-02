@@ -35,6 +35,7 @@ val counter: IO[StateMachine[IO, ChangeCount, Int]] = for {
         j -> j
       }
     }
+    override def getCurrent: IO[Int] = state.get
   }
 }
 ```
@@ -148,7 +149,7 @@ val proc = RaftProcess.simple(
 1. Start the Raft Server, modelled by `def startRaft: Stream[F, Unit]`
 2. Receive AppendLog Request from peer nodes
 3. Receive Vote Request from peer nodes
-3. Receive Command from clients
+3. Receive requests from clients (both Read and Write)
 
 * `Peer node` refers to the node in the same Raft cluster.
 * `Client` refers to process that uses Raft algorithm to store state.
@@ -181,11 +182,16 @@ Below is an example by using HTTP4S
               reply  <- api.incoming(change)
               res    <- Ok(reply.asJson)
             } yield res
+          case GET -> Root / "state" =>
+            for {
+              reply <- api.read
+              res   <- Ok(reply.asJson)
+            } yield res
         }
         
     val server = BlazeServerBuilder[F]
         .bindHttp(9000,"localhost")
-        // This is how you hook api to HTTP4S
+        // hook api to HTTP4S
         .withHttpApp(raftProtocol(raftProc.api).orNotFound) 
         .serve
 ```
