@@ -41,7 +41,7 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
         val stateMachine = new TestStateMachine[F](testState)
         val state = TestState(
           clusterConf,
-          persist,
+          new TestPersistent(persist),
           servTpe,
           lock,
           new TestLogsIO(baseLog)

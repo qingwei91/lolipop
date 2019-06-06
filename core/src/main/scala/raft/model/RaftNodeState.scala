@@ -7,7 +7,7 @@ import raft.algebra.io.LogIO
 
 trait RaftNodeState[F[_], Cmd] {
   def config: ClusterConfig
-  def persistent: Ref[F, Persistent]
+  def persistent: PersistentIO[F]
   def serverTpe: Ref[F, ServerType]
   def serverTpeLock: MVar[F, Unit]
   def logs: LogIO[F, Cmd]

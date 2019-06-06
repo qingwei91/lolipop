@@ -23,27 +23,27 @@ import scala.concurrent.duration._
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
 object RaftProcess {
 
-  // simplest way to create a RaftProcess, it creates most of
-  // the dependencies for you, the trade-off is that you have
-  // less control over it, which is fine for prod server as it
-  // is likely what you want
-  def simple[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
+  /**
+    * Method used to start a RaftProcess, can be use to
+    * restart Raft process eg. after server crash
+    */
+  def init[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
     clusterConfig: ClusterConfig,
     logIO: LogIO[F, Cmd],
     networkIO: NetworkIO[F, Cmd],
-    eventLogger: EventLogger[F, Cmd, State]
+    eventLogger: EventLogger[F, Cmd, State],
+    persistentIO: PersistentIO[F]
   ): F[RaftProcess[F, Cmd, State]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
       initFollower = Follower(0, 0, time, None)
       serverTpeRef <- Ref.of[F, ServerType](initFollower)
-      persistentIO <- Ref.of[F, Persistent](Persistent.init)
       lock         <- MVar[F].of(())
       state = new RaftNodeState[F, Cmd] {
         override def config: ClusterConfig = clusterConfig
 
-        override def persistent: Ref[F, Persistent] = persistentIO
+        override def persistent: PersistentIO[F] = persistentIO
 
         override def serverTpe: Ref[F, ServerType] = serverTpeRef
 

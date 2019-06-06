@@ -2,7 +2,7 @@ package raft.http
 
 import java.nio.file.Paths
 
-import cats.effect.concurrent.Ref
+import cats.effect.concurrent.{ MVar, Ref }
 import cats.effect.{ ExitCode, IO, IOApp }
 import cats.implicits._
 import cats.{ Eq, ~> }
@@ -12,7 +12,7 @@ import org.http4s.{ Uri, dsl }
 import pureconfig.ConfigReader
 import pureconfig.generic.auto._
 import raft.algebra._
-import raft.model.RaftLog
+import raft.model.{ Persistent, RaftLog }
 import swaydb.data
 import swaydb.data.io.{ FutureTransformer, Wrap }
 import swaydb.data.slice.Slice
@@ -47,6 +47,19 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
       val term   = reader.readInt()
       val i      = reader.readInt()
       RaftLog(idx, term, ChangeCount(i))
+    }
+  }
+
+  implicit object persistSerializer extends Serializer[Persistent] {
+    override def write(data: Persistent): Slice[Byte] =
+      Slice.create[Byte](100).addInt(data.currentTerm).addString(data.votedFor.getOrElse(""))
+
+    override def read(data: Slice[Byte]): Persistent = {
+      val reader   = data.createReader()
+      val currentT = reader.readInt()
+      val votedRaw = reader.readRemainingAsString()
+      val votedFor = if (votedRaw == "") None else Some(votedRaw)
+      Persistent(currentT, votedFor)
     }
   }
 
@@ -90,11 +103,25 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
 
   implicit val ioWrap: Wrap[IO] = Wrap.buildAsyncWrap[IO](IOTransformer, 10.seconds)
 
-  private val dbPath = Paths.get("raft-sample")
-  private val db     = swaydb.persistent.Map[Int, RaftLog[ChangeCount]](dbPath)
+  private val logDB = {
+    val dbPath = Paths.get("raft-sample-log")
+    val db     = swaydb.persistent.Map[Int, RaftLog[ChangeCount]](dbPath)
+    nt(db).map { inner =>
+      new FileLogIO(inner.asyncAPI[IO])
+    }
+  }
 
-  private val ioDB = nt(db).map { inner =>
-    new FileLogIO(inner.asyncAPI[IO])
+  private val persistDB = {
+    val dbPath = Paths.get("raft-sample-persist")
+    val db     = swaydb.persistent.Map[Int, Persistent](dbPath)
+
+    for {
+      swayMap <- nt(db).map(_.asyncAPI[IO])
+      _       <- swayMap.put(1, Persistent.init)
+      lock    <- MVar[IO].of(())
+    } yield {
+      new FilePersist(swayMap.asyncAPI[IO], lock)
+    }
   }
 
   override def run(args: List[String]): IO[ExitCode] = {
@@ -105,7 +132,8 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
       networkConfs,
       counter,
       dsl.io,
-      ioDB
+      logDB,
+      persistDB
     ).start
       .compile[IO, IO, ExitCode]
       .drain
