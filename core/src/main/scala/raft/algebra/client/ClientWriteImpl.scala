@@ -12,7 +12,7 @@ import raft.model._
 class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
   allState: RaftNodeState[F, Cmd],
   broadcast: BroadcastAppend[F],
-  getCommittedStream: () => F[Stream[F, Cmd]],
+  getCommittedStream: () => Resource[F, Stream[F, Cmd]],
   rpcScheduler: RPCTaskScheduler[F],
   eventLogger: EventLogger[F, Cmd, _]
 ) extends ClientWrite[F, Cmd] {
@@ -33,14 +33,15 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
                       }
                 } yield ()
 
-                for {
-                  stream <- getCommittedStream()
-                  _      <- dispatchReq
-                  _ <- stream
-                        .find(_ === cmd)
-                        .compile
-                        .lastOrError
-                } yield CommandCommitted: WriteResponse
+                getCommittedStream().use { stream =>
+                  for {
+                    _ <- dispatchReq
+                    _ <- stream
+                          .find(_ === cmd)
+                          .compile
+                          .lastOrError
+                  } yield CommandCommitted: WriteResponse
+                }
 
               case _: Candidate => Monad[F].pure[WriteResponse](NoLeader)
               case f: Follower =>
