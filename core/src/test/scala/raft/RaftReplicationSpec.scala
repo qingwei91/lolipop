@@ -41,7 +41,7 @@ class RaftReplicationSpec extends Specification {
       val deps = new RaftTestDeps[IO]()
       import deps._
 
-      val check_logs_replicated = assertWithServers(tasksIO) { raftComponents =>
+      val check_logs_replicated = managedProcesses(tasksIO).use { raftComponents =>
         val statesOfAllNode = raftComponents.map(_.state)
         val clients = raftComponents.map { components =>
           components.state.config.nodeId -> components.api
@@ -54,7 +54,7 @@ class RaftReplicationSpec extends Specification {
         }
         val readReq = TestClient.readFromLeader(clients.toSortedMap)("0")
 
-        for {
+        val assertions = for {
           _        <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention
           writeRes <- writeRequests.timeout(timeToReplication * 2)
           readRes  <- readReq
@@ -88,7 +88,22 @@ class RaftReplicationSpec extends Specification {
             )
             .reduce
         }
+
+        val rand = Random.nextInt(10000)
+        val flushLogsToFile = raftComponents.traverse { comp =>
+          val nodeId = comp.eventLogger.nodeId
+          comp.flushLogTo(new File(s"reptest-$rand-$nodeId.log"))
+        }
+
+        assertions
+          .timeout(timeToReplication * 5)
+          .onError { case _: Throwable => flushLogsToFile.void }
+          .flatMap {
+            case ok if ok.isSuccess => ok.pure[IO]
+            case nok => flushLogsToFile.as(nok)
+          }
       }
+
       check_logs_replicated
     }
 
@@ -114,7 +129,7 @@ class RaftReplicationSpec extends Specification {
     val deps = new RaftTestDeps[IO](shouldFail = splitbrain)
     import deps._
 
-    val checkLogCommitted = assertWithServers(tasksIO) { testData =>
+    val checkLogCommitted = managedProcesses(tasksIO).use { testData =>
       val statesOfAllNode = testData.map(_.state)
       val clients = testData.map { components =>
         components.state.config.nodeId -> components.api
@@ -161,7 +176,7 @@ class RaftReplicationSpec extends Specification {
     val deps = new RaftTestDeps[IO](shouldFail = moreThanHalfDown)
     import deps._
 
-    val checkLogCommitted = assertWithServers(tasksIO) { testData =>
+    val checkLogCommitted = managedProcesses(tasksIO).use { testData =>
       val statesOfAllNode = testData.map(_.state)
       val clients = testData.map { components =>
         components.state.config.nodeId -> components.api
@@ -203,39 +218,23 @@ class RaftReplicationSpec extends Specification {
   }
 }
 
+@SuppressWarnings(Array("org.wartremover.warts.All"))
 object RaftReplicationSpec {
   val timeToReplication = 3.seconds
 
-  @SuppressWarnings(Array("org.wartremover.warts.All"))
-  def assertWithServers[A](
-    allRaftProcesses: IO[NonEmptyList[RaftTestComponents[IO]]]
-  )(
-    fn: NonEmptyList[RaftTestComponents[IO]] => IO[MatchResult[A]],
-    name: String = "test"
-  )(implicit CS: ContextShift[IO], TM: Timer[IO]): IO[MatchResult[A]] = {
-    allRaftProcesses.flatMap { ts =>
-      ts.parTraverse { components =>
-          val startedPoller = components.proc.startRaft.compile.drain.start
-          startedPoller.map(components -> _)
+  def managedProcesses[F[_]: Concurrent](
+    allRaftProcesses: F[NonEmptyList[RaftTestComponents[F]]]
+  ): Resource[F, NonEmptyList[RaftTestComponents[F]]] = {
+    Resource
+      .make(allRaftProcesses.flatMap { components =>
+        components.traverse { component =>
+          val startedPoller = Concurrent[F].start(component.proc.startRaft.compile.drain)
+          startedPoller.map(component -> _)
         }
-        .bracket { all =>
-          val components = all.map(_._1)
-          val assertion  = fn(components)
-          val rand       = Random.nextInt(10000)
-          val flushLogsToFile = components.traverse { comp =>
-            val nodeId = comp.eventLogger.nodeId
-            comp.flushLogTo(new File(s"$name-$rand-$nodeId.log"))
-          }
-
-          assertion
-            .timeout(timeToReplication * 5)
-            .onError { case _: Throwable => flushLogsToFile.void }
-            .flatMap {
-              case ok if ok.isSuccess => ok.pure[IO]
-              case nok => flushLogsToFile.as(nok)
-            }
-        }(_.parTraverse_(_._2.cancel))
-    }
+      }) { all =>
+        all.traverse_(_._2.cancel)
+      }
+      .map(_.map(_._1))
   }
 
 }

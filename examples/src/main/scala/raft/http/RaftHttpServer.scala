@@ -1,5 +1,7 @@
 package raft.http
 
+import java.io.{ BufferedWriter, FileWriter, PrintWriter }
+
 import cats._
 import cats.effect._
 import cats.implicits._
@@ -14,8 +16,8 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
-import raft.algebra.event.EventLogger
 import raft.algebra.io.LogIO
+import raft.debug.JsonEventLogger
 import raft.model._
 import raft.{ RaftApi, RaftProcess }
 
@@ -69,24 +71,38 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
     val config = ClusterConfig(nodeID, networkMapping.keySet - nodeID)
 
-    val raftProcess: Stream[F, RaftProcess[F, Cmd, State]] = for {
-      client <- BlazeClientBuilder.apply[F](global).stream
-      network = new HttpNetwork[F, Cmd](networkMapping, client)
-      stateM    <- Stream.eval(stateMachineF)
-      logIO     <- Stream.eval(logIOF)
-      persistIO <- Stream.eval(persistIOF)
-      eventLogger: EventLogger[F, Cmd, State] = ???
-      proc <- Stream.eval(
-               RaftProcess.init(
-                 stateM,
-                 config,
-                 logIO,
-                 network,
-                 eventLogger,
-                 persistIO
+    val fileResource = Stream.bracket(
+      Defer[F].defer(
+        new PrintWriter(
+          new BufferedWriter(
+            new FileWriter("hardcoded.json", true)
+          )
+        ).pure[F]
+      )
+    )(writer => Applicative[F].pure(writer.close()))
+
+    val raftProcess: Stream[F, RaftProcess[F, Cmd, State]] =
+      for {
+        client <- BlazeClientBuilder.apply[F](global).stream
+        network = new HttpNetwork[F, Cmd](networkMapping, client)
+        stateM    <- Stream.eval(stateMachineF)
+        logIO     <- Stream.eval(logIOF)
+        persistIO <- Stream.eval(persistIOF)
+        printer   <- fileResource
+        eventLogger = new JsonEventLogger[F, Cmd, State](
+          s => Defer[F].defer(Applicative[F].pure(printer.println(s)))
+        )
+        proc <- Stream.eval(
+                 RaftProcess.init(
+                   stateM,
+                   config,
+                   logIO,
+                   network,
+                   eventLogger,
+                   persistIO
+                 )
                )
-             )
-    } yield proc
+      } yield proc
 
     new RaftHttpServer[F] {
       @SuppressWarnings(Array("org.wartremover.warts.Any"))
