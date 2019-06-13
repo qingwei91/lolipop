@@ -1,24 +1,25 @@
-package raft.http
+package raft
+package persistent
 
-import cats.effect.IO
+import cats.Monad
 import cats.effect.concurrent.MVar
 import raft.model.{ Persistent, PersistentIO }
 
-class FilePersist(db: swaydb.Map[Int, Persistent, IO], lock: MVar[IO, Unit]) extends PersistentIO[IO] {
+class SwayDBPersist[F[_]: Monad](db: swaydb.Map[Int, Persistent, F], lock: MVar[F, Unit]) extends PersistentIO[F] {
   val singleKey = 1
 
   @SuppressWarnings(Array("org.wartremover.warts.OptionPartial"))
-  override def get: IO[Persistent] = db.get(singleKey).map(_.get)
+  override def get: F[Persistent] = db.get(singleKey).map(_.get)
 
   /**
-    * The implementation of this method must persist
+    * The implementatFn of this method must persist
     * the `Persistent` atomically
     *
-    * possible implementation:
+    * possible implementatFn:
     *   - JVM FileLock
     *   - embedded database
     */
-  override def update(f: Persistent => Persistent): IO[Unit] =
+  override def update(f: Persistent => Persistent): F[Unit] =
     for {
       _   <- lock.take
       old <- get

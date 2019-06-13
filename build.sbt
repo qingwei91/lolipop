@@ -15,20 +15,30 @@ lazy val lolipop = project
     micrositeUrl := "https://qingwei91.github.io"
   )
   .enablePlugins(MicrositesPlugin)
-  .dependsOn(core, httpExample)
-  .aggregate(core, httpExample)
+  .dependsOn(core, swaydbPersisent, examples)
+  .aggregate(core, swaydbPersisent, examples)
 
 lazy val core = project
   .in(file("core"))
-  .settings(commmon)
+  .settings(common)
   .settings(
     libraryDependencies ++= coreDeps
   )
 
-lazy val httpExample = project
-  .in(file("http-example"))
+lazy val swaydbPersisent = project
+  .in(file("swaydb-persistent"))
   .dependsOn(core)
-  .settings(commmon)
+  .settings(common)
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.swaydb" %% "swaydb" % "0.8-beta.7"
+    )
+  )
+
+lazy val examples = project
+  .in(file("examples"))
+  .dependsOn(core, swaydbPersisent)
+  .settings(common)
   .settings(
     libraryDependencies ++= Seq(
       "org.http4s"            %% "http4s-dsl"          % http4sVersion,
@@ -36,6 +46,7 @@ lazy val httpExample = project
       "org.http4s"            %% "http4s-blaze-client" % http4sVersion,
       "org.http4s"            %% "http4s-circe"        % http4sVersion,
       "io.circe"              %% "circe-core"          % circeVersion,
+      "io.circe"              %% "circe-literal"       % circeVersion,
       "io.circe"              %% "circe-generic"       % circeVersion,
       "io.circe"              %% "circe-parser"        % circeVersion,
       "com.github.pureconfig" %% "pureconfig"          % "0.10.2",
@@ -45,7 +56,7 @@ lazy val httpExample = project
 
 lazy val http4sVersion = "0.20.0-M5"
 lazy val circeVersion  = "0.11.1"
-lazy val commmon = Def.settings(
+lazy val common = Def.settings(
   version := "1.0",
   scalaVersion := "2.12.8",
   scalacOptions ++= Seq(

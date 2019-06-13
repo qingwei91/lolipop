@@ -2,19 +2,20 @@ package raft.http
 
 import java.nio.file.Paths
 
-import cats.effect.concurrent.{ MVar, Ref }
-import cats.effect.{ ExitCode, IO, IOApp }
+import cats.effect.concurrent.{MVar, Ref}
+import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
-import cats.{ Eq, ~> }
+import cats.{Eq, ~>}
 import io.circe.generic.auto._
 import org.http4s.circe._
-import org.http4s.{ Uri, dsl }
+import org.http4s.{Uri, dsl}
 import pureconfig.ConfigReader
 import pureconfig.generic.auto._
 import raft.algebra._
-import raft.model.{ Persistent, RaftLog }
+import raft.model.{Persistent, RaftLog}
+import raft.persistent.{SwayDBLogIO, SwayDBPersist}
 import swaydb.data
-import swaydb.data.io.{ FutureTransformer, Wrap }
+import swaydb.data.io.{FutureTransformer, Wrap}
 import swaydb.data.slice.Slice
 import swaydb.serializers.Default._
 import swaydb.serializers.Serializer
@@ -107,7 +108,7 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
     val dbPath = Paths.get("raft-sample-log")
     val db     = swaydb.persistent.Map[Int, RaftLog[ChangeCount]](dbPath)
     nt(db).map { inner =>
-      new FileLogIO(inner.asyncAPI[IO])
+      new SwayDBLogIO(inner.asyncAPI[IO])
     }
   }
 
@@ -120,7 +121,7 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
       _       <- swayMap.put(1, Persistent.init)
       lock    <- MVar[IO].of(())
     } yield {
-      new FilePersist(swayMap.asyncAPI[IO], lock)
+      new SwayDBPersist(swayMap.asyncAPI[IO], lock)
     }
   }
 

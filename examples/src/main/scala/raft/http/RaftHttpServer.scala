@@ -14,7 +14,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
-import raft.algebra.event.Slf4jEventLogger
+import raft.algebra.event.EventLogger
 import raft.algebra.io.LogIO
 import raft.model._
 import raft.{ RaftApi, RaftProcess }
@@ -75,7 +75,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
       stateM    <- Stream.eval(stateMachineF)
       logIO     <- Stream.eval(logIOF)
       persistIO <- Stream.eval(persistIOF)
-      eventLogger = new Slf4jEventLogger[F, Cmd, State](nodeID)
+      eventLogger: EventLogger[F, Cmd, State] = ???
       proc <- Stream.eval(
                RaftProcess.init(
                  stateM,

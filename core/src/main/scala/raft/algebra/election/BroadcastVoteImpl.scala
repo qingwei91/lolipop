@@ -38,12 +38,10 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
   }
 
   private def sendReq(targetPeer: String, request: VoteRequest): F[Unit] = {
-    (for {
+    for {
       res <- networkManager.sendVoteRequest(targetPeer, request)
       _   <- processVote(targetPeer, res, request)
-    } yield ()).recoverWith {
-      case _ => eventLogger.candidateVoteRejected(request, targetPeer)
-    }
+    } yield ()
 
   }
 
@@ -57,11 +55,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
                            nState -> Some(nState)
                          case other => other -> None
                        }
-      _ <- if (res.voteGranted) {
-            eventLogger.candidateReceivedVote(req, targetPeer)
-          } else {
-            F.unit
-          }
+      _          <- eventLogger.voteRPCEnded(req, targetPeer, res)
       persistent <- allState.persistent.get
       lastLog    <- allState.logs.lastLog
 

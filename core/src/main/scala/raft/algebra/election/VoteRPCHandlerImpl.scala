@@ -32,12 +32,13 @@ class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
         hasVote      = (sameTerm && voteAvailable(pState.votedFor, req.candidateID)) || higherTerm
         canGrantVote = hasVote && candidateUpToDate(req, lastLog)
 
-        res <- if (canGrantVote) {
-                eventLogger.grantedVote(req).as(VoteResponse(currentTerm, voteGranted = true))
-              } else {
-                VoteResponse(currentTerm, voteGranted = false).pure[F]
-              }
+        res = if (canGrantVote) {
+          VoteResponse(currentTerm, voteGranted = true)
+        } else {
+          VoteResponse(currentTerm, voteGranted = false)
+        }
 
+        _ <- eventLogger.voteRPCReplied(req, res)
         _ <- if (res.voteGranted) {
               for {
                 _ <- allState.persistent.update(x => x.copy(currentTerm = req.term, votedFor = Some(req.candidateID)))

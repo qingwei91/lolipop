@@ -87,18 +87,16 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
 
     checkPrevLogsConsistency(req).flatMap { isConsistent =>
       val prevLogMisMatch = !isConsistent
-      true match {
-        case `leaderOutdated` =>
-          elogger.rejectedLog(req, allState).as(rejectAppend(currentTerm))
-
-        case `prevLogMisMatch` =>
-          elogger.rejectedLog(req, allState).as(rejectAppend(currentTerm))
+      val res = true match {
+        case `leaderOutdated` => rejectAppend(currentTerm).pure[F]
+        case `prevLogMisMatch` => rejectAppend(currentTerm).pure[F]
 
         case _ =>
           allState.logs.overwrite(req.entries) *>
-            commitAndExecCmd(req.leaderCommit, follower) *>
-            elogger.acceptedLog(req, allState).as(acceptAppend(currentTerm))
+            commitAndExecCmd(req.leaderCommit, follower)
+              .as(acceptAppend(currentTerm))
       }
+      res.flatTap(r => elogger.appendRPCReplied(req, r))
     }
   }
 

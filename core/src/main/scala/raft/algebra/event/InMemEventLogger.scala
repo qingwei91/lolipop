@@ -4,8 +4,8 @@ package algebra.event
 import java.time.LocalTime
 
 import cats.effect.concurrent.Ref
-import cats.{Applicative, Show}
-import raft.model.{AppendRequest, RaftNodeState, ReadResponse, VoteRequest, WriteResponse}
+import cats.{ Applicative, Show }
+import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))
 class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: String, val logs: Ref[F, StringBuffer])
@@ -22,42 +22,32 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
     add(s"Reply $res to client for $req")
   }
 
-  override def receivedClientRead: F[Unit] = add(s"Client tries to read state")
+  override def receivedClientRead: F[Unit]                        = add(s"Client tries to read state")
   override def replyClientRead(res: ReadResponse[State]): F[Unit] = add(s"Return $res to client for read")
 
   override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
     add(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")
 
-  override def candidateReceivedVote(voteRequest: VoteRequest, peerId: String): F[Unit] =
+  def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit] =
+    add(s"Candidate start vote rpc to $receiverId with ${voteRequest.show}")
+
+  override def voteRPCEnded(voteRequest: VoteRequest, peerId: String, response: VoteResponse): F[Unit] =
     add(s"Candidate received vote for ${voteRequest.show} from $peerId")
 
-  override def candidateVoteRejected(voteRequest: VoteRequest, peerId: String): F[Unit] =
-    add(s"Candidate vote rejected for ${voteRequest.show} from $peerId")
-
-  override def grantedVote(voteRequest: VoteRequest): F[Unit] = add(s"Grant vote for ${voteRequest.show}")
-
-  override def rejectedVote(voteRequest: VoteRequest): F[Unit] = add(s"Reject vote for ${voteRequest.show}")
+  override def voteRPCReplied(voteRequest: VoteRequest, response: VoteResponse): F[Unit] =
+    add(s"Reply vote for ${voteRequest.show} with ${response.show}")
 
   override def elected(term: Int, lastLog: Option[Int]): F[Unit] =
     add(s"Elected as leader of $term, lastLog=${lastLog.orNull}")
 
-  override def replicationStarted(term: Int): F[Unit] = add(s"Start replication, term=$term")
-
-  override def leaderAppendSucceeded(appendRequest: AppendRequest[Cmd], followerId: String): F[Unit] =
-    add(s"Appended ${appendRequest.show} to $followerId")
-
-  override def leaderAppendRejected(appendRequest: AppendRequest[Cmd], followerId: String): F[Unit] =
-    add(s"Fail to append ${appendRequest.show} to $followerId")
-
-  override def acceptedLog(appendRequest: AppendRequest[Cmd], state: RaftNodeState[F, Cmd]): F[Unit] =
-    add(s"Accepted log from ${appendRequest.show}")
-
-  override def rejectedLog(appendRequest: AppendRequest[Cmd], state: RaftNodeState[F, Cmd]): F[Unit] =
-    add(s"Rejected log from ${appendRequest.show}")
+  override def appendRPCStarted(request: AppendRequest[Cmd], receiverId: String): F[Unit] =
+    add(s"Leader start append rpc to $receiverId with ${request.show}")
+  override def appendRPCReplied(request: AppendRequest[Cmd], response: AppendResponse): F[Unit] =
+    add(s"Reply append rpc to ${request.show} with ${response.show}")
+  override def appendRPCEnded(request: AppendRequest[Cmd], response: AppendResponse): F[Unit] =
+    add(s"Leader received append rpc response ${response.show} for ${request.show}")
 
   override def logCommitted(idx: Int, cmd: Cmd): F[Unit] = add(s"Committed idx=$idx, cmd=$cmd")
-
-  override def stateUpdated(state: State): F[Unit] = add(s"State updated to ${state.show}")
 
   override def errorLogs(message: String): F[Unit] = add(message)
 }

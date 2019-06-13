@@ -51,34 +51,34 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
       }
     }
 
-    def handleResponse(res: AppendResponse, leader: Leader, req: AppendRequest[Cmd]): F[Unit] = res match {
-      case AppendResponse(_, true) =>
-        val updatedSt = req.entries.lastOption match {
-          case Some(lastAppended) =>
-            val updated = updateLeaderState(peerId, lastAppended)(leader)
+    def handleResponse(res: AppendResponse, leader: Leader, req: AppendRequest[Cmd]): F[Unit] = {
+      res match {
+        case AppendResponse(_, true) =>
+          val updatedSt = req.entries.lastOption match {
+            case Some(lastAppended) =>
+              val updated = updateLeaderState(peerId, lastAppended)(leader)
 
-            eLogger.leaderAppendSucceeded(req, peerId) *>
-            allState.serverTpe.set(updated).as(updated)
+              allState.serverTpe.set(updated).as(updated)
 
-          case None => leader.pure[F]
-        }
+            case None => leader.pure[F]
+          }
 
-        for {
-          updated <- updatedSt
-          _       <- findIdxToCommit(updated)
-        } yield ()
+          for {
+            updated <- updatedSt
+            _       <- findIdxToCommit(updated)
+          } yield ()
 
-      case AppendResponse(nodeTerm, false) =>
-        for {
-          persistent <- allState.persistent.get
-          currentT = persistent.currentTerm
-          r <- if (currentT < nodeTerm) {
-                convertToFollow(nodeTerm)
-              } else {
-                eLogger.leaderAppendRejected(req, peerId) *>
-                appendFailed(peerId, leader)
-              }
-        } yield r
+        case AppendResponse(nodeTerm, false) =>
+          for {
+            persistent <- allState.persistent.get
+            currentT = persistent.currentTerm
+            r <- if (currentT < nodeTerm) {
+                  convertToFollow(nodeTerm)
+                } else {
+                  appendFailed(peerId, leader)
+                }
+          } yield r
+      }
     }
 
     for {
@@ -92,7 +92,9 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
                       for {
                         state <- allState.serverTpe.get
                         result <- state match {
-                                   case l: Leader => handleResponse(res, l, req)
+                                   case l: Leader =>
+                                     eLogger.appendRPCEnded(req, res) *>
+                                       handleResponse(res, l, req)
                                    case _ => F.unit
                                  }
                       } yield result
