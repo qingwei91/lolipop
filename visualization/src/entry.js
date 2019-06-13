@@ -7,87 +7,35 @@
  * 
  */
 
-import * as THREE from 'three';
+import * as PIXI from 'pixi.js';
 
-const canvas = document.querySelector('#c');
-const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvas});
 
-const fov = 75;
-const aspect = 2;  // the canvas default
-const near = 0.1;
-const far = 5;
-const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+const app = new PIXI.Application({width: 512, height: 512});
 
-camera.position.z = 2;
+document.body.appendChild(app.view);
+const loader = PIXI.Loader.shared;
 
-const scene = new THREE.Scene();
+const catImgPath = "img/cat.jpg";
 
-const boxWidth = 1;
-const boxHeight = 1;
-const boxDepth = 1;
-const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+loader
+  .add(catImgPath)
+  .load(setup);
 
-const material = new THREE.MeshPhongMaterial({color: 0x44aa88});
+function setup() {
 
-const cube = new THREE.Mesh(geometry, material);
+  //Create the cat sprite
+  const cat = new PIXI.Sprite(loader.resources[catImgPath].texture);
+  cat.x = 128;
+  cat.y = 128;
+  //Add the cat to the stage
+  app.ticker.add(delta => gameLoop(delta));
+  app.stage.addChild(cat);
+  function gameLoop(delta){
 
-scene.add(cube);
-
-const color = 0xFFFFFF;
-const intensity = 1;
-const light = new THREE.DirectionalLight(color, intensity);
-light.position.set(-1, 2, 4);
-
-scene.add(light)
-
-// camera
-// camera.position.set(6,3,-10);
-// camera.lookAt(new Vector3(0,0,0));
-
-// renderer
-// renderer.setPixelRatio(window.devicePixelRatio);
-// renderer.setClearColor(0x7ec0ee, 1);
-
-// render loop
-const onAnimationFrameHandler = (time) => {
-  time *= 0.001;  // convert time to seconds
-  cube.rotation.x = time;
-  cube.rotation.y = time;
-
-  if (resizeRendererToDisplaySize(renderer)) {
-    const canvas = renderer.domElement;
-    camera.aspect = canvas.clientWidth / canvas.clientHeight;
-    camera.updateProjectionMatrix();
+    //Move the cat 1 pixel
+    cat.x += 1;
   }
-  renderer.render(scene, camera);
-  window.requestAnimationFrame(onAnimationFrameHandler);
-}
-
-function resizeRendererToDisplaySize(renderer) {
-  const canvas = renderer.domElement;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  const needResize = canvas.width !== width || canvas.height !== height;
-  if (needResize) {
-    renderer.setSize(width, height, false);
-  }
-  return needResize;
 }
 
 
-window.requestAnimationFrame(onAnimationFrameHandler);
-
-// resize
-// const windowResizeHanlder = () => {
-//   const { innerHeight, innerWidth } = window;
-//   renderer.setSize(innerWidth, innerHeight);
-//   camera.aspect = innerWidth / innerHeight;
-//   camera.updateProjectionMatrix();
-// };
-// windowResizeHanlder();
-// window.addEventListener('resize', windowResizeHanlder);
-
-// dom
-// document.body.style.margin = 0;
-// document.body.appendChild( renderer.domElement );
 
