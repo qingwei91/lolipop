@@ -1,5 +1,0 @@
-package raft
-
-class Testbed {
-
-}

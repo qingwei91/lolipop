@@ -9,8 +9,6 @@ trait EventLogger[F[_], Cmd, State] {
   def receivedClientRead: F[Unit]
   def replyClientRead(res: ReadResponse[State]): F[Unit]
 
-  def electionStarted(term: Int, lastLogIdx: Int): F[Unit]
-
   def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit]
   def voteRPCReplied(voteRequest: VoteRequest, response: VoteResponse): F[Unit]
   def voteRPCEnded(voteRequest: VoteRequest, receiverId: String, response: VoteResponse): F[Unit]

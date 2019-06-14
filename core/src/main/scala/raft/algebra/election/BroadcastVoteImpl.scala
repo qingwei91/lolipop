@@ -32,7 +32,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
       voteReq = VoteRequest(persistent.currentTerm, nodeId, last.map(_.idx), last.map(_.term))
     } yield {
       allState.config.peersId.map { target =>
-        target -> sendReq(target, voteReq)
+        target -> eventLogger.voteRPCStarted(voteReq, target) *> sendReq(target, voteReq)
       }.toMap
     }
   }

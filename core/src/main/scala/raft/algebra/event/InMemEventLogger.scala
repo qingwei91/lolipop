@@ -25,9 +25,6 @@ class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: St
   override def receivedClientRead: F[Unit]                        = add(s"Client tries to read state")
   override def replyClientRead(res: ReadResponse[State]): F[Unit] = add(s"Return $res to client for read")
 
-  override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] =
-    add(s"Starting election for term=$term, lastLogIdx=$lastLogIdx")
-
   def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit] =
     add(s"Candidate start vote rpc to $receiverId with ${voteRequest.show}")
 

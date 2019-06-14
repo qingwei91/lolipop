@@ -87,6 +87,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
             case l: Leader =>
               for {
                 req <- prepReq(l)
+                _   <- eLogger.appendRPCStarted(req, peerId)
                 res <- networkManager.sendAppendRequest(peerId, req)
                 r <- allState.serverTpeMutex {
                       for {

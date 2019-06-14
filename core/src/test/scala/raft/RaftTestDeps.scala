@@ -2,18 +2,21 @@ package raft
 
 import cats.data._
 import cats.effect.concurrent.{ MVar, Ref }
-import cats.effect.{ Concurrent, ContextShift, Timer }
+import cats.effect._
 import fs2.concurrent.{ Queue, Topic }
 import raft.algebra.append._
 import raft.algebra.election._
-import raft.algebra.event.InMemEventLogger
+import raft.algebra.event.{ EventLogger, InMemEventLogger }
 import raft.model._
 import raft.setup._
 
 import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
-class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => false)(
+class RaftTestDeps[F[_]](
+  logger: String => EventLogger[F, String, String],
+  shouldFail: (String, String) => Boolean = (_, _) => false,
+)(
   implicit cs: ContextShift[F],
   tm: Timer[F],
   con: Concurrent[F]
@@ -34,7 +37,6 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
         servTpe         <- Ref.of[F, ServerType](tpe)
         lock            <- MVar[F].of(())
         baseLog         <- Ref.of[F, Seq[RaftLog[String]]](Seq.empty)
-        logAcc          <- Ref[F].of(new StringBuffer(10000))
         testState       <- Ref[F].of("")
       } yield {
         val clusterConf  = ClusterConfig(i, clientIds - i)
@@ -47,7 +49,7 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
           new TestLogsIO(baseLog)
         )
 
-        val eventLogger = new InMemEventLogger[F, String, String](i, logAcc)
+        val eventLogger = logger(i)
         val allState    = AllState(stateMachine, state, committedStream, clientReqQueue)
         val append = new AppendRPCHandlerImpl(
           stateMachine,
@@ -83,4 +85,25 @@ class RaftTestDeps[F[_]](shouldFail: (String, String) => Boolean = (_, _) => fal
           }
       }
     }
+}
+
+object RaftTestDeps {
+  def apply[F[_]](
+    implicit cs: ContextShift[F],
+    tm: Timer[F],
+    con: Concurrent[F]
+  ): RaftTestDeps[F] = {
+    val buffer = Ref.unsafe[F, StringBuffer](new StringBuffer(10000))
+    new RaftTestDeps[F](logger = i => new InMemEventLogger[F, String, String](i, buffer))
+  }
+
+  def apply[F[_]](shouldFail: (String, String) => Boolean)(
+    implicit cs: ContextShift[F],
+    tm: Timer[F],
+    con: Concurrent[F]
+  ): RaftTestDeps[F] = {
+    val buffer = Ref.unsafe[F, StringBuffer](new StringBuffer(10000))
+    new RaftTestDeps[F](i => new InMemEventLogger[F, String, String](i, buffer), shouldFail)
+  }
+
 }

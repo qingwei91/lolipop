@@ -1,6 +1,6 @@
 package raft
 
-import java.io.File
+import java.io.{ File, PrintWriter }
 import java.util.concurrent.Executors
 
 import cats.Semigroup
@@ -11,6 +11,7 @@ import org.specs2.execute.Result
 import org.specs2.matcher.MatchResult
 import org.specs2.specification.core.SpecStructure
 import raft.RaftReplicationSpec._
+import raft.algebra.event.InMemEventLogger
 import raft.model._
 import raft.setup._
 
@@ -31,14 +32,18 @@ class RaftReplicationSpec extends Specification {
           - not replicate if more than half failed - $dontReplicateIfLessThanHalf
       """
 
-  def eventuallyReplicated(n: Int = 1): Result = {
+  def eventuallyReplicated(reqCount: Int = 1): Result = {
     val executor                        = Executors.newFixedThreadPool(4)
     val ecToUse                         = ExecutionContext.fromExecutor(executor)
     implicit val ioCS: ContextShift[IO] = IO.contextShift(ecToUse)
     implicit val ioTM: Timer[IO]        = IO.timer(ecToUse)
 
-    val allResults = NonEmptyList.of(0, (1 to 20).toList).parTraverse { _ =>
-      val deps = new RaftTestDeps[IO]()
+    val N       = 20
+    val listOfN = NonEmptyList.of(0, (1 to N): _*)
+
+    val allResults = listOfN.parTraverse { _ =>
+      val deps = RaftTestDeps[IO]
+
       import deps._
 
       val check_logs_replicated = managedProcesses(tasksIO).use { raftComponents =>
@@ -47,7 +52,7 @@ class RaftReplicationSpec extends Specification {
           components.state.config.nodeId -> components.api
         }.toNem
 
-        val commands = NonEmptyList.fromListUnsafe((0 to n).map(i => s"Cmd$i").toList)
+        val commands = NonEmptyList.fromListUnsafe((0 to reqCount).map(i => s"Cmd$i").toList)
 
         val writeRequests = commands.parTraverse { cmd =>
           TestClient.writeToLeader(clients.toSortedMap)("0", cmd)
@@ -67,11 +72,11 @@ class RaftReplicationSpec extends Specification {
                           }
         } yield {
           val logReplicated = allLogs.collect {
-            case Some(a) if a.idx == n + 1 =>
+            case Some(a) if a.idx == reqCount + 1 =>
               a
           }.size must be_>=(3)
 
-          val logCommittedBySome = commitIndices.collectFirst { case Some(x) => x } must beSome(n + 1)
+          val logCommittedBySome = commitIndices.collectFirst { case Some(x) => x } must beSome(reqCount + 1)
 
           val elected = writeRes.map(_ must_!== NoLeader).reduce
 
@@ -89,11 +94,7 @@ class RaftReplicationSpec extends Specification {
             .reduce
         }
 
-        val rand = Random.nextInt(10000)
-        val flushLogsToFile = raftComponents.traverse { comp =>
-          val nodeId = comp.eventLogger.nodeId
-          comp.flushLogTo(new File(s"reptest-$rand-$nodeId.log"))
-        }
+        val flushLogsToFile = printLogsToFile(raftComponents)
 
         assertions
           .timeout(timeToReplication * 5)
@@ -126,7 +127,7 @@ class RaftReplicationSpec extends Specification {
     implicit val ioCS: ContextShift[IO] = IO.contextShift(ecToUse)
     implicit val ioTM: Timer[IO]        = IO.timer(ecToUse)
 
-    val deps = new RaftTestDeps[IO](shouldFail = splitbrain)
+    val deps = RaftTestDeps[IO](splitbrain)
     import deps._
 
     val checkLogCommitted = managedProcesses(tasksIO).use { testData =>
@@ -173,7 +174,7 @@ class RaftReplicationSpec extends Specification {
       Set(from.toInt, to.toInt) != Set(1, 2)
     }
 
-    val deps = new RaftTestDeps[IO](shouldFail = moreThanHalfDown)
+    val deps = RaftTestDeps[IO](moreThanHalfDown)
     import deps._
 
     val checkLogCommitted = managedProcesses(tasksIO).use { testData =>
@@ -211,6 +212,22 @@ class RaftReplicationSpec extends Specification {
 
   }
 
+  def printLogsToFile(raftComponents: NonEmptyList[RaftTestComponents[IO]]): IO[Unit] = {
+    val rand = Random.nextInt(10000)
+    raftComponents.traverse_ { comp =>
+      val nodeId = comp.state.config.nodeId
+      comp.eventLogger
+        .asInstanceOf[InMemEventLogger[IO, String, String]]
+        .logs
+        .get
+        .map { strBuf =>
+          val pw = new PrintWriter(new File(s"reptest-$rand-$nodeId.log"))
+          pw.println(strBuf.toString)
+          pw.close()
+        }
+    }
+  }
+
   implicit def resultSemigroup[A]: Semigroup[MatchResult[A]] = new Semigroup[MatchResult[A]] {
     override def combine(x: MatchResult[A], y: MatchResult[A]): MatchResult[A] = {
       x and y
@@ -222,6 +239,8 @@ class RaftReplicationSpec extends Specification {
 object RaftReplicationSpec {
   val timeToReplication = 3.seconds
 
+  // wrap in resource to always terminate the process after test
+  // to avoid memory leak
   def managedProcesses[F[_]: Concurrent](
     allRaftProcesses: F[NonEmptyList[RaftTestComponents[F]]]
   ): Resource[F, NonEmptyList[RaftTestComponents[F]]] = {

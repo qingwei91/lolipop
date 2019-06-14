@@ -37,7 +37,7 @@ lazy val swaydbPersisent = project
 
 lazy val examples = project
   .in(file("examples"))
-  .dependsOn(core, swaydbPersisent)
+  .dependsOn(core % "test->test;compile->compile", swaydbPersisent)
   .settings(common)
   .settings(
     libraryDependencies ++= Seq(

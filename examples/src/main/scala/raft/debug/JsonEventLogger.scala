@@ -8,12 +8,8 @@ import io.circe.syntax._
 import io.circe.generic.auto._
 import raft.model._
 
-class JsonEventLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](toFile: String => F[Unit])
+class JsonEventLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFile: Json => F[Unit])
     extends EventLogger[F, Cmd, State] {
-
-  def jsonToFile(json: Json): F[Unit] = {
-    toFile(json.noSpaces)
-  }
 
   override def receivedClientCmd(cmd: Cmd): F[Unit] = jsonToFile {
     Json.obj(
@@ -33,8 +29,6 @@ class JsonEventLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](toFile: S
   override def receivedClientRead: F[Unit] = Applicative[F].unit
 
   override def replyClientRead(res: ReadResponse[State]): F[Unit] = Applicative[F].unit
-
-  override def electionStarted(term: Int, lastLogIdx: Int): F[Unit] = Applicative[F].unit
 
   override def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit] = jsonToFile(
     Json.obj(
