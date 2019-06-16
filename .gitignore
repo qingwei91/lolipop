@@ -1,6 +1,5 @@
 *.class
 *.log
-*.json
 
 node_modules
 /build

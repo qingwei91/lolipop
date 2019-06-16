@@ -1,0 +1,7092 @@
+{
+  "4" : [
+    {
+      "tpe" : "VoteRPCReplied",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          },
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 7,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 7
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 11
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 15
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 19
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    }
+  ],
+  "1" : [
+    {
+      "tpe" : "VoteRPCReplied",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 8
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 12
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 16
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 20
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    }
+  ],
+  "0" : [
+    {
+      "tpe" : "VoteRPCStarted",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "remoteId" : "3"
+    },
+    {
+      "tpe" : "VoteRPCEnded",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "VoteRPCEnded",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "Elected",
+      "term" : 1,
+      "lastLog" : null
+    },
+    {
+      "tpe" : "VoteRPCEnded",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "VoteRPCEnded",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd0"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd2"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd3"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd4"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd6"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd7"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd8"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd10"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd11"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd13"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd14"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd16"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd17"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd19"
+    },
+    {
+      "tpe" : "ReceivedClientCmd",
+      "cmd" : "Cmd20"
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          },
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          }
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          },
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 7,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 0
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 1,
+      "cmd" : "Cmd0"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 2
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 2,
+      "cmd" : "Cmd2"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 3,
+      "cmd" : "Cmd1"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 7,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 4,
+      "cmd" : "Cmd3"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 2
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 5,
+      "cmd" : "Cmd4"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd3",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd0",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd4",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 5
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 5
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 5
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 6,
+      "cmd" : "Cmd6"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd6",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 7
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd5",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 8
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 8,
+      "cmd" : "Cmd7"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd7",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 8
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 9,
+      "cmd" : "Cmd8"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd8",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 7
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 10
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 10,
+      "cmd" : "Cmd9"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd9",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 8
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 11,
+      "cmd" : "Cmd10"
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 11
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 8
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd10",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 12,
+      "cmd" : "Cmd11"
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 12
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd11",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 13,
+      "cmd" : "Cmd13"
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 13
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 11
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd13",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 14
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 14,
+      "cmd" : "Cmd12"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd12",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 12
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 15,
+      "cmd" : "Cmd14"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 13
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 16
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 16,
+      "cmd" : "Cmd15"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 14
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd15",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 17,
+      "cmd" : "Cmd16"
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd16",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 15
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 17
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 18
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 18,
+      "cmd" : "Cmd18"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 16
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd18",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 19
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 17
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd19",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 20,
+      "cmd" : "Cmd17"
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 20
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 18
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "LogCommitted",
+      "idx" : 21,
+      "cmd" : "Cmd20"
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 19
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "3",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 20
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "ReplyClientWrite",
+      "req" : "Cmd20",
+      "res" : {
+        "CommandCommitted" : {
+          
+        }
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "2",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "4",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      }
+    },
+    {
+      "tpe" : "AppendRPCEnded",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCStarted",
+      "remoteId" : "1",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      }
+    }
+  ],
+  "2" : [
+    {
+      "tpe" : "VoteRPCReplied",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 2
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 8
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 13
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 17
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    }
+  ],
+  "3" : [
+    {
+      "tpe" : "VoteRPCReplied",
+      "req" : {
+        "term" : 1,
+        "candidateID" : "0",
+        "lastLogIdx" : null,
+        "lastLogTerm" : null
+      },
+      "res" : {
+        "term" : 0,
+        "voteGranted" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : null,
+        "prevLogTerm" : null,
+        "entries" : [
+          {
+            "idx" : 1,
+            "term" : 1,
+            "command" : "Cmd0"
+          },
+          {
+            "idx" : 2,
+            "term" : 1,
+            "command" : "Cmd2"
+          },
+          {
+            "idx" : 3,
+            "term" : 1,
+            "command" : "Cmd1"
+          },
+          {
+            "idx" : 4,
+            "term" : 1,
+            "command" : "Cmd3"
+          },
+          {
+            "idx" : 5,
+            "term" : 1,
+            "command" : "Cmd4"
+          },
+          {
+            "idx" : 6,
+            "term" : 1,
+            "command" : "Cmd6"
+          }
+        ],
+        "leaderCommit" : 0
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 6,
+        "prevLogTerm" : 1,
+        "entries" : [
+          {
+            "idx" : 7,
+            "term" : 1,
+            "command" : "Cmd5"
+          },
+          {
+            "idx" : 8,
+            "term" : 1,
+            "command" : "Cmd7"
+          },
+          {
+            "idx" : 9,
+            "term" : 1,
+            "command" : "Cmd8"
+          },
+          {
+            "idx" : 10,
+            "term" : 1,
+            "command" : "Cmd9"
+          },
+          {
+            "idx" : 11,
+            "term" : 1,
+            "command" : "Cmd10"
+          },
+          {
+            "idx" : 12,
+            "term" : 1,
+            "command" : "Cmd11"
+          },
+          {
+            "idx" : 13,
+            "term" : 1,
+            "command" : "Cmd13"
+          },
+          {
+            "idx" : 14,
+            "term" : 1,
+            "command" : "Cmd12"
+          },
+          {
+            "idx" : 15,
+            "term" : 1,
+            "command" : "Cmd14"
+          },
+          {
+            "idx" : 16,
+            "term" : 1,
+            "command" : "Cmd15"
+          },
+          {
+            "idx" : 17,
+            "term" : 1,
+            "command" : "Cmd16"
+          },
+          {
+            "idx" : 18,
+            "term" : 1,
+            "command" : "Cmd18"
+          },
+          {
+            "idx" : 19,
+            "term" : 1,
+            "command" : "Cmd19"
+          },
+          {
+            "idx" : 20,
+            "term" : 1,
+            "command" : "Cmd17"
+          },
+          {
+            "idx" : 21,
+            "term" : 1,
+            "command" : "Cmd20"
+          }
+        ],
+        "leaderCommit" : 5
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 10
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 14
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 18
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    },
+    {
+      "tpe" : "AppendRPCReplied",
+      "req" : {
+        "term" : 1,
+        "leaderId" : "0",
+        "prevLogIdx" : 21,
+        "prevLogTerm" : 1,
+        "entries" : [
+        ],
+        "leaderCommit" : 21
+      },
+      "res" : {
+        "term" : 1,
+        "success" : true
+      }
+    }
+  ]
+}
