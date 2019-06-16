@@ -9,11 +9,34 @@ const RectFillColor = 0xFF3300;
 const RectLineWidth = 4;
 const RectLineColor = 0x66CCFF;
 
+const VoteRPCStarted = 'VoteRPCStarted';
+const VoteRPCReplied = 'VoteRPCReplied';
+const VoteRPCEnded = 'VoteRPCEnded';
+const Elected = 'Elected';
+const AppendRPCStarted = 'AppendRPCStarted';
+const AppendRPCReplied = 'AppendRPCReplied';
+const AppendRPCEnded = 'AppendRPCEnded';
+const LogCommitted = 'LogCommitted';
+
+const colors = {
+    VoteRPCStarted: 0x3366ff,
+    VoteRPCReplied: 0x0000ff,
+    VoteRPCEnded: 0x000099,
+    AppendRPCStarted: 0xff0066,
+    AppendRPCReplied: 0xff5050,
+    AppendRPCEnded: 0xff0000,
+};
+
+const eventColor = event => {
+    const color = colors[event.tpe]
+    return color === undefined ? 0x00ff00 : color;
+};
+
 export const RaftEvent = withPixiApp(props => {
     return (
       <Container x={props.idx * RectWidth}>
         <Graphics draw={ g => {
-            g.beginFill(RectFillColor);
+            g.beginFill(eventColor(props.event));
             g.lineStyle(RectLineWidth, RectLineColor);
             g.drawShape(basicRect());
             g.endFill();
