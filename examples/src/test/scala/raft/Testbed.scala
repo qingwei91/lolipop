@@ -1,6 +1,6 @@
 package raft
 
-import java.io.{ File, FileWriter, PrintWriter }
+import java.io.{ BufferedWriter, File, FileWriter }
 import java.util.concurrent.Executors
 
 import cats.data.NonEmptyList
@@ -60,12 +60,21 @@ class Testbed extends Specification {
         _        <- writeRequests.timeout(timeToReplication * 2)
         jsonLogs <- jsonMapRef.get
       } yield {
-        jsonLogs.map {
-          case (id, logs) =>
-            new PrintWriter(new FileWriter(new File(s"events-$id.json"))).println(
-              Json.arr(logs: _*).spaces2
-            )
+        val allLogs = jsonLogs.foldLeft(Json.obj()) {
+          case (acc, (id, logs)) =>
+            acc.mapObject { obj =>
+              obj.add(id, Json.arr(logs: _*))
+            }
         }
+        val writer = new BufferedWriter(
+          new FileWriter(
+            new File(s"visualization/src/data/events.json"),
+            false
+          )
+        )
+        writer.write(allLogs.spaces2)
+        writer.flush()
+        writer.close()
         success
       }
 

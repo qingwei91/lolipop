@@ -9,33 +9,61 @@
 
 import * as PIXI from 'pixi.js';
 
+window.GOWN = {};
+window.GOWN.loader = PIXI.Loader.shared;
 
-const app = new PIXI.Application({width: 512, height: 512});
+import Slider from './shaded-gown/Slider';
+import ThemeParser from './shaded-gown/ThemeParser';
+
+import events from './data/events.json';
+import {drawEventsPerNode} from './raft-viz.js';
+
+const app = new PIXI.Application({
+  autoResize: true,
+  resolution: devicePixelRatio
+});
 
 document.body.appendChild(app.view);
 const loader = PIXI.Loader.shared;
 
-const catImgPath = "img/cat.jpg";
+const rects = events['0'];
 
-loader
-  .add(catImgPath)
-  .load(setup);
+loader.load(setup);
 
 function setup() {
+  const graphic = new PIXI.Graphics();
 
-  //Create the cat sprite
-  const cat = new PIXI.Sprite(loader.resources[catImgPath].texture);
-  cat.x = 128;
-  cat.y = 128;
-  //Add the cat to the stage
-  app.ticker.add(delta => gameLoop(delta));
-  app.stage.addChild(cat);
+  const metalTheme = new ThemeParser("aeon.json");
+
+  const slider = new Slider(metalTheme);
+  slider.x = 400;
+  slider.width = 300;
+
+
+  const eventContainer = drawEventsPerNode(rects, graphic.geometry);
+
+  // let rectangle = new PIXI.Graphics();
+  // rectangle.lineStyle(4, 0xFF3300, 1);
+  // rectangle.beginFill(0x66CCFF);
+  // rectangle.drawRect(0, 0, 64, 64);
+  // rectangle.endFill();
+  // rectangle.x = 170;
+  // rectangle.y = 170;
+  app.stage.addChild(eventContainer);
+  app.stage.addChild(slider);
+
+
+  // app.ticker.add(delta => gameLoop(delta));
   function gameLoop(delta){
 
-    //Move the cat 1 pixel
-    cat.x += 1;
   }
 }
 
+window.addEventListener('resize', resize);
 
+function resize() {
+  // Resize the renderer
+  app.renderer.resize(window.innerWidth, window.innerHeight);
+}
 
+resize();
