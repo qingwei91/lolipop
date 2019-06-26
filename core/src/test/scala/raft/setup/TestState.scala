@@ -1,7 +1,7 @@
 package raft.setup
 
 import cats.effect.concurrent.{ MVar, Ref }
-import raft.algebra.io.LogIO
+import raft.algebra.io.{ LogIO, PersistentIO }
 import raft.model._
 
 case class TestState[F[_]](

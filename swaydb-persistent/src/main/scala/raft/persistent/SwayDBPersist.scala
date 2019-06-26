@@ -3,7 +3,8 @@ package persistent
 
 import cats.Monad
 import cats.effect.concurrent.MVar
-import raft.model.{ Persistent, PersistentIO }
+import raft.algebra.io.PersistentIO
+import raft.model.Persistent
 
 class SwayDBPersist[F[_]: Monad](db: swaydb.Map[Int, Persistent, F], lock: MVar[F, Unit]) extends PersistentIO[F] {
   val singleKey = 1

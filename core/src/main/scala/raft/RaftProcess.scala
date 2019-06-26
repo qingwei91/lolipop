@@ -9,7 +9,7 @@ import raft.algebra.append._
 import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
 import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
-import raft.algebra.io.{ LogIO, NetworkIO }
+import raft.algebra.io.{ LogIO, NetworkIO, PersistentIO }
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 

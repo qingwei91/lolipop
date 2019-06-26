@@ -16,7 +16,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
-import raft.algebra.io.LogIO
+import raft.algebra.io.{ LogIO, PersistentIO }
 import raft.debug.JsonEventLogger
 import raft.model._
 import raft.{ RaftApi, RaftProcess }

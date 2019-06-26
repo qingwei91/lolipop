@@ -1,7 +1,8 @@
 package raft.setup
 
 import cats.effect.concurrent.Ref
-import raft.model.{ Persistent, PersistentIO }
+import raft.algebra.io.PersistentIO
+import raft.model.Persistent
 
 class TestPersistent[F[_]](ref: Ref[F, Persistent]) extends PersistentIO[F] {
   override def get: F[Persistent] = ref.get

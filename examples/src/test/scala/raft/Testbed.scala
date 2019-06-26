@@ -68,7 +68,7 @@ class Testbed extends Specification {
         }
         val writer = new BufferedWriter(
           new FileWriter(
-            new File(s"visualization/src/data/events.json"),
+            new File(s"viz/src/data/events.json"),
             false
           )
         )

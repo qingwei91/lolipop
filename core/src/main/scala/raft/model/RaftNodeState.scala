@@ -3,7 +3,7 @@ package model
 
 import cats.Monad
 import cats.effect.concurrent.{ MVar, Ref }
-import raft.algebra.io.LogIO
+import raft.algebra.io.{ LogIO, PersistentIO }
 
 trait RaftNodeState[F[_], Cmd] {
   def config: ClusterConfig
