@@ -4,7 +4,7 @@ import raft.model.Persistent
 
 trait PersistentIO[F[_]] {
 
-  // read does not have to be atomic
+  // read does not need to be atomic
   def get: F[Persistent]
 
   /**

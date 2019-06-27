@@ -7,7 +7,7 @@ title: Usage
 
 **Lolipop** is a basic implementation of Raft algorithm using a purely functional approach. It is effect agnostic meaning user can choose your own effect type (eg. cats IO, Future, ZIO)
 
-It does not support
+It does not support the following feature (todo)
 
 * Dynamic membership
 * Log compaction 
@@ -19,11 +19,18 @@ It does not support
 
 ### 1. Define `StateMachine`
 
-StateMachine is application specific, it represents the State that we are trying to reach consensus for. It could be as simple as an Int, or it could be a collection of documents. 
+Raft algorithm is used to implement a replicated state machine, represented by StateMachine in our code.
 
+StateMachine is application specific, it manages the State that we are trying to reach consensus for. It could be as simple as an Int, or it could be a collection of documents. 
+
+
+Below is a sample implementation, there are 2 method to implement
 ```scala
 import cats.effect._
 import cats.implicits._
+import raft.algebra.StateMachine
+
+case class ChangeCount(i: Int)
 
 val counter: IO[StateMachine[IO, ChangeCount, Int]] = for {
   state <- Ref[IO].of(0)
@@ -42,7 +49,9 @@ val counter: IO[StateMachine[IO, ChangeCount, Int]] = for {
 
 ### 2. Define `LogIO`
 
-`LogIO` represent the ability for the application to interact with log files, **Lolipop** allow user to implement this because there are different ways to persist logs (eg. file system, database) 
+Raft algorithm reach consensus by replicating logs in the cluster, and logs are expected to be durable so that consensus are maintain in spite of server crash.
+
+`LogIO` represent the ability for the application to interact with log files, **Lolipop** let user to implement this because there are different ways to achieve durable logs (eg. file system, remote database).   
 
 Below is an example implemented using [SwayDB](http://www.swaydb.io/)
 
@@ -111,54 +120,85 @@ class HttpNetwork[F[_]: Sync, Cmd: Encoder](networkConfig: Map[String, Uri], cli
 }
 ```
 
-### 4. Define `EventLogger`
+### 4. Define `PersistentIO`
 
-EventLogger is useful for debugging, it is being used to record important events in a Raft process. There is a `Slf4jEventLogger` provided out of the box.
+Each raft node need to store some metadata durable, other than logs, the interaction with these metadata is a lot simpler, it's basic get and put, it is represented by `PersistentIO`
 
-### 5. Create `RaftProcess
+Here's an example
+```scala
+import cats.Monad
+import cats.effect.concurrent.MVar
+import raft.algebra.io.PersistentIO
+import raft.model.Persistent
 
-Once we have the above dependencies, we can build a RaftProcess
+class SwayDBPersist[F[_]: Monad](db: swaydb.Map[Int, Persistent, F], lock: MVar[F, Unit]) extends PersistentIO[F] {
+  val singleKey = 1
+
+  override def get: F[Persistent] = db.get(singleKey).map(_.get)
+
+  /**
+    * The implementatFn of this method must persist
+    * the `Persistent` atomically
+    *
+    * possible implementatFn:
+    *   - JVM FileLock
+    *   - embedded database
+    */
+  override def update(f: Persistent => Persistent): F[Unit] =
+    for {
+      _   <- lock.take
+      old <- get
+      new_ = f(old)
+      _ <- db.put(singleKey, new_)
+      _ <- lock.put(())
+    } yield ()
+}
+```  
+
+### 5. Define `EventLogger`
+
+EventLogger is useful for debugging, it is being used to record important events in a Raft process. There is a `JsonEventLogger` provided out of the box.
+
+TODO: Provide a slf4j event logger
+
+### 6. Create `RaftProcess
+
+Once we have the above dependencies, we can build a RaftProcess using methods on RaftProcess object, it requires all dependencies mentioned above, with an additional `ClusterConfig`, which is a case class containing names of each node 
+
+WARNING: `ClusterConfig` will change once we support dynamic membership
 
 ```
 import raft._
 
-val stateMachine = new StateMachine { .... }
-
-// config that represent cluster membership, so that a node knows about its peer node
-val myId = "node0"
-val clusterConfig = ClusterConfig(myId, Set("node1", "node2"))
-
-val logIO = new FileLogIO(...)
-val networkIO = new HttpNetwork(...)
-val eventLogger = new Slf4jEventLogger(myId)
+val clusterConfig = ClusterConfig("node0", Set("node1", "node2"))
 
 val proc = RaftProcess.simple(
   stateMachine,
   clusterConfig,
   logIO,
   networkIO,
-  eventLogger
+  eventLogger,
+  persistentIO
 )
 
 ```
 
-### 6. Expose raft api to the network
+### 7. Expose raft api to the network
 
-`RaftProcess` provides several abilities 
+Once you get a `RaftProcess`, you can do the following 
 
-1. Start the Raft Server, modelled by `def startRaft: Stream[F, Unit]`
-2. Receive AppendLog Request from peer nodes
-3. Receive Vote Request from peer nodes
-3. Receive requests from clients (both Read and Write)
+#### Bind client API to network
 
-* `Peer node` refers to the node in the same Raft cluster.
-* `Client` refers to process that uses Raft algorithm to store state.
-* All api is grouped under `RaftApi` which is a field on `RaftProcess`, `def api: RaftApi[F, Cmd]` 
+RaftProcess exposes `RaftApi` trait, which contains multiple method that should be binded to network
 
-We should expose the api to the network before we start the Raft Process, the integration depends on the networking protocol and library.
+* `def write(cmd: Cmd): F[WriteResponse]`
+* `def read: F[ReadResponse[State]]`
+* `def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse]`
+* `def requestVote(req: VoteRequest): F[VoteResponse]`
 
-Below is an example by using HTTP4S
+User need to route network request to these methods
 
+Here's an example of exposing methods by http api
 ```scala
     def raftProtocol(api: RaftApi[F, Cmd]): HttpRoutes[F] =
       HttpRoutes
@@ -196,13 +236,9 @@ Below is an example by using HTTP4S
         .serve
 ```
 
-### 7. Start the RaftProcess
+#### Start the Raft Server
 
-RaftProcess is a logical long running process, it has 2 responsibilities:
-
-1. Execute client's request, eg. WriteCommand or ReadState
-2. Periodically check the health of peer nodes
-
-It is modelled as a `fs2.Stream`, it is typically being invoked in your Main class.
-
+Once the methods are exposed, we can start the raft process, by doing this, raft process will run continuously to check if each nodes are reacheable.
+ 
+You can start server by calling `def startRaft: Stream[F, Unit]` on RaftProcess, we typically evaluate the stream in Main class.
 
