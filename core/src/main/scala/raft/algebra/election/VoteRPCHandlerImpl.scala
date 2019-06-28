@@ -23,7 +23,7 @@ class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
               case c: Candidate => c.copy(lastRPCTimeMillis = time)
               case l: Leader => l
             }
-        pState  <- allState.persistent.get
+        pState  <- allState.metadata.get
         lastLog <- allState.logs.lastLog
 
         currentTerm  = pState.currentTerm
@@ -41,7 +41,7 @@ class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
         _ <- eventLogger.voteRPCReplied(req, res)
         _ <- if (res.voteGranted) {
               for {
-                _ <- allState.persistent.update(x => x.copy(currentTerm = req.term, votedFor = Some(req.candidateID)))
+                _ <- allState.metadata.update(x => x.copy(currentTerm = req.term, votedFor = Some(req.candidateID)))
                 _ <- allState.serverTpe.update(
                       s => Follower(s.commitIdx, s.lastApplied, time, Some(req.candidateID))
                     )

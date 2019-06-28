@@ -6,7 +6,7 @@ import raft.model._
 
 case class TestState[F[_]](
                             config: ClusterConfig,
-                            persistent: MetadataIO[F],
+                            metadata: MetadataIO[F],
                             serverTpe: Ref[F, ServerType],
                             serverTpeLock: MVar[F, Unit],
                             logs: LogsApi[F, String]

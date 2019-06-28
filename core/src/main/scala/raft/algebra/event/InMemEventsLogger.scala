@@ -44,7 +44,7 @@ class InMemEventsLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: S
   override def appendRPCEnded(request: AppendRequest[Cmd], response: AppendResponse): F[Unit] =
     add(s"Leader received append rpc response ${response.show} for ${request.show}")
 
-  override def logCommitted(idx: Int, cmd: Cmd): F[Unit] = add(s"Committed idx=$idx, cmd=$cmd")
+  override def logCommittedAndExecuted(idx: Int, cmd: Cmd, latest: State): F[Unit] = add(s"Committed idx=$idx, cmd=$cmd, state=$latest")
 
   override def errorLogs(message: String): F[Unit] = add(message)
 }

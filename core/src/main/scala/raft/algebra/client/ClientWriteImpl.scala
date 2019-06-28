@@ -55,7 +55,7 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
 
   private def appendToLocalLog(cmd: Cmd): F[Unit] = allState.serverTpeMutex {
     for {
-      persistent <- allState.persistent.get
+      persistent <- allState.metadata.get
       lastLog    <- allState.logs.lastLog
       nextIdx = lastLog.map(_.idx + 1).getOrElse(1)
       next    = RaftLog(nextIdx, persistent.currentTerm, cmd)

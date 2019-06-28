@@ -61,7 +61,7 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd](
 
                     for {
                       _ <- allState.serverTpe.set(newServerTpe)
-                      _ <- allState.persistent.update { p =>
+                      _ <- allState.metadata.update { p =>
                             val updated = p.copy(p.currentTerm + 1, votedFor = Some(selfId))
                             updated
                           }

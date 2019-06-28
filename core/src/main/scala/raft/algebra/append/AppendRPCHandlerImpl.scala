@@ -44,13 +44,13 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
 
   private def followerServeAppend(req: AppendRequest[Cmd], follower: Follower): F[AppendResponse] = {
     for {
-      persistent <- allState.persistent.get
+      persistent <- allState.metadata.get
       r          <- handleReq(persistent, req, follower)
     } yield r
   }
   private def candidateServeAppend(req: AppendRequest[Cmd]): F[AppendResponse] = {
     for {
-      persistent <- allState.persistent.get
+      persistent <- allState.metadata.get
       currentTerm = persistent.currentTerm
       toFollower  = req.term >= currentTerm
       r <- if (toFollower) {
@@ -66,7 +66,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
 
   private def leaderServeAppend(req: AppendRequest[Cmd]): F[AppendResponse] = {
     for {
-      persistent <- allState.persistent.get
+      persistent <- allState.metadata.get
       currentTerm = persistent.currentTerm
       toFollower  = req.term > currentTerm
 
@@ -104,7 +104,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   private def acceptAppend(term: Int) = AppendResponse(term, true)
   private def convertToFollower(newTerm: Int, leaderId: String): F[Follower] = {
     for {
-      _       <- allState.persistent.update(_.copy(currentTerm = newTerm))
+      _       <- allState.metadata.update(_.copy(currentTerm = newTerm))
       rpcTime <- Timer[F].clock.realTime(MILLISECONDS)
       st <- allState.serverTpe.modify { s =>
              val newState = Follower(s.commitIdx, s.lastApplied, rpcTime, Some(leaderId))
@@ -170,17 +170,20 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     } else F.unit
   }
 
-  private def applyLatestCmd(idxToApply: Int, follower: Follower): F[Unit] = {
-    if (follower.lastApplied == idxToApply) {
+  private def applyLatestCmd(committedIdx: Int, follower: Follower): F[Unit] = {
+    if (follower.lastApplied == committedIdx) {
       F.unit
-    } else {
+    } else if (follower.lastApplied < committedIdx) {
       for {
-        maybLog <- allState.logs.getByIdx(idxToApply)
+        maybLog <- allState.logs.getByIdx(committedIdx)
         Some(log) = maybLog
-        _    <- stateMachine.execute(log.command)
+        st   <- stateMachine.execute(log.command)
+        _    <- elogger.logCommittedAndExecuted(committedIdx, log.command, st)
         time <- Timer[F].clock.realTime(MILLISECONDS)
         _    <- allState.serverTpe.set(follower.copy(lastApplied = log.idx, lastRPCTimeMillis = time))
       } yield ()
+    } else {
+      F.raiseError[Unit](new RuntimeException("Unexpected: Last Applied is larger than committed, there's a bug"))
     }
   }
 

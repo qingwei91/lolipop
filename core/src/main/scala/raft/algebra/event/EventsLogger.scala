@@ -19,7 +19,7 @@ trait EventsLogger[F[_], Cmd, State] {
   def appendRPCReplied(request: AppendRequest[Cmd], response: AppendResponse): F[Unit]
   def appendRPCEnded(request: AppendRequest[Cmd], response: AppendResponse): F[Unit]
 
-  def logCommitted(idx: Int, cmd: Cmd): F[Unit]
+  def logCommittedAndExecuted(idx: Int, cmd: Cmd, latest: State): F[Unit]
 
   def errorLogs(message: String): F[Unit]
 }

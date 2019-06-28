@@ -27,7 +27,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
   private def broadcastVoteReq: F[Map[String, F[Unit]]] = {
     val nodeId = allState.config.nodeId
     for {
-      persistent <- allState.persistent.get
+      persistent <- allState.metadata.get
       last       <- allState.logs.lastLog
       voteReq = VoteRequest(persistent.currentTerm, nodeId, last.map(_.idx), last.map(_.term))
     } yield {
@@ -56,7 +56,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
                          case other => other -> None
                        }
       _          <- eventLogger.voteRPCEnded(req, targetPeer, res)
-      persistent <- allState.persistent.get
+      persistent <- allState.metadata.get
       lastLog    <- allState.logs.lastLog
 
       // should we wrap this in critical region??

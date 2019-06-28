@@ -35,7 +35,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
   private def taskPerPeer(peerId: String): F[Unit] = {
     def prepReq(l: Leader) = {
       for {
-        persistent <- allState.persistent.get
+        persistent <- allState.metadata.get
         nextIdx = l.nextIndices(peerId)
         logsToSend <- allState.logs.takeFrom(nextIdx)
         prevLog    <- allState.logs.getByIdx(nextIdx - 1)
@@ -70,7 +70,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
 
         case AppendResponse(nodeTerm, false) =>
           for {
-            persistent <- allState.persistent.get
+            persistent <- allState.metadata.get
             currentT = persistent.currentTerm
             r <- if (currentT < nodeTerm) {
                   convertToFollow(nodeTerm)
@@ -129,7 +129,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
     if (canCommit) {
       for {
         maybeLog   <- allState.logs.getByIdx(leader.commitIdx + 1)
-        persistent <- allState.persistent.get
+        persistent <- allState.metadata.get
         _ <- maybeLog match {
               case Some(log) =>
                 val termMatched = log.term == persistent.currentTerm
@@ -152,10 +152,10 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
 
   private def commitLog(newlyCommited: Log, leader: Leader): F[Unit] = {
     for {
-      _ <- allState.serverTpe.set(leader.copy(commitIdx = newlyCommited.idx))
-      _ <- stateMachine.execute(newlyCommited.command)
-      _ <- publishCommittedEvent(newlyCommited.command)
-      _ <- eLogger.logCommitted(newlyCommited.idx, newlyCommited.command)
+      _  <- allState.serverTpe.set(leader.copy(commitIdx = newlyCommited.idx))
+      st <- stateMachine.execute(newlyCommited.command)
+      _  <- publishCommittedEvent(newlyCommited.command)
+      _  <- eLogger.logCommittedAndExecuted(newlyCommited.idx, newlyCommited.command, st)
     } yield ()
   }
 
@@ -168,7 +168,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
 
   private def convertToFollow(newTerm: Int): F[Unit] = {
     for {
-      _ <- allState.persistent.update(_.copy(currentTerm = newTerm))
+      _ <- allState.metadata.update(_.copy(currentTerm = newTerm))
 
       time <- Timer[F].clock.realTime(MILLISECONDS)
       _ <- allState.serverTpe.update { server =>

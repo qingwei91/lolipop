@@ -1,7 +1,6 @@
 package raft
 
 import cats._
-import cats.effect.concurrent.{ MVar, Ref }
 import cats.effect.{ Concurrent, ContextShift, Timer }
 import fs2.Stream
 import fs2.concurrent._
@@ -18,8 +17,6 @@ trait RaftProcess[F[_], Cmd, State] {
   def api: RaftApi[F, Cmd, State]
 }
 
-import scala.concurrent.duration._
-
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
 object RaftProcess {
 
@@ -28,29 +25,15 @@ object RaftProcess {
     * restart Raft process eg. after server crash
     */
   def init[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
-                                                                   stateMachine: StateMachine[F, Cmd, State],
-                                                                   clusterConfig: ClusterConfig,
-                                                                   logIO: LogsApi[F, Cmd],
-                                                                   networkIO: NetworkIO[F, Cmd],
-                                                                   eventLogger: EventsLogger[F, Cmd, State],
-                                                                   persistentIO: MetadataIO[F]
+    stateMachine: StateMachine[F, Cmd, State],
+    clusterConfig: ClusterConfig,
+    logsApi: LogsApi[F, Cmd],
+    networkIO: NetworkIO[F, Cmd],
+    eventLogger: EventsLogger[F, Cmd, State],
+    metadataIO: MetadataIO[F]
   ): F[RaftProcess[F, Cmd, State]] = {
     for {
-      time <- Timer[F].clock.realTime(MILLISECONDS)
-      initFollower = Follower(0, 0, time, None)
-      serverTpeRef <- Ref.of[F, ServerType](initFollower)
-      lock         <- MVar[F].of(())
-      state = new RaftNodeState[F, Cmd] {
-        override def config: ClusterConfig = clusterConfig
-
-        override def persistent: MetadataIO[F] = persistentIO
-
-        override def serverTpe: Ref[F, ServerType] = serverTpeRef
-
-        override def serverTpeLock: MVar[F, Unit] = lock
-
-        override def logs: LogsApi[F, Cmd] = logIO
-      }
+      state <- RaftNodeState.init(clusterConfig, metadataIO, logsApi)
       appendHandler = new AppendRPCHandlerImpl(
         stateMachine,
         state,
