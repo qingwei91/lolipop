@@ -2,7 +2,7 @@
 
 <p><strong>Lolipop</strong> is a basic implementation of Raft algorithm using a purely functional approach. It is effect agnostic meaning user can choose your own effect type (eg. cats IO, Future, ZIO)</p>
 
-<p>It does not support</p>
+<p>It does not support the following feature (todo)</p>
 
 <ul>
   <li>Dynamic membership</li>
@@ -11,14 +11,21 @@
 
 <h2 id="usage">Usage</h2>
 
-<p><strong>Lolipop</strong> is rather minimal, thus user need to provide a few dependencies and deal with the wiring.</p>
+<p><strong>Lolipop</strong> is rather minimal, users need to implement several interfaces to be able to use it, below are interfaces that are required</p>
 
-<h3 id="1-define-statemachine">1. Define <code class="highlighter-rouge">StateMachine</code></h3>
+<h3 id="1-implement-statemachine">1. Implement <code class="highlighter-rouge">StateMachine</code></h3>
 
-<p>StateMachine is application specific, it represents the State that we are trying to reach consensus for. It could be as simple as an Int, or it could be a collection of documents.</p>
+<p>Raft algorithm is used to implement a replicated state machine, represented by StateMachine in our code.</p>
+
+<p>StateMachine is application specific, it manages the State that we are trying to reach consensus for. It could be as simple as an Int, or it could be a collection of documents.</p>
+
+<p>Below is a sample implementation, there are 2 method to implement</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect._</span>
 <span class="k">import</span> <span class="nn">cats.implicits._</span>
+<span class="k">import</span> <span class="nn">raft.algebra.StateMachine</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">ChangeCount</span><span class="o">(</span><span class="n">i</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
 
 <span class="k">val</span> <span class="n">counter</span><span class="k">:</span> <span class="kt">IO</span><span class="o">[</span><span class="kt">StateMachine</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">ChangeCount</span>, <span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="k">for</span> <span class="o">{</span>
   <span class="n">state</span> <span class="k">&lt;-</span> <span class="nc">Ref</span><span class="o">[</span><span class="kt">IO</span><span class="o">].</span><span class="n">of</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span>
@@ -35,9 +42,11 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="2-define-logio">2. Define <code class="highlighter-rouge">LogIO</code></h3>
+<h3 id="2-implement-logio">2. Implement <code class="highlighter-rouge">LogIO</code></h3>
 
-<p><code class="highlighter-rouge">LogIO</code> represent the ability for the application to interact with log files, <strong>Lolipop</strong> allow user to implement this because there are different ways to persist logs (eg. file system, database)</p>
+<p>Raft algorithm reach consensus by replicating logs in the cluster, and logs are expected to be durable so that consensus are maintain in spite of server crash.</p>
+
+<p><code class="highlighter-rouge">LogIO</code> represent the ability for the application to interact with log files, <strong>Lolipop</strong> let user to implement this because there are different ways to achieve durable logs (eg. file system, remote database).</p>
 
 <p>Below is an example implemented using <a href="http://www.swaydb.io/">SwayDB</a></p>
 
@@ -68,7 +77,7 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="3-define-networkio">3. Define <code class="highlighter-rouge">NetworkIO</code></h3>
+<h3 id="3-implement-networkio">3. Implement <code class="highlighter-rouge">NetworkIO</code></h3>
 
 <p><code class="highlighter-rouge">NetworkIO</code> represents the two kind of network communication in a Raft cluster, <code class="highlighter-rouge">AppendRequestRPC</code> and <code class="highlighter-rouge">VoteRequestRPC</code>.</p>
 
@@ -104,56 +113,86 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="4-define-eventlogger">4. Define <code class="highlighter-rouge">EventLogger</code></h3>
+<h3 id="4-implement-persistentio">4. Implement <code class="highlighter-rouge">PersistentIO</code></h3>
 
-<p>EventLogger is useful for debugging, it is being used to record important events in a Raft process. There is a <code class="highlighter-rouge">Slf4jEventLogger</code> provided out of the box.</p>
+<p>Each raft node need to store some metadata durable, other than logs, the interaction with these metadata is a lot simpler, it’s basic get and put, it is represented by <code class="highlighter-rouge">PersistentIO</code></p>
 
-<h3 id="5-create-raftprocess">5. Create `RaftProcess</h3>
+<p>Here’s an example</p>
 
-<p>Once we have the above dependencies, we can build a RaftProcess</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.Monad</span>
+<span class="k">import</span> <span class="nn">cats.effect.concurrent.MVar</span>
+<span class="k">import</span> <span class="nn">raft.algebra.io.PersistentIO</span>
+<span class="k">import</span> <span class="nn">raft.model.Persistent</span>
+
+<span class="k">class</span> <span class="nc">SwayDBPersist</span><span class="o">[</span><span class="kt">F</span><span class="o">[</span><span class="k">_</span><span class="o">]</span><span class="kt">:</span> <span class="kt">Monad</span><span class="o">](</span><span class="n">db</span><span class="k">:</span> <span class="kt">swaydb.Map</span><span class="o">[</span><span class="kt">Int</span>, <span class="kt">Persistent</span>, <span class="kt">F</span><span class="o">],</span> <span class="n">lock</span><span class="k">:</span> <span class="kt">MVar</span><span class="o">[</span><span class="kt">F</span>, <span class="kt">Unit</span><span class="o">])</span> <span class="k">extends</span> <span class="nc">PersistentIO</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">singleKey</span> <span class="k">=</span> <span class="mi">1</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="n">get</span><span class="k">:</span> <span class="kt">F</span><span class="o">[</span><span class="kt">Persistent</span><span class="o">]</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">singleKey</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">get</span><span class="o">)</span>
+
+  <span class="cm">/**
+    * The implementatFn of this method must persist
+    * the `Persistent` atomically
+    *
+    * possible implementatFn:
+    *   - JVM FileLock
+    *   - embedded database
+    */</span>
+  <span class="k">override</span> <span class="k">def</span> <span class="n">update</span><span class="o">(</span><span class="n">f</span><span class="k">:</span> <span class="kt">Persistent</span> <span class="o">=&gt;</span> <span class="nc">Persistent</span><span class="o">)</span><span class="k">:</span> <span class="kt">F</span><span class="o">[</span><span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span>
+    <span class="k">for</span> <span class="o">{</span>
+      <span class="k">_</span>   <span class="k">&lt;-</span> <span class="n">lock</span><span class="o">.</span><span class="n">take</span>
+      <span class="n">old</span> <span class="k">&lt;-</span> <span class="n">get</span>
+      <span class="n">new_</span> <span class="k">=</span> <span class="n">f</span><span class="o">(</span><span class="n">old</span><span class="o">)</span>
+      <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">put</span><span class="o">(</span><span class="n">singleKey</span><span class="o">,</span> <span class="n">new_</span><span class="o">)</span>
+      <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">lock</span><span class="o">.</span><span class="n">put</span><span class="o">(())</span>
+    <span class="o">}</span> <span class="k">yield</span> <span class="o">()</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="5-implement-eventlogger-optional">5. Implement <code class="highlighter-rouge">EventLogger</code> (Optional)</h3>
+
+<p>EventLogger is useful for debugging, it is being used to record important events in a Raft process. There is a <code class="highlighter-rouge">JsonEventLogger</code> provided out of the box.</p>
+
+<p>TODO: Provide a slf4j event logger</p>
+
+<h3 id="6-create-raftprocess">6. Create `RaftProcess</h3>
+
+<p>Once we have the above dependencies, we can build a RaftProcess using methods on RaftProcess object, it requires all dependencies mentioned above, with an additional <code class="highlighter-rouge">ClusterConfig</code>, which is a case class containing names of each node</p>
+
+<p>WARNING: <code class="highlighter-rouge">ClusterConfig</code> will change once we support dynamic membership</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import raft._
 
-val stateMachine = new StateMachine { .... }
-
-// config that represent cluster membership, so that a node knows about its peer node
-val myId = "node0"
-val clusterConfig = ClusterConfig(myId, Set("node1", "node2"))
-
-val logIO = new FileLogIO(...)
-val networkIO = new HttpNetwork(...)
-val eventLogger = new Slf4jEventLogger(myId)
+val clusterConfig = ClusterConfig("node0", Set("node1", "node2"))
 
 val proc = RaftProcess.simple(
   stateMachine,
   clusterConfig,
   logIO,
   networkIO,
-  eventLogger
+  eventLogger,
+  persistentIO
 )
 
 </code></pre></div></div>
 
-<h3 id="6-expose-raft-api-to-the-network">6. Expose raft api to the network</h3>
+<h3 id="7-expose-raft-api-to-the-network">7. Expose raft api to the network</h3>
 
-<p><code class="highlighter-rouge">RaftProcess</code> provides several abilities</p>
+<p>Once you get a <code class="highlighter-rouge">RaftProcess</code>, you can do the following</p>
 
-<ol>
-  <li>Start the Raft Server, modelled by <code class="highlighter-rouge">def startRaft: Stream[F, Unit]</code></li>
-  <li>Receive AppendLog Request from peer nodes</li>
-  <li>Receive Vote Request from peer nodes</li>
-  <li>Receive requests from clients (both Read and Write)</li>
-</ol>
+<h4 id="bind-client-api-to-network">Bind client API to network</h4>
+
+<p>RaftProcess exposes <code class="highlighter-rouge">RaftApi</code> trait, which contains multiple method that should be binded to network</p>
 
 <ul>
-  <li><code class="highlighter-rouge">Peer node</code> refers to the node in the same Raft cluster.</li>
-  <li><code class="highlighter-rouge">Client</code> refers to process that uses Raft algorithm to store state.</li>
-  <li>All api is grouped under <code class="highlighter-rouge">RaftApi</code> which is a field on <code class="highlighter-rouge">RaftProcess</code>, <code class="highlighter-rouge">def api: RaftApi[F, Cmd]</code></li>
+  <li><code class="highlighter-rouge">def write(cmd: Cmd): F[WriteResponse]</code></li>
+  <li><code class="highlighter-rouge">def read: F[ReadResponse[State]]</code></li>
+  <li><code class="highlighter-rouge">def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse]</code></li>
+  <li><code class="highlighter-rouge">def requestVote(req: VoteRequest): F[VoteResponse]</code></li>
 </ul>
 
-<p>We should expose the api to the network before we start the Raft Process, the integration depends on the networking protocol and library.</p>
+<p>User need to route network request to these methods</p>
 
-<p>Below is an example by using HTTP4S</p>
+<p>Here’s an example of exposing methods by http api</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">def</span> <span class="n">raftProtocol</span><span class="o">(</span><span class="n">api</span><span class="k">:</span> <span class="kt">RaftApi</span><span class="o">[</span><span class="kt">F</span>, <span class="kt">Cmd</span><span class="o">])</span><span class="k">:</span> <span class="kt">HttpRoutes</span><span class="o">[</span><span class="kt">F</span><span class="o">]</span> <span class="k">=</span>
       <span class="nc">HttpRoutes</span>
@@ -191,16 +230,11 @@ val proc = RaftProcess.simple(
         <span class="o">.</span><span class="n">serve</span>
 </code></pre></div></div>
 
-<h3 id="7-start-the-raftprocess">7. Start the RaftProcess</h3>
+<h4 id="start-the-raft-server">Start the Raft Server</h4>
 
-<p>RaftProcess is a logical long running process, it has 2 responsibilities:</p>
+<p>Once the methods are exposed, we can start the raft process, by doing this, raft process will run continuously to check if each nodes are reacheable.</p>
 
-<ol>
-  <li>Execute client’s request, eg. WriteCommand or ReadState</li>
-  <li>Periodically check the health of peer nodes</li>
-</ol>
-
-<p>It is modelled as a <code class="highlighter-rouge">fs2.Stream</code>, it is typically being invoked in your Main class.</p>
+<p>You can start server by calling <code class="highlighter-rouge">def startRaft: Stream[F, Unit]</code> on RaftProcess, we typically evaluate the stream in Main class.</p>
 
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/lolipop/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
