@@ -10,8 +10,8 @@ import io.circe.Json
 import org.specs2.Specification
 import org.specs2.specification.core.SpecStructure
 import raft.RaftReplicationSpec.{ managedProcesses, timeToReplication }
-import raft.algebra.event.EventLogger
-import raft.debug.JsonEventLogger
+import raft.algebra.event.EventsLogger
+import raft.debug.JsonEventsLogger
 import raft.setup.TestClient
 
 import scala.concurrent.ExecutionContext
@@ -30,8 +30,8 @@ class Testbed extends Specification {
 
     val jsonMapRef: Ref[IO, Map[String, Seq[Json]]] = Ref.unsafe(Map.empty)
 
-    def jsonLogger(id: String): EventLogger[IO, String, String] = {
-      new JsonEventLogger[IO, String, String](str => {
+    def jsonLogger(id: String): EventsLogger[IO, String, String] = {
+      new JsonEventsLogger[IO, String, String](str => {
         for {
           jsonMap <- jsonMapRef.get
           json    = jsonMap.getOrElse(id, Seq.empty[Json])

@@ -3,14 +3,14 @@ package algebra.election
 
 import cats.Monad
 import cats.effect.Timer
-import raft.algebra.event.EventLogger
+import raft.algebra.event.EventsLogger
 import raft.model._
 
 import scala.concurrent.duration._
 
 class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
   allState: RaftNodeState[F, Cmd],
-  eventLogger: EventLogger[F, Cmd, _]
+  eventLogger: EventsLogger[F, Cmd, _]
 ) extends VoteRPCHandler[F] {
   type Log = RaftLog[Cmd]
 

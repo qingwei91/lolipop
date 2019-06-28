@@ -17,7 +17,7 @@ import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
 import raft.algebra.io.{ LogsApi, MetadataIO }
-import raft.debug.JsonEventLogger
+import raft.debug.JsonEventsLogger
 import raft.model._
 import raft.{ RaftApi, RaftProcess }
 
@@ -89,7 +89,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
         logIO     <- Stream.eval(logIOF)
         persistIO <- Stream.eval(persistIOF)
         printer   <- fileResource
-        eventLogger = new JsonEventLogger[F, Cmd, State](
+        eventLogger = new JsonEventsLogger[F, Cmd, State](
           s => Defer[F].defer(Applicative[F].pure(printer.println(s)))
         )
         proc <- Stream.eval(

@@ -5,7 +5,7 @@ import cats.MonadError
 import cats.effect.{ ContextShift, Timer }
 import org.slf4j.{ Logger, LoggerFactory }
 import raft.algebra.ChangeState
-import raft.algebra.event.EventLogger
+import raft.algebra.event.EventsLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
 
@@ -16,7 +16,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
   stateMachine: ChangeState[F, Cmd, State],
   allState: RaftNodeState[F, Cmd],
   publishCommittedEvent: Cmd => F[Unit],
-  eLogger: EventLogger[F, Cmd, State]
+  eLogger: EventsLogger[F, Cmd, State]
 )(implicit F: MonadError[F, Throwable])
     extends BroadcastAppend[F] {
   type Log = RaftLog[Cmd]

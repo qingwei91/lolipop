@@ -5,7 +5,7 @@ import cats.MonadError
 import cats.effect.Timer
 import org.slf4j.LoggerFactory
 import raft.algebra._
-import raft.algebra.event.EventLogger
+import raft.algebra.event.EventsLogger
 import raft.model._
 
 import scala.concurrent.duration._
@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   val stateMachine: ChangeState[F, Cmd, State],
   val allState: RaftNodeState[F, Cmd],
-  elogger: EventLogger[F, Cmd, State]
+  elogger: EventsLogger[F, Cmd, State]
 )(implicit F: MonadError[F, Throwable])
     extends AppendRPCHandler[F, Cmd] {
   type Log = RaftLog[Cmd]

@@ -2,7 +2,7 @@ package raft.algebra.event
 
 import raft.model._
 
-trait EventLogger[F[_], Cmd, State] {
+trait EventsLogger[F[_], Cmd, State] {
   def receivedClientCmd(cmd: Cmd): F[Unit]
   def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit]
 

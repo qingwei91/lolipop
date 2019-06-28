@@ -3,13 +3,13 @@ package algebra
 package client
 
 import cats.Monad
-import raft.algebra.event.EventLogger
+import raft.algebra.event.EventsLogger
 import raft.model._
 
 class ClientReadImpl[F[_]: Monad, State](
   queryState: QueryState[F, State],
   allState: RaftNodeState[F, _],
-  eventLogger: EventLogger[F, _, State]
+  eventLogger: EventsLogger[F, _, State]
 ) extends ClientRead[F, State] {
   override def read: F[ReadResponse[State]] = {
     for {

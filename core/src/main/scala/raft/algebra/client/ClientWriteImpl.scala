@@ -5,7 +5,7 @@ import cats._
 import cats.effect._
 import fs2.Stream
 import raft.algebra.append.BroadcastAppend
-import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
+import raft.algebra.event.{ EventsLogger, RPCTaskScheduler }
 import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
@@ -14,7 +14,7 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
   broadcast: BroadcastAppend[F],
   getCommittedStream: () => Resource[F, Stream[F, Cmd]],
   rpcScheduler: RPCTaskScheduler[F],
-  eventLogger: EventLogger[F, Cmd, _]
+  eventLogger: EventsLogger[F, Cmd, _]
 ) extends ClientWrite[F, Cmd] {
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent

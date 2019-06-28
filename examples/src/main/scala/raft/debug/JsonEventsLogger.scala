@@ -1,15 +1,15 @@
 package raft.debug
 
 import cats.Applicative
-import raft.algebra.event.EventLogger
+import raft.algebra.event.EventsLogger
 import io.circe._
 import io.circe.literal._
 import io.circe.syntax._
 import io.circe.generic.auto._
 import raft.model._
 
-class JsonEventLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFile: Json => F[Unit])
-    extends EventLogger[F, Cmd, State] {
+class JsonEventsLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFile: Json => F[Unit])
+    extends EventsLogger[F, Cmd, State] {
 
   override def receivedClientCmd(cmd: Cmd): F[Unit] = jsonToFile {
     Json.obj(

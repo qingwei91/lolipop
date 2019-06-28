@@ -8,8 +8,8 @@ import cats.{ Applicative, Show }
 import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))
-class InMemEventLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: String, val logs: Ref[F, StringBuffer])
-    extends EventLogger[F, Cmd, State] {
+class InMemEventsLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: String, val logs: Ref[F, StringBuffer])
+    extends EventsLogger[F, Cmd, State] {
 
   private def add(s: String): F[Unit] = {
     logs.update(_.append(s"\n${LocalTime.now()} Node-$nodeId: $s"))

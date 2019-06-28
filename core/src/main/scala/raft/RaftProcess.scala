@@ -8,7 +8,7 @@ import fs2.concurrent._
 import raft.algebra.append._
 import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
-import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
+import raft.algebra.event.{ EventsLogger, RPCTaskScheduler }
 import raft.algebra.io.{ LogsApi, NetworkIO, MetadataIO }
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
@@ -32,7 +32,7 @@ object RaftProcess {
                                                                    clusterConfig: ClusterConfig,
                                                                    logIO: LogsApi[F, Cmd],
                                                                    networkIO: NetworkIO[F, Cmd],
-                                                                   eventLogger: EventLogger[F, Cmd, State],
+                                                                   eventLogger: EventsLogger[F, Cmd, State],
                                                                    persistentIO: MetadataIO[F]
   ): F[RaftProcess[F, Cmd, State]] = {
     for {
@@ -69,7 +69,7 @@ object RaftProcess {
     networkIO: NetworkIO[F, Cmd],
     appendHandler: AppendRPCHandler[F, Cmd],
     voteHandler: VoteRPCHandler[F],
-    eventLogger: EventLogger[F, Cmd, State]
+    eventLogger: EventsLogger[F, Cmd, State]
   ): F[RaftProcess[F, Cmd, State]] = {
     val peers = state.config.peersId.toList
     for {

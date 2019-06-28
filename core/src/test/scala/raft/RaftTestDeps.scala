@@ -6,7 +6,7 @@ import cats.effect._
 import fs2.concurrent.{ Queue, Topic }
 import raft.algebra.append._
 import raft.algebra.election._
-import raft.algebra.event.{ EventLogger, InMemEventLogger }
+import raft.algebra.event.{ EventsLogger, InMemEventsLogger }
 import raft.model._
 import raft.setup._
 
@@ -14,8 +14,8 @@ import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 class RaftTestDeps[F[_]](
-  logger: String => EventLogger[F, String, String],
-  shouldFail: (String, String) => Boolean = (_, _) => false,
+                          logger: String => EventsLogger[F, String, String],
+                          shouldFail: (String, String) => Boolean = (_, _) => false,
 )(
   implicit cs: ContextShift[F],
   tm: Timer[F],
@@ -94,7 +94,7 @@ object RaftTestDeps {
     con: Concurrent[F]
   ): RaftTestDeps[F] = {
     val buffer = Ref.unsafe[F, StringBuffer](new StringBuffer(10000))
-    new RaftTestDeps[F](logger = i => new InMemEventLogger[F, String, String](i, buffer))
+    new RaftTestDeps[F](logger = i => new InMemEventsLogger[F, String, String](i, buffer))
   }
 
   def apply[F[_]](shouldFail: (String, String) => Boolean)(
@@ -103,7 +103,7 @@ object RaftTestDeps {
     con: Concurrent[F]
   ): RaftTestDeps[F] = {
     val buffer = Ref.unsafe[F, StringBuffer](new StringBuffer(10000))
-    new RaftTestDeps[F](i => new InMemEventLogger[F, String, String](i, buffer), shouldFail)
+    new RaftTestDeps[F](i => new InMemEventsLogger[F, String, String](i, buffer), shouldFail)
   }
 
 }

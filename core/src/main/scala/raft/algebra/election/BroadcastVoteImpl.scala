@@ -3,14 +3,14 @@ package algebra.election
 
 import cats.MonadError
 import cats.effect._
-import raft.algebra.event.EventLogger
+import raft.algebra.event.EventsLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
 
 class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
   allState: RaftNodeState[F, Cmd],
   networkManager: NetworkIO[F, Cmd],
-  eventLogger: EventLogger[F, Cmd, _]
+  eventLogger: EventsLogger[F, Cmd, _]
 )(implicit F: MonadError[F, Throwable])
     extends BroadcastVote[F] {
 

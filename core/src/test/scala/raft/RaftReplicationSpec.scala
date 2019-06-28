@@ -11,7 +11,7 @@ import org.specs2.execute.Result
 import org.specs2.matcher.MatchResult
 import org.specs2.specification.core.SpecStructure
 import raft.RaftReplicationSpec._
-import raft.algebra.event.InMemEventLogger
+import raft.algebra.event.InMemEventsLogger
 import raft.model._
 import raft.setup._
 
@@ -217,7 +217,7 @@ class RaftReplicationSpec extends Specification {
     raftComponents.traverse_ { comp =>
       val nodeId = comp.state.config.nodeId
       comp.eventLogger
-        .asInstanceOf[InMemEventLogger[IO, String, String]]
+        .asInstanceOf[InMemEventsLogger[IO, String, String]]
         .logs
         .get
         .map { strBuf =>
