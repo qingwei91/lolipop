@@ -16,9 +16,9 @@ technologies:
 It parameterized over the following concepts for flexibility
   
 * Effect type
-* Log's IO
-* Network's IO
+* Persistent Log Layer
+* Network layer
 
-Currently it only supports the bare minimum, which is the ability to reach consensus within the cluster in a timely manner. It does **NOT** supports `Dynamic membership` and `Log compaction` yet.
+Currently it only supports the bare minimum, which is the ability to reach consensus within the cluster. It does **NOT** supports `Dynamic membership` and `Log compaction` yet.
 
 For more, check the [documentations](/docs)

@@ -15,9 +15,9 @@ It does not support the following feature (todo)
 
 ## Usage
 
-**Lolipop** is rather minimal, thus user need to provide a few dependencies and deal with the wiring.
+**Lolipop** is rather minimal, users need to implement several interfaces to be able to use it, below are interfaces that are required  
 
-### 1. Define `StateMachine`
+### 1. Implement `StateMachine`
 
 Raft algorithm is used to implement a replicated state machine, represented by StateMachine in our code.
 
@@ -47,7 +47,7 @@ val counter: IO[StateMachine[IO, ChangeCount, Int]] = for {
 }
 ```
 
-### 2. Define `LogIO`
+### 2. Implement `LogIO`
 
 Raft algorithm reach consensus by replicating logs in the cluster, and logs are expected to be durable so that consensus are maintain in spite of server crash.
 
@@ -83,7 +83,7 @@ class FileLogIO(db: swaydb.Map[Int, RaftLog[ChangeCount], IO]) extends LogIO[IO,
 }
 ```
 
-### 3. Define `NetworkIO`
+### 3. Implement `NetworkIO`
 
 `NetworkIO` represents the two kind of network communication in a Raft cluster, `AppendRequestRPC` and `VoteRequestRPC`.
 
@@ -120,7 +120,7 @@ class HttpNetwork[F[_]: Sync, Cmd: Encoder](networkConfig: Map[String, Uri], cli
 }
 ```
 
-### 4. Define `PersistentIO`
+### 4. Implement `PersistentIO`
 
 Each raft node need to store some metadata durable, other than logs, the interaction with these metadata is a lot simpler, it's basic get and put, it is represented by `PersistentIO`
 
@@ -155,7 +155,7 @@ class SwayDBPersist[F[_]: Monad](db: swaydb.Map[Int, Persistent, F], lock: MVar[
 }
 ```  
 
-### 5. Define `EventLogger`
+### 5. Implement `EventLogger` (Optional)
 
 EventLogger is useful for debugging, it is being used to record important events in a Raft process. There is a `JsonEventLogger` provided out of the box.
 
