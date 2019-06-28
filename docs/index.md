@@ -21,4 +21,4 @@ It parameterized over the following concepts for flexibility
 
 Currently it only supports the bare minimum, which is the ability to reach consensus within the cluster. It does **NOT** supports `Dynamic membership` and `Log compaction` yet.
 
-For more, check the [documentations](/docs)
+For more, check the [documentations](./docs)

@@ -87,8 +87,13 @@ class JsonEventsLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFi
     )
   )
 
-  override def logCommitted(idx: Int, cmd: Cmd): F[Unit] = jsonToFile(
-    Json.obj("tpe" -> "LogCommitted".asJson, "idx" -> idx.asJson, "cmd" -> cmd.asJson)
+  override def logCommittedAndExecuted(idx: Int, cmd: Cmd, latest: State): F[Unit] = jsonToFile(
+    Json.obj(
+      "tpe"   -> "LogCommitted".asJson,
+      "idx"   -> idx.asJson,
+      "cmd"   -> cmd.asJson,
+      "state" -> latest.asJson
+    )
   )
   override def errorLogs(message: String): F[Unit] = Applicative[F].unit
 }

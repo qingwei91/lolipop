@@ -72,8 +72,9 @@ export const RaftEvents = withPixiApp((props) => {
     const pgOffset = pgOffsetPercent * viewWidth;
     const [pageStart, pageEnd] = pageToRange(targetPg, pageSize, totalE);
 
-    const position = new PIXI.Point(-pgOffset, 10);
+    const position = new PIXI.Point(-pgOffset, props.idx * RectHeight);
     const events = props.events.slice(pageStart, pageEnd+pageSize);
+
     return (
       <Container position={position}>
         {
