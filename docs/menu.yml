@@ -7,7 +7,6 @@ options:
     nested_options:
       - title: State Machine
         url: docs/state-machine.html
-
       - title: Logs API
         url: docs/logs-api.html
       - title: NetworkIO

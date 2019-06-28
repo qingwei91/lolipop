@@ -14,8 +14,14 @@ It does not support the following feature (todo)
 * Log compaction 
 
 
-## Usage
+## Usage Guide
 
 **Lolipop** is rather minimal, users need to implement several interfaces to be able to use it, below are interfaces that are required
 
-
+1. [State Machine](./state-machine.html)
+2. [Logs Api](./logs-api.html)
+3. [Network IO](./network-io.html)
+4. [Metadata Api](./metadata-api.html)
+5. [Events Logger](./events-logger.html)
+6. [Raft Process](./raft-process.html)
+7. [Start the server](./start-raft.html)
