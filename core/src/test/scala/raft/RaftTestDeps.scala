@@ -33,7 +33,7 @@ class RaftTestDeps[F[_]](
         tpe = Follower(0, 0, time, None)
         committedStream <- Topic[F, String]("")
         clientReqQueue  <- Queue.bounded[F, F[Unit]](100)
-        persist         <- Ref.of[F, Persistent](Persistent.init)
+        persist         <- Ref.of[F, Metadata](Metadata.init)
         servTpe         <- Ref.of[F, ServerType](tpe)
         lock            <- MVar[F].of(())
         baseLog         <- Ref.of[F, Seq[RaftLog[String]]](Seq.empty)
@@ -43,7 +43,7 @@ class RaftTestDeps[F[_]](
         val stateMachine = new TestStateMachine[F](testState)
         val state = TestState(
           clusterConf,
-          new TestPersistent(persist),
+          new TestMetadata(persist),
           servTpe,
           lock,
           new TestLogsIO(baseLog)

@@ -16,7 +16,7 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.syntax._
 import raft.algebra.StateMachine
-import raft.algebra.io.{ LogIO, PersistentIO }
+import raft.algebra.io.{ LogsApi, MetadataIO }
 import raft.debug.JsonEventLogger
 import raft.model._
 import raft.{ RaftApi, RaftProcess }
@@ -31,12 +31,12 @@ trait RaftHttpServer[F[_]] {
 object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
   def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, Cmd: Decoder: Encoder: Eq: Show, State: Show: Encoder](
-    nodeID: String,
-    networkMapping: Map[String, Uri],
-    stateMachineF: F[StateMachine[F, Cmd, State]],
-    httpDSL: Http4sDsl[F],
-    logIOF: F[LogIO[F, Cmd]],
-    persistIOF: F[PersistentIO[F]]
+                                                                                                                        nodeID: String,
+                                                                                                                        networkMapping: Map[String, Uri],
+                                                                                                                        stateMachineF: F[StateMachine[F, Cmd, State]],
+                                                                                                                        httpDSL: Http4sDsl[F],
+                                                                                                                        logIOF: F[LogsApi[F, Cmd]],
+                                                                                                                        persistIOF: F[MetadataIO[F]]
   ): RaftHttpServer[F] = {
     import httpDSL._
 

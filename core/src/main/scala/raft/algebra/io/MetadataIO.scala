@@ -1,11 +1,11 @@
 package raft.algebra.io
 
-import raft.model.Persistent
+import raft.model.Metadata
 
-trait PersistentIO[F[_]] {
+trait MetadataIO[F[_]] {
 
   // read does not need to be atomic
-  def get: F[Persistent]
+  def get: F[Metadata]
 
   /**
     * The implementation of this method must persist
@@ -15,5 +15,5 @@ trait PersistentIO[F[_]] {
     *   - JVM FileLock
     *   - embedded database
     */
-  def update(f: Persistent => Persistent): F[Unit]
+  def update(f: Metadata => Metadata): F[Unit]
 }

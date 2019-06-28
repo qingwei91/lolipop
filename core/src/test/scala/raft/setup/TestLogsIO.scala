@@ -3,10 +3,10 @@ package setup
 
 import cats.Functor
 import cats.effect.concurrent.Ref
-import raft.algebra.io.LogIO
+import raft.algebra.io.LogsApi
 import raft.model.RaftLog
 
-class TestLogsIO[F[_]: Functor](ref: Ref[F, Seq[RaftLog[String]]]) extends LogIO[F, String] {
+class TestLogsIO[F[_]: Functor](ref: Ref[F, Seq[RaftLog[String]]]) extends LogsApi[F, String] {
   override def getByIdx(idx: Int): F[Option[Log]] = ref.get.map(_.find(_.idx == idx))
 
   override def overwrite(logs: Seq[Log]): F[Unit] = ref.update { existing =>

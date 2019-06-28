@@ -81,7 +81,7 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
     } yield r
   }
 
-  private def handleReq(state: Persistent, req: AppendRequest[Cmd], follower: Follower): F[AppendResponse] = {
+  private def handleReq(state: Metadata, req: AppendRequest[Cmd], follower: Follower): F[AppendResponse] = {
     import state._
     val leaderOutdated = req.term < currentTerm
 

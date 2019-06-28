@@ -2,10 +2,10 @@ package raft
 package persistent
 
 import cats.Functor
-import raft.algebra.io.LogIO
+import raft.algebra.io.LogsApi
 import raft.model.RaftLog
 
-class SwayDBLogIO[F[_]: Functor, Cmd](db: swaydb.Map[Int, RaftLog[Cmd], F]) extends LogIO[F, Cmd] {
+class SwayDBLogsApi[F[_]: Functor, Cmd](db: swaydb.Map[Int, RaftLog[Cmd], F]) extends LogsApi[F, Cmd] {
 
   override def getByIdx(idx: Int): F[Option[Log]] = db.get(idx)
 

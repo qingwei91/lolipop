@@ -12,8 +12,8 @@ import org.http4s.{Uri, dsl}
 import pureconfig.ConfigReader
 import pureconfig.generic.auto._
 import raft.algebra._
-import raft.model.{Persistent, RaftLog}
-import raft.persistent.{SwayDBLogIO, SwayDBPersist}
+import raft.model.{Metadata, RaftLog}
+import raft.persistent.{SwayDBLogsApi, SwayDBPersist}
 import swaydb.data
 import swaydb.data.io.{FutureTransformer, Wrap}
 import swaydb.data.slice.Slice
@@ -51,16 +51,16 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
     }
   }
 
-  implicit object persistSerializer extends Serializer[Persistent] {
-    override def write(data: Persistent): Slice[Byte] =
+  implicit object persistSerializer extends Serializer[Metadata] {
+    override def write(data: Metadata): Slice[Byte] =
       Slice.create[Byte](100).addInt(data.currentTerm).addString(data.votedFor.getOrElse(""))
 
-    override def read(data: Slice[Byte]): Persistent = {
+    override def read(data: Slice[Byte]): Metadata = {
       val reader   = data.createReader()
       val currentT = reader.readInt()
       val votedRaw = reader.readRemainingAsString()
       val votedFor = if (votedRaw == "") None else Some(votedRaw)
-      Persistent(currentT, votedFor)
+      Metadata(currentT, votedFor)
     }
   }
 
@@ -108,17 +108,17 @@ object RaftHttpExample extends IOApp with CirceEntityDecoder {
     val dbPath = Paths.get("raft-sample-log")
     val db     = swaydb.persistent.Map[Int, RaftLog[ChangeCount]](dbPath)
     nt(db).map { inner =>
-      new SwayDBLogIO(inner.asyncAPI[IO])
+      new SwayDBLogsApi(inner.asyncAPI[IO])
     }
   }
 
   private val persistDB = {
     val dbPath = Paths.get("raft-sample-persist")
-    val db     = swaydb.persistent.Map[Int, Persistent](dbPath)
+    val db     = swaydb.persistent.Map[Int, Metadata](dbPath)
 
     for {
       swayMap <- nt(db).map(_.asyncAPI[IO])
-      _       <- swayMap.put(1, Persistent.init)
+      _       <- swayMap.put(1, Metadata.init)
       lock    <- MVar[IO].of(())
     } yield {
       new SwayDBPersist(swayMap.asyncAPI[IO], lock)

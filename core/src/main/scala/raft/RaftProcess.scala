@@ -9,7 +9,7 @@ import raft.algebra.append._
 import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
 import raft.algebra.event.{ EventLogger, RPCTaskScheduler }
-import raft.algebra.io.{ LogIO, NetworkIO, PersistentIO }
+import raft.algebra.io.{ LogsApi, NetworkIO, MetadataIO }
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 
@@ -28,12 +28,12 @@ object RaftProcess {
     * restart Raft process eg. after server crash
     */
   def init[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
-    stateMachine: StateMachine[F, Cmd, State],
-    clusterConfig: ClusterConfig,
-    logIO: LogIO[F, Cmd],
-    networkIO: NetworkIO[F, Cmd],
-    eventLogger: EventLogger[F, Cmd, State],
-    persistentIO: PersistentIO[F]
+                                                                   stateMachine: StateMachine[F, Cmd, State],
+                                                                   clusterConfig: ClusterConfig,
+                                                                   logIO: LogsApi[F, Cmd],
+                                                                   networkIO: NetworkIO[F, Cmd],
+                                                                   eventLogger: EventLogger[F, Cmd, State],
+                                                                   persistentIO: MetadataIO[F]
   ): F[RaftProcess[F, Cmd, State]] = {
     for {
       time <- Timer[F].clock.realTime(MILLISECONDS)
@@ -43,13 +43,13 @@ object RaftProcess {
       state = new RaftNodeState[F, Cmd] {
         override def config: ClusterConfig = clusterConfig
 
-        override def persistent: PersistentIO[F] = persistentIO
+        override def persistent: MetadataIO[F] = persistentIO
 
         override def serverTpe: Ref[F, ServerType] = serverTpeRef
 
         override def serverTpeLock: MVar[F, Unit] = lock
 
-        override def logs: LogIO[F, Cmd] = logIO
+        override def logs: LogsApi[F, Cmd] = logIO
       }
       appendHandler = new AppendRPCHandlerImpl(
         stateMachine,

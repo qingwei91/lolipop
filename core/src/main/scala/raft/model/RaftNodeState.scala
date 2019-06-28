@@ -3,14 +3,14 @@ package model
 
 import cats.Monad
 import cats.effect.concurrent.{ MVar, Ref }
-import raft.algebra.io.{ LogIO, PersistentIO }
+import raft.algebra.io.{ LogsApi, MetadataIO }
 
 trait RaftNodeState[F[_], Cmd] {
   def config: ClusterConfig
-  def persistent: PersistentIO[F]
+  def persistent: MetadataIO[F]
   def serverTpe: Ref[F, ServerType]
   def serverTpeLock: MVar[F, Unit]
-  def logs: LogIO[F, Cmd]
+  def logs: LogsApi[F, Cmd]
 
   def serverTpeMutex[A](fa: F[A])(implicit F: Monad[F]): F[A] = {
     for {
