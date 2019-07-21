@@ -1,6 +1,8 @@
 *.class
 *.log
 
+viz/src/data/events.json
+
 node_modules
 /build
 *.log*

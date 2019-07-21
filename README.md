@@ -17,3 +17,9 @@ To learn more, check [Documentation](https://qingwei91.github.io/lolipop/docs/)
 * Input: (events log, time)
 * Output: States of each node
 * Allow controlling time back and forth
+
+### Have a better way to test
+
+* Randomly generate failure, this can be encoded by a DSL (try Free)
+* Test case should test guarantee like no dirty read, no dirty write
+ 

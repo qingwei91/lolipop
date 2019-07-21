@@ -1,19 +1,20 @@
 package raft
 
 import cats._
-import cats.effect.{ Concurrent, ContextShift, Timer }
+import cats.effect.{ Concurrent, ContextShift, Resource, Timer }
 import fs2.Stream
 import fs2.concurrent._
 import raft.algebra.append._
 import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
 import raft.algebra.event.{ EventsLogger, RPCTaskScheduler }
-import raft.algebra.io.{ LogsApi, NetworkIO, MetadataIO }
+import raft.algebra.io.{ LogsApi, MetadataIO, NetworkIO }
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 
 trait RaftProcess[F[_], Cmd, State] {
-  def startRaft: Stream[F, Unit]
+
+  def startRaft: Resource[F, Stream[F, Unit]]
   def api: RaftApi[F, Cmd, State]
 }
 
@@ -85,9 +86,7 @@ object RaftProcess {
       val clientRead = new ClientReadImpl[F, State](stateMachine, state, eventLogger)
 
       new RaftProcess[F, Cmd, State] {
-        override def startRaft: Stream[F, Unit] = {
-          // this is messy and potentially incorrect due to mixing
-          // immutable data structure with concurrent queue
+        override def startRaft: Resource[F, Stream[F, Unit]] = {
 
           val rpcTasks = taskQueue.values
             .foldLeft(Stream[F, Unit]()) {
@@ -102,9 +101,9 @@ object RaftProcess {
                 )
             }
 
-          poller.start
-            .evalMap { tasks =>
-              tasks.toList.traverse_ {
+          val raftTask = poller.start
+            .evalMap { heartBeatTask =>
+              heartBeatTask.toList.traverse_ {
                 case (nodeId, task) => scheduler.register(nodeId, task)
               }
             }
@@ -115,6 +114,19 @@ object RaftProcess {
                   eventLogger.errorLogs(s"Unexpected error on RaftProc: ${err.getMessage}")
                 )
             }
+
+          val interruptible = for {
+            interruption <- Queue.bounded[F, Boolean](1)
+          } yield {
+            raftTask.interruptWhen(interruption.dequeue) -> interruption
+          }
+
+          Resource
+            .make(interruptible) {
+              case (_, interupt) =>
+                interupt.enqueue1(true)
+            }
+            .map(_._1)
         }
 
         override def api: RaftApi[F, Cmd, State] = new RaftApi[F, Cmd, State] {

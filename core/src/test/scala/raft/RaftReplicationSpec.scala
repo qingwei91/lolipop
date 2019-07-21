@@ -247,7 +247,10 @@ object RaftReplicationSpec {
     Resource
       .make(allRaftProcesses.flatMap { components =>
         components.traverse { component =>
-          val startedPoller = Concurrent[F].start(component.proc.startRaft.compile.drain)
+          val raftProc = component.proc.startRaft
+
+          val startedPoller = Concurrent[F].start(raftProc.use(_.compile.drain))
+
           startedPoller.map(component -> _)
         }
       }) { all =>

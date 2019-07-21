@@ -31,12 +31,12 @@ trait RaftHttpServer[F[_]] {
 object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
 
   def apply[F[_]: ConcurrentEffect: Timer: Monad: ContextShift, Cmd: Decoder: Encoder: Eq: Show, State: Show: Encoder](
-                                                                                                                        nodeID: String,
-                                                                                                                        networkMapping: Map[String, Uri],
-                                                                                                                        stateMachineF: F[StateMachine[F, Cmd, State]],
-                                                                                                                        httpDSL: Http4sDsl[F],
-                                                                                                                        logIOF: F[LogsApi[F, Cmd]],
-                                                                                                                        persistIOF: F[MetadataIO[F]]
+    nodeID: String,
+    networkMapping: Map[String, Uri],
+    stateMachineF: F[StateMachine[F, Cmd, State]],
+    httpDSL: Http4sDsl[F],
+    logIOF: F[LogsApi[F, Cmd]],
+    persistIOF: F[MetadataIO[F]]
   ): RaftHttpServer[F] = {
     import httpDSL._
 
@@ -118,7 +118,8 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
             )
             .withHttpApp(raftProtocol(raft.api).orNotFound)
             .serve
-          code <- raft.startRaft.as(ExitCode.Success).merge(server)
+          raftProcess <- Stream.resource(raft.startRaft)
+          code        <- raftProcess.as(ExitCode.Success).merge(server)
         } yield code
       }
     }

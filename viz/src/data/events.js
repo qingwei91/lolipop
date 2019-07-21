@@ -1,4 +1,4 @@
-const eventsToListen = [
+export const eventsToListen = [
   'ReceivedClientCmd',
   'VoteRPCReplied',
   'VoteRPCEnded',
@@ -32,9 +32,13 @@ const serverTpes = {
   CANDIDATE: 'Candidate'
 };
 
-const extractData = ev => {
-  data => {
-    const newD = Object.assign({}, data);
+export const extractData = acc => ev => {
+    const newD = Object.assign({
+      logs: [],
+      receivedCmd: [],
+      votes: [],
+    }, acc);
+
     switch (ev.tpe) {
       case 'ReceivedClientCmd':
         newD.receivedCmd.push(ev.cmd);
@@ -62,7 +66,9 @@ const extractData = ev => {
         newD.term = ev.term;
         break;
       case 'AppendRPCReplied':
-        if (ev.res.success) {
+
+        if (ev.res.success && ev.req.entries.length > 0) {
+          console.log(ev.req);
           newD.term = ev.res.term;
           newD.logs.concat(ev.req.entries);
         }
@@ -74,5 +80,6 @@ const extractData = ev => {
         newD.state = ev.state;
         break;
     }
-  }
-};
+
+    return newD;
+  };

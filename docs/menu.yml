@@ -14,7 +14,7 @@ options:
       - title: Metadata Api
         url: docs/metadata-api.html
       - title: Events Logger
-        url: docs/events-logger.html
+        url: docs/eventsData-logger.html
       - title: Raft Process
         url: docs/raft-process.html
       - title: Start!
