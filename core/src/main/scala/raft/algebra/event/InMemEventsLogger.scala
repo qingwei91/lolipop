@@ -47,4 +47,5 @@ class InMemEventsLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: S
   override def logCommittedAndExecuted(idx: Int, cmd: Cmd, latest: State): F[Unit] = add(s"Committed idx=$idx, cmd=$cmd, state=$latest")
 
   override def errorLogs(message: String): F[Unit] = add(message)
+  override def processTerminated: F[Unit] = add("RaftProcess terminated")
 }

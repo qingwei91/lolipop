@@ -124,7 +124,7 @@ object RaftProcess {
           Resource
             .make(interruptible) {
               case (_, interupt) =>
-                interupt.enqueue1(true)
+                interupt.enqueue1(true) *> eventLogger.processTerminated
             }
             .map(_._1)
         }

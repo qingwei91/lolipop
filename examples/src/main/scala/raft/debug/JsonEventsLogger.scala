@@ -96,4 +96,8 @@ class JsonEventsLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFi
     )
   )
   override def errorLogs(message: String): F[Unit] = Applicative[F].unit
+
+  override def processTerminated: F[Unit] = jsonToFile(
+    Json.obj("tpe" -> "Termination".asJson)
+  )
 }

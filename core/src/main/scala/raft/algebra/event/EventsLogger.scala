@@ -22,4 +22,5 @@ trait EventsLogger[F[_], Cmd, State] {
   def logCommittedAndExecuted(idx: Int, cmd: Cmd, latest: State): F[Unit]
 
   def errorLogs(message: String): F[Unit]
+  def processTerminated: F[Unit]
 }

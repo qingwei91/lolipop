@@ -1,7 +1,7 @@
 *.class
 *.log
 
-viz/src/data/events.json
+**/events.json
 
 node_modules
 /build
