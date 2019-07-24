@@ -9,7 +9,7 @@ class TestMetadata[F[_]](ref: Ref[F, Metadata]) extends MetadataIO[F] {
 
   /**
     * The implementation of this method must persist
-    * the `Persistent` atomically
+    * `Metadata` atomically
     *
     * possible implementation:
     *   - JVM FileLock
