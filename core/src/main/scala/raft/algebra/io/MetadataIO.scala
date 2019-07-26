@@ -8,8 +8,7 @@ trait MetadataIO[F[_]] {
   def get: F[Metadata]
 
   /**
-    * The implementation of this method must persist
-    * the `Persistent` atomically
+    * This method need to be thread safe
     *
     * possible implementation:
     *   - JVM FileLock

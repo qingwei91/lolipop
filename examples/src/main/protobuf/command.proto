@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package com.example.protos;
+
+// The greeting service definition.
+service Counter {
+  // Sends a greeting
+  rpc Increase (Increment) returns (Count) {}
+}
+
+// The request message containing the user's name.
+message Increment {
+  string id = 1;
+}
+
+// The response message containing the greetings
+message Count {
+    int32 count = 1;
+}

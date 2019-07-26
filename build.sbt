@@ -40,18 +40,25 @@ lazy val examples = project
   .dependsOn(core % "test->test;compile->compile", swaydbPersisent)
   .settings(common)
   .settings(
+    PB.targets in Compile := Seq(
+      scalapb.gen() -> (sourceManaged in Compile).value
+    ),
     libraryDependencies ++= Seq(
-      "org.http4s"            %% "http4s-dsl"          % http4sVersion,
-      "org.http4s"            %% "http4s-blaze-server" % http4sVersion,
-      "org.http4s"            %% "http4s-blaze-client" % http4sVersion,
-      "org.http4s"            %% "http4s-circe"        % http4sVersion,
-      "io.circe"              %% "circe-core"          % circeVersion,
-      "io.circe"              %% "circe-literal"       % circeVersion,
-      "io.circe"              %% "circe-generic"       % circeVersion,
-      "io.circe"              %% "circe-parser"        % circeVersion,
-      "com.github.pureconfig" %% "pureconfig"          % "0.10.2",
-      "io.swaydb"             %% "swaydb"              % "0.8-beta.7"
-    )
+      "org.http4s"            %% "http4s-dsl"           % http4sVersion,
+      "org.http4s"            %% "http4s-blaze-server"  % http4sVersion,
+      "org.http4s"            %% "http4s-blaze-client"  % http4sVersion,
+      "org.http4s"            %% "http4s-circe"         % http4sVersion,
+      "io.circe"              %% "circe-core"           % circeVersion,
+      "io.circe"              %% "circe-literal"        % circeVersion,
+      "io.circe"              %% "circe-generic"        % circeVersion,
+      "io.circe"              %% "circe-parser"         % circeVersion,
+      "com.github.pureconfig" %% "pureconfig"           % "0.10.2",
+      "io.swaydb"             %% "swaydb"               % "0.8-beta.7",
+      "io.grpc"               % "grpc-netty"            % scalapb.compiler.Version.grpcJavaVersion,
+      "com.thesamet.scalapb"  %% "scalapb-runtime"      % scalapb.compiler.Version.scalapbVersion % "protobuf",
+      "com.thesamet.scalapb"  %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
+    ),
+    wartremoverExcluded += sourceManaged.value
   )
 
 lazy val http4sVersion = "0.20.0-M5"
