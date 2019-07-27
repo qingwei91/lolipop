@@ -1,6 +1,6 @@
-syntax = "proto3";
+syntax = "proto2";
 
-package com.example.protos;
+package raft.grpc;
 
 // The greeting service definition.
 service Counter {
@@ -8,12 +8,11 @@ service Counter {
   rpc Increase (Increment) returns (Count) {}
 }
 
-// The request message containing the user's name.
 message Increment {
-  string id = 1;
+  required int32 count = 1;
 }
 
 // The response message containing the greetings
 message Count {
-    int32 count = 1;
+    required int32 count = 1;
 }

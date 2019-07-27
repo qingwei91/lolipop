@@ -1,4 +1,4 @@
-package raft.http
+package raft
 
 import org.http4s.Uri
 

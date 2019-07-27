@@ -2,20 +2,21 @@ package raft.http
 
 import java.nio.file.Paths
 
-import cats.effect.concurrent.{MVar, Ref}
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.concurrent.{ MVar, Ref }
+import cats.effect.{ ExitCode, IO, IOApp }
 import cats.implicits._
-import cats.{Eq, ~>}
+import cats.{ Eq, ~> }
 import io.circe.generic.auto._
 import org.http4s.circe._
-import org.http4s.{Uri, dsl}
+import org.http4s.{ Uri, dsl }
 import pureconfig.ConfigReader
 import pureconfig.generic.auto._
+import raft.RawConfig
 import raft.algebra._
-import raft.model.{Metadata, RaftLog}
-import raft.persistent.{SwayDBLogsApi, SwayDBPersist}
+import raft.model.{ Metadata, RaftLog }
+import raft.persistent.{ SwayDBLogsApi, SwayDBPersist }
 import swaydb.data
-import swaydb.data.io.{FutureTransformer, Wrap}
+import swaydb.data.io.{ FutureTransformer, Wrap }
 import swaydb.data.slice.Slice
 import swaydb.serializers.Default._
 import swaydb.serializers.Serializer

@@ -1,0 +1,43 @@
+syntax = "proto2";
+
+import "command.proto";
+
+package raft.grpc.server;
+
+service PeerRPC {
+    rpc Append (AppendRequestProto) returns (AppendResponseProto) {}
+    rpc Get (VoteRequestProto) returns (VoteResponseProto) {}
+}
+
+message AppendRequestProto {
+    required int32 term = 1;
+    required string leaderId = 2;
+    optional int32 prevLogIdx = 3;
+    optional int32 prevLogTerm = 4;
+    repeated Log entries = 5;
+    required int32 leaderCommit = 6;
+}
+
+message AppendResponseProto {
+    required int32 term = 1;
+    required bool success = 2;
+}
+
+message Log {
+    required int32 idx = 1;
+    required int32 term = 2;
+    required Increment cmd = 3;
+}
+
+message VoteRequestProto {
+    required int32 term = 1;
+    required string candidateID = 2;
+    optional int32 lastLogIdx = 3;
+    optional int32 lastLogTerm = 4;
+}
+
+message VoteResponseProto {
+    required int32 term = 1;
+    required bool granted = 2;
+}
+

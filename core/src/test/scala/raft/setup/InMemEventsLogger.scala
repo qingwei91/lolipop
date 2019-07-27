@@ -1,10 +1,11 @@
-package raft
-package algebra.event
+package raft.setup
 
 import java.time.LocalTime
 
+import cats.syntax.show._
 import cats.effect.concurrent.Ref
-import cats.{ Applicative, Show }
+import cats.{Applicative, Show}
+import raft.algebra.event.EventsLogger
 import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any", "org.wartremover.warts.Null"))

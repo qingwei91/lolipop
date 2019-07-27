@@ -6,7 +6,7 @@ import cats.effect._
 import fs2.concurrent.{ Queue, Topic }
 import raft.algebra.append._
 import raft.algebra.election._
-import raft.algebra.event.{ EventsLogger, InMemEventsLogger }
+import raft.algebra.event.EventsLogger
 import raft.model._
 import raft.setup._
 
@@ -14,8 +14,8 @@ import scala.concurrent.duration._
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 class RaftTestDeps[F[_]](
-                          logger: String => EventsLogger[F, String, String],
-                          shouldFail: (String, String) => Boolean = (_, _) => false,
+  logger: String => EventsLogger[F, String, String],
+  shouldFail: (String, String) => Boolean = (_, _) => false,
 )(
   implicit cs: ContextShift[F],
   tm: Timer[F],
