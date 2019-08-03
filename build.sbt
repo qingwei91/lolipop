@@ -1,3 +1,4 @@
+import com.typesafe.sbt.packager.docker.DockerPermissionStrategy
 import sbt.Keys.scalaVersion
 
 lazy val lolipop = project
@@ -37,6 +38,8 @@ lazy val swaydbPersisent = project
 
 lazy val examples = project
   .in(file("examples"))
+  .enablePlugins(DockerPlugin)
+  .enablePlugins(AshScriptPlugin)
   .dependsOn(core % "test->test;compile->compile", swaydbPersisent)
   .settings(common)
   .settings(
@@ -58,7 +61,23 @@ lazy val examples = project
       "com.thesamet.scalapb"  %% "scalapb-runtime"      % scalapb.compiler.Version.scalapbVersion % "protobuf",
       "com.thesamet.scalapb"  %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
     ),
-    wartremoverExcluded += sourceManaged.value
+    wartremoverExcluded += sourceManaged.value,
+    mainClass in ThisBuild := Some("raft.grpc.RaftGrpcExample"),
+    mainClass in assembly := Some("raft.grpc.RaftGrpcExample"),
+    assemblyMergeStrategy in assembly := {
+      case path if path.endsWith("META-INF/INDEX.LIST") => MergeStrategy.concat
+      case path if path.endsWith("logback.xml") => MergeStrategy.first
+      case path if path.endsWith("META-INF/MANIFEST.MF") => MergeStrategy.discard
+      case _ => MergeStrategy.first
+    }
+  )
+  .settings(
+    maintainer in Docker := "QingWei",
+    dockerBaseImage := "openjdk:8-alpine",
+    daemonUserUid in Docker := None,
+    daemonUser in Docker := "root",
+    dockerExposedPorts := Seq(80),
+    dockerPermissionStrategy := DockerPermissionStrategy.Run
   )
 
 lazy val http4sVersion = "0.20.0-M5"
@@ -117,7 +136,6 @@ lazy val common = Def.settings(
   scalacOptions in Test ++= Seq("-Yrangepos"),
   testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "failtrace"),
   wartremoverErrors ++= Warts.unsafe,
-  addCompilerPlugin(("org.scalameta" % "paradise" % "3.0.0-M11").cross(CrossVersion.full)),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.0")
 )
 lazy val coreDeps = Seq(

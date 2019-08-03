@@ -95,7 +95,7 @@ object RaftProcess {
                   queue.dequeue.evalMap(
                     _.recoverWith {
                       case err =>
-                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: ${err.getMessage}")
+                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
                     }
                   )
                 )

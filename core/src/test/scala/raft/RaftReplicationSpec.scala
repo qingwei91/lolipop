@@ -11,7 +11,6 @@ import org.specs2.execute.Result
 import org.specs2.matcher.MatchResult
 import org.specs2.specification.core.SpecStructure
 import raft.RaftReplicationSpec._
-import raft.algebra.event.InMemEventsLogger
 import raft.model._
 import raft.setup._
 
