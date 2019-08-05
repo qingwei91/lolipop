@@ -1,7 +1,8 @@
 package raft
 
 import cats._
-import cats.effect.{ Concurrent, ContextShift, Resource, Timer }
+import cats.effect._
+import cats.effect.concurrent.Ref
 import fs2.Stream
 import fs2.concurrent._
 import raft.algebra.append._
@@ -9,6 +10,7 @@ import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
 import raft.algebra.event.{ EventsLogger, RPCTaskScheduler }
 import raft.algebra.io.{ LogsApi, MetadataIO, NetworkIO }
+import raft.algebra.membership.MembershipStateMachine
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 
@@ -32,7 +34,7 @@ object RaftProcess {
     networkIO: NetworkIO[F, Cmd],
     eventLogger: EventsLogger[F, Cmd, State],
     metadataIO: MetadataIO[F]
-  ): F[RaftProcess[F, Cmd, State]] = {
+  )(implicit membershipProjection: State => ClusterMembership): F[RaftProcess[F, Cmd, State]] = {
     for {
       state <- RaftNodeState.init(clusterConfig, metadataIO, logsApi)
       appendHandler = new AppendRPCHandlerImpl(
@@ -47,6 +49,37 @@ object RaftProcess {
     }
   }
 
+  // method for the lazy, this will construct a raft node that support
+  // dynamic membership, we cannot fully encapsulate dynamic membership part
+  // as it impacts things like persistent, network and logging
+  def dynamicMembership[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
+    stateMachine: StateMachine[F, Cmd, State],
+    clusterConfig: ClusterConfig,
+    logsApi: LogsApi[F, Either[Cmd, AddMemberRequest]],
+    networkIO: NetworkIO[F, Either[Cmd, AddMemberRequest]],
+    eventLogger: EventsLogger[F, Either[Cmd, AddMemberRequest], (State, ClusterMembership)],
+    metadataIO: MetadataIO[F]
+  ): F[RaftProcess[F, Either[Cmd, AddMemberRequest], (State, ClusterMembership)]] = {
+
+    implicit val projection: ((State, ClusterMembership)) => ClusterMembership = _._2
+
+    for {
+      membershipRef <- Ref[F].of(ClusterMembership(clusterConfig.nodeId, Set.empty))
+      membershipStateMachine = new MembershipStateMachine(membershipRef)
+      fullStateMachine       = StateMachine.compose(stateMachine, membershipStateMachine)
+      state <- RaftNodeState.init(clusterConfig, metadataIO, logsApi)
+      appendHandler = new AppendRPCHandlerImpl(
+        fullStateMachine,
+        state,
+        eventLogger
+      )
+      voteHandler = new VoteRPCHandlerImpl(state, eventLogger)
+      proc <- RaftProcess.apply(fullStateMachine, state, networkIO, appendHandler, voteHandler, eventLogger)
+    } yield {
+      proc
+    }
+  }
+
   def apply[F[_]: Concurrent: Timer: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
     state: RaftNodeState[F, Cmd],
@@ -54,24 +87,19 @@ object RaftProcess {
     appendHandler: AppendRPCHandler[F, Cmd],
     voteHandler: VoteRPCHandler[F],
     eventLogger: EventsLogger[F, Cmd, State]
+  )(
+    implicit membershipProjection: State => ClusterMembership
   ): F[RaftProcess[F, Cmd, State]] = {
-    val peers = state.config.peersId.toList
     for {
-      committedTopic <- CustomTopics[F, Cmd]
-      taskQueue <- peers
-                    .traverse { nodeId =>
-                      Queue
-                        .bounded[F, F[Unit]](100)
-                        .map(nodeId -> _)
-                    }
-                    .map(_.toMap)
+      committedTopic    <- CustomTopics[F, Cmd]
+      singleQueueForAll <- Queue.bounded[F, F[Unit]](100)
     } yield {
 
-      val scheduler = RPCTaskScheduler(taskQueue)
+      val scheduler = RPCTaskScheduler.singleQueue(singleQueueForAll)
       val appendInitiator =
         new BroadcastAppendImpl(networkIO, stateMachine, state, committedTopic.publish1, eventLogger)
 
-      val voteInitiator = new BroadcastVoteImpl(state, networkIO, eventLogger)
+      val voteInitiator = new BroadcastVoteImpl(state, networkIO, eventLogger, stateMachine)
 
       val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator)
 
@@ -83,23 +111,26 @@ object RaftProcess {
         eventLogger
       )
 
-      val clientRead = new ClientReadImpl[F, State](stateMachine, state, eventLogger)
+      val clientRead = new ClientReadImpl(stateMachine, state, eventLogger)
 
       new RaftProcess[F, Cmd, State] {
         override def startRaft: Resource[F, Stream[F, Unit]] = {
 
-          val rpcTasks = taskQueue.values
-            .foldLeft(Stream[F, Unit]()) {
-              case (merged, queue) =>
-                merged.merge(
-                  queue.dequeue.evalMap(
-                    _.recoverWith {
-                      case err =>
-                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
-                    }
-                  )
-                )
-            }
+          val rpcTasks = singleQueueForAll.dequeue.parEvalMapUnordered(5)(_.recoverWith {
+            case err => eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
+          })
+//          val rpcTasks = taskQueuePerPeer.values
+//            .foldLeft(Stream[F, Unit]()) {
+//              case (merged, queue) =>
+//                merged.merge(
+//                  queue.dequeue.evalMap(
+//                    _.recoverWith {
+//                      case err =>
+//                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
+//                    }
+//                  )
+//                )
+//            }
 
           val raftTask = poller.start
             .evalMap { heartBeatTask =>

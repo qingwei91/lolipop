@@ -1,5 +1,6 @@
 package raft
-package algebra.election
+package algebra
+package election
 
 import cats.MonadError
 import cats.effect._
@@ -7,11 +8,12 @@ import raft.algebra.event.EventsLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
 
-class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
+class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd, State](
   allState: RaftNodeState[F, Cmd],
   networkManager: NetworkIO[F, Cmd],
-  eventLogger: EventsLogger[F, Cmd, _]
-)(implicit F: MonadError[F, Throwable])
+  eventLogger: EventsLogger[F, Cmd, _],
+  queryState: QueryState[F, State]
+)(implicit F: MonadError[F, Throwable], stateToMembership: State => ClusterMembership)
     extends BroadcastVote[F] {
 
   override def requestVotes: F[Map[String, F[Unit]]] = {
@@ -30,8 +32,9 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
       persistent <- allState.metadata.get
       last       <- allState.logs.lastLog
       voteReq = VoteRequest(persistent.currentTerm, nodeId, last.map(_.idx), last.map(_.term))
+      state <- queryState.getCurrent
     } yield {
-      allState.config.peersId.map { target =>
+      stateToMembership(state).peersId.map { target =>
         target -> eventLogger.voteRPCStarted(voteReq, target) *> sendReq(target, voteReq)
       }.toMap
     }
@@ -46,7 +49,6 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
   }
 
   private def processVote(targetPeer: String, res: VoteResponse, req: VoteRequest): F[Unit] = allState.serverTpeMutex {
-    val conf = allState.config
     for {
 
       maybeCandidate <- allState.serverTpe.modify {
@@ -59,16 +61,18 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
       persistent <- allState.metadata.get
       lastLog    <- allState.logs.lastLog
 
+      currentCluster <- queryState.getCurrent.map(stateToMembership)
+      peersId = currentCluster.peersId
       // should we wrap this in critical region??
       // in theory we dont have to as the changes is convergent
-      // meaning multi-threading should not impact the leader promotion
+      // meaning concurrency should not impact the leader promotion
       // #monotonic
       r <- maybeCandidate match {
             case Some(cand) =>
               val totalVotes = cand.receivedVotes.count {
                 case (_, voted) => voted
               }
-              val enoughVotes = (totalVotes + 1) * 2 > conf.peersId.size + 1
+              val enoughVotes = (totalVotes + 1) * 2 > peersId.size + 1
               if (enoughVotes) {
                 eventLogger.elected(persistent.currentTerm, lastLog.map(_.idx)) *>
                 allState.serverTpe.update {
@@ -77,8 +81,8 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd](
                     Leader(
                       c.commitIdx,
                       c.lastApplied,
-                      conf.peersId.map(_ -> nextLogIdx).toMap, // todo: might be wrong when no logs
-                      conf.peersId.map(_ -> 0).toMap
+                      peersId.map(_ -> nextLogIdx).toMap, // todo: might be wrong when no logs
+                      peersId.map(_ -> 0).toMap
                     )
                   case other => other
                 }

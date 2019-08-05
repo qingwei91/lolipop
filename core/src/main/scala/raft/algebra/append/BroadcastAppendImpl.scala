@@ -4,7 +4,7 @@ package algebra.append
 import cats.MonadError
 import cats.effect.{ ContextShift, Timer }
 import org.slf4j.{ Logger, LoggerFactory }
-import raft.algebra.ChangeState
+import raft.algebra.StateMachine
 import raft.algebra.event.EventsLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
@@ -13,23 +13,25 @@ import scala.concurrent.duration.MILLISECONDS
 
 class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
   networkManager: NetworkIO[F, Cmd],
-  stateMachine: ChangeState[F, Cmd, State],
+  stateMachine: StateMachine[F, Cmd, State],
   allState: RaftNodeState[F, Cmd],
   publishCommittedEvent: Cmd => F[Unit],
   eLogger: EventsLogger[F, Cmd, State]
-)(implicit F: MonadError[F, Throwable])
+)(implicit F: MonadError[F, Throwable], stateToMembership: State => ClusterMembership)
     extends BroadcastAppend[F] {
   type Log = RaftLog[Cmd]
 
   private val logger: Logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
 
   override def replicateLogs: F[Map[String, F[Unit]]] = {
-    allState.config.peersId
-      .map { pId =>
+    for {
+      st <- stateMachine.getCurrent
+    } yield {
+      val memberShip = stateToMembership(st)
+      memberShip.peersId.map { pId =>
         pId -> taskPerPeer(pId)
-      }
-      .toMap
-      .pure[F]
+      }.toMap
+    }
   }
 
   private def taskPerPeer(peerId: String): F[Unit] = {

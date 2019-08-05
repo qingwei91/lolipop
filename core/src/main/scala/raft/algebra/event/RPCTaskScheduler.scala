@@ -26,4 +26,10 @@ object RPCTaskScheduler {
     }
   }
 
+  def singleQueue[F[_]](q: Queue[F, F[Unit]]): RPCTaskScheduler[F] = {
+    new RPCTaskScheduler[F] {
+      override def register(nodeId: String, task: F[Unit]): F[Unit] = q.enqueue1(task)
+    }
+  }
+
 }
