@@ -14,14 +14,19 @@ import raft.algebra.membership.MembershipStateMachine
 import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 
+/**
+  * todo: Can be decouple startRaft and api?
+  * Reality is that startRaft and api are related but not captured in type
+  *
+  * user should not start calling api before startRaft is evaluated
+  *
+  */
 trait RaftProcess[F[_], Cmd, State] {
-
   def startRaft: Resource[F, Stream[F, Unit]]
   def api: RaftApi[F, Cmd, State]
 }
-
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
-object RaftProcess {
+object RaftProcess extends RaftProcessInstances {
 
   /**
     * Method used to start a RaftProcess, can be use to
@@ -172,5 +177,27 @@ object RaftProcess {
         }
       }
     }
+  }
+}
+
+trait RaftProcessInstances {
+  implicit def deriveFunctor[F[_], Cmd](
+    implicit apiFunctor: Functor[RaftApi[F, Cmd, ?]]
+  ): Functor[RaftProcess[F, Cmd, ?]] = new Functor[RaftProcess[F, Cmd, ?]] {
+    override def map[A, B](fa: RaftProcess[F, Cmd, A])(f: A => B): RaftProcess[F, Cmd, B] = new RaftProcess[F, Cmd, B] {
+      override def startRaft: Resource[F, Stream[F, Unit]] = fa.startRaft
+      override def api: RaftApi[F, Cmd, B]                 = apiFunctor.map(fa.api)(f)
+    }
+  }
+
+  implicit def deriveContravariant[F[_], State](
+    implicit apiContra: Contravariant[RaftApi[F, ?, State]]
+  ): Contravariant[RaftProcess[F, ?, State]] = new Contravariant[RaftProcess[F, ?, State]] {
+    override def contramap[A, B](fa: RaftProcess[F, A, State])(f: B => A): RaftProcess[F, B, State] =
+      new RaftProcess[F, B, State] {
+        override def startRaft: Resource[F, Stream[F, Unit]] = fa.startRaft
+
+        override def api: RaftApi[F, B, State] = apiContra.contramap(fa.api)(f)
+      }
   }
 }
