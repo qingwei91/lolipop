@@ -14,12 +14,12 @@ import scala.concurrent.duration._
 class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
   val stateMachine: ChangeState[F, Cmd, State],
   val allState: RaftNodeState[F, Cmd],
-  elogger: EventsLogger[F, Cmd, State]
+  val elogger: EventsLogger[F, Cmd, State]
 )(implicit F: MonadError[F, Throwable])
     extends AppendRPCHandler[F, Cmd] {
   type Log = RaftLog[Cmd]
 
-  private val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
+  private val logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.nodeId}")
 
   override def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse] = allState.serverTpeMutex {
     for {

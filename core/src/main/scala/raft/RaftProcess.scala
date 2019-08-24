@@ -34,14 +34,14 @@ object RaftProcess extends RaftProcessInstances {
     */
   def init[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
-    clusterConfig: ClusterConfig,
+    nodeId: String,
     logsApi: LogsApi[F, Cmd],
     networkIO: NetworkIO[F, Cmd],
     eventLogger: EventsLogger[F, Cmd, State],
     metadataIO: MetadataIO[F]
   )(implicit membershipProjection: State => ClusterMembership): F[RaftProcess[F, Cmd, State]] = {
     for {
-      state <- RaftNodeState.init(clusterConfig, metadataIO, logsApi)
+      state <- RaftNodeState.init(nodeId, metadataIO, logsApi)
       appendHandler = new AppendRPCHandlerImpl(
         stateMachine,
         state,
@@ -57,9 +57,10 @@ object RaftProcess extends RaftProcessInstances {
   // method for the lazy, this will construct a raft node that support
   // dynamic membership, we cannot fully encapsulate dynamic membership part
   // as it impacts things like persistent, network and logging
+  // so it leaks into the constructor in logsApi, networkIO and eventLogger
   def dynamicMembership[F[_]: Timer: Concurrent: ContextShift, Cmd: Eq, State](
     stateMachine: StateMachine[F, Cmd, State],
-    clusterConfig: ClusterConfig,
+    nodeId: String,
     logsApi: LogsApi[F, Either[Cmd, AddMemberRequest]],
     networkIO: NetworkIO[F, Either[Cmd, AddMemberRequest]],
     eventLogger: EventsLogger[F, Either[Cmd, AddMemberRequest], (State, ClusterMembership)],
@@ -69,10 +70,10 @@ object RaftProcess extends RaftProcessInstances {
     implicit val projection: ((State, ClusterMembership)) => ClusterMembership = _._2
 
     for {
-      membershipRef <- Ref[F].of(ClusterMembership(clusterConfig.nodeId, Set.empty))
+      membershipRef <- Ref[F].of(ClusterMembership(nodeId, Set.empty))
       membershipStateMachine = new MembershipStateMachine(membershipRef)
       fullStateMachine       = StateMachine.compose(stateMachine, membershipStateMachine)
-      state <- RaftNodeState.init(clusterConfig, metadataIO, logsApi)
+      state <- RaftNodeState.init(nodeId, metadataIO, logsApi)
       appendHandler = new AppendRPCHandlerImpl(
         fullStateMachine,
         state,

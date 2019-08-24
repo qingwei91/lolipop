@@ -9,7 +9,7 @@ import raft.algebra.io.{ LogsApi, MetadataIO }
 import scala.concurrent.duration.MILLISECONDS
 
 trait RaftNodeState[F[_], Cmd] {
-  def config: ClusterConfig
+  def nodeId: String
   def metadata: MetadataIO[F]
   def serverTpe: Ref[F, ServerType]
   def serverTpeLock: MVar[F, Unit]
@@ -28,7 +28,7 @@ trait RaftNodeState[F[_], Cmd] {
 
 object RaftNodeState {
   def init[F[_]: Timer: Monad: Concurrent, Cmd](
-    clusterConfig: ClusterConfig,
+    node: String,
     metaIO: MetadataIO[F],
     logIO: LogsApi[F, Cmd]
   ): F[RaftNodeState[F, Cmd]] = {
@@ -39,7 +39,6 @@ object RaftNodeState {
       lock         <- MVar[F].of(())
     } yield {
       new RaftNodeState[F, Cmd] {
-        override def config: ClusterConfig = clusterConfig
 
         override def metadata: MetadataIO[F] = metaIO
 
@@ -48,6 +47,8 @@ object RaftNodeState {
         override def serverTpeLock: MVar[F, Unit] = lock
 
         override def logs: LogsApi[F, Cmd] = logIO
+
+        override def nodeId: String = node
       }
     }
   }

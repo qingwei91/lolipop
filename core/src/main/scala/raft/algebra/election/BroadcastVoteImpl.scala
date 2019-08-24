@@ -27,7 +27,7 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd, State
   }
 
   private def broadcastVoteReq: F[Map[String, F[Unit]]] = {
-    val nodeId = allState.config.nodeId
+    val nodeId = allState.nodeId
     for {
       persistent <- allState.metadata.get
       last       <- allState.logs.lastLog

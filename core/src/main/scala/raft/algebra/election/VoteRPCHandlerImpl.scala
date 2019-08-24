@@ -9,8 +9,8 @@ import raft.model._
 import scala.concurrent.duration._
 
 class VoteRPCHandlerImpl[F[_]: Monad: Timer, Cmd](
-  allState: RaftNodeState[F, Cmd],
-  eventLogger: EventsLogger[F, Cmd, _]
+  val allState: RaftNodeState[F, Cmd],
+  val eventLogger: EventsLogger[F, Cmd, _]
 ) extends VoteRPCHandler[F] {
   type Log = RaftLog[Cmd]
 

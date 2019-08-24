@@ -21,7 +21,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
     extends BroadcastAppend[F] {
   type Log = RaftLog[Cmd]
 
-  private val logger: Logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.config.nodeId}")
+  private val logger: Logger = LoggerFactory.getLogger(s"${getClass.getSimpleName}.${allState.nodeId}")
 
   override def replicateLogs: F[Map[String, F[Unit]]] = {
     for {
@@ -44,7 +44,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
       } yield {
         AppendRequest(
           term         = persistent.currentTerm,
-          leaderId     = allState.config.nodeId,
+          leaderId     = allState.nodeId,
           prevLogIdx   = prevLog.map(_.idx),
           prevLogTerm  = prevLog.map(_.term),
           entries      = logsToSend,

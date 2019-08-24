@@ -57,7 +57,7 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd](
 
       votingReq <- if (timeoutReached) {
                     val newServerTpe = Candidate(nonLeader.commitIdx, nonLeader.lastApplied, timeInMillis, Map.empty)
-                    val selfId       = allState.config.nodeId
+                    val selfId       = allState.nodeId
 
                     for {
                       _ <- allState.serverTpe.set(newServerTpe)
