@@ -5,7 +5,7 @@ import raft.algebra.io.{ LogsApi, MetadataIO }
 import raft.model._
 
 case class TestState[F[_]](
-                            config: ClusterConfig,
+                            nodeId: String,
                             metadata: MetadataIO[F],
                             serverTpe: Ref[F, ServerType],
                             serverTpeLock: MVar[F, Unit],

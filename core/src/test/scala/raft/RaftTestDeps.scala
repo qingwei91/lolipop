@@ -39,10 +39,9 @@ class RaftTestDeps[F[_]](
         baseLog         <- Ref.of[F, Seq[RaftLog[String]]](Seq.empty)
         testState       <- Ref[F].of("")
       } yield {
-        val clusterConf  = ClusterConfig(i, clientIds - i)
         val stateMachine = new TestStateMachine[F](testState)
         val state = TestState(
-          clusterConf,
+          i,
           new TestMetadata(persist),
           servTpe,
           lock,
@@ -71,9 +70,9 @@ class RaftTestDeps[F[_]](
 
       data.traverse {
         case (_, voteHandler, AllState(stateMachine, allState, _, _), appendHandler, eventLogger) =>
-          // this will model static membership, keep it for now
+          // TODO: hack to model static membership, fix it
           implicit val staticMembershipHack: String => ClusterMembership =
-            _ => ClusterMembership(allState.config.nodeId, allState.config.peersId)
+            _ => ClusterMembership(allState.nodeId, clientIds - allState.nodeId)
 
           for {
             proc <- RaftProcess(

@@ -48,7 +48,7 @@ class RaftReplicationSpec extends Specification {
       val check_logs_replicated = managedProcesses(tasksIO).use { raftComponents =>
         val statesOfAllNode = raftComponents.map(_.state)
         val clients = raftComponents.map { components =>
-          components.state.config.nodeId -> components.api
+          components.state.nodeId -> components.api
         }.toNem
 
         val commands = NonEmptyList.fromListUnsafe((0 to reqCount).map(i => s"Cmd$i").toList)
@@ -132,7 +132,7 @@ class RaftReplicationSpec extends Specification {
     val checkLogCommitted = managedProcesses(tasksIO).use { testData =>
       val statesOfAllNode = testData.map(_.state)
       val clients = testData.map { components =>
-        components.state.config.nodeId -> components.api
+        components.state.nodeId -> components.api
       }.toNem
 
       val clientResIO = TestClient.writeToLeader(clients.toSortedMap)("0", "Cmd1")
@@ -179,7 +179,7 @@ class RaftReplicationSpec extends Specification {
     val checkLogCommitted = managedProcesses(tasksIO).use { testData =>
       val statesOfAllNode = testData.map(_.state)
       val clients = testData.map { components =>
-        components.state.config.nodeId -> components.api
+        components.state.nodeId -> components.api
       }.toNem
 
       val clientResIO = IO
@@ -214,7 +214,7 @@ class RaftReplicationSpec extends Specification {
   def printLogsToFile(raftComponents: NonEmptyList[RaftTestComponents[IO]]): IO[Unit] = {
     val rand = Random.nextInt(10000)
     raftComponents.traverse_ { comp =>
-      val nodeId = comp.state.config.nodeId
+      val nodeId = comp.state.nodeId
       comp.eventLogger
         .asInstanceOf[InMemEventsLogger[IO, String, String]]
         .logs
