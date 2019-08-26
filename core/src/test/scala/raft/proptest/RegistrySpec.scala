@@ -1,8 +1,8 @@
 package raft
 package proptest
 
-import cats.{ Contravariant, Show }
-import cats.effect.{ ContextShift, IO, Sync, Timer }
+import cats._
+import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.kernel.Eq
 import org.specs2.Specification
@@ -10,17 +10,19 @@ import org.specs2.specification.core.SpecStructure
 import raft.algebra.StateMachine
 import raft.algebra.append.{ AppendRPCHandler, AppendRPCHandlerImpl }
 import raft.algebra.election.{ VoteRPCHandler, VoteRPCHandlerImpl }
+import raft.algebra.event.EventsLogger
 import raft.algebra.membership.MembershipStateMachine
 import raft.model._
 import raft.setup._
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.global
 
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
 class RegistrySpec extends Specification {
   override def is: SpecStructure =
     s2"""
-
+      $simpleTest
       """
 
   import RegistrySpec._
@@ -32,6 +34,7 @@ class RegistrySpec extends Specification {
   import RaftApi.apiContravariant
   import RaftProcess.deriveContravariant
 
+  // for some reason compiler failed to derive this instance
   implicit val contra: Contravariant[RaftProcess[IO, ?, Map[String, String]]] = deriveContravariant
 
   def simpleTest = {
@@ -41,15 +44,18 @@ class RegistrySpec extends Specification {
       _ <- stopAll
     } yield ()
 
+    runProgram(program).unsafeRunTimed(10.seconds) must_=== Some(())
+  }
+
+  def runProgram[A](program: RegistryProgram[A]): IO[A] = {
     for {
-      cluster  <- prepareRaft(List("1", "2", "3"))
+      cluster  <- prepareRaft[IO](List("1", "2", "3"), CommutativeApplicative[IO])
       internal <- Ref[IO].of(InternalState(Map.empty, Set.empty))
       refined = cluster.mapValues { proc =>
-        val mapped: RaftProcess[IO, Cmd, Map[String, String]] = proc.map(_._1)
-
+        val mapped = proc.map(_._1)
         contra.contramap[Cmd, RegistryCmd](mapped)(Left(_))
       }
-      exe <- program.foldMap(compile(refined, internal))
+      exe <- program.foldMap(toIO(refined, internal))
     } yield exe
   }
 
@@ -64,12 +70,12 @@ object RegistrySpec {
   implicit val cmdEq: Eq[Cmd]                                            = Eq.fromUniversalEquals[Cmd]
   implicit val showState: Show[(Map[String, String], ClusterMembership)] = Show.fromToString[State]
 
-  case class Stuff(
-    sm: StateMachine[IO, Cmd, State],
-    nodeS: RaftNodeState[IO, Cmd],
-    append: AppendRPCHandler[IO, Cmd],
-    vote: VoteRPCHandler[IO],
-    logger: InMemEventsLogger[IO, Cmd, State]
+  case class Stuff[F[_]](
+    sm: StateMachine[F, Cmd, State],
+    nodeS: RaftNodeState[F, Cmd],
+    append: AppendRPCHandler[F, Cmd],
+    vote: VoteRPCHandler[F],
+    logger: EventsLogger[F, Cmd, State]
   )
 
   def stateMachineWithMembership[F[_]: Sync, C, S](
@@ -83,46 +89,44 @@ object RegistrySpec {
       StateMachine.compose(stateMachine, membershipStateMachine)
     }
   }
-  def prepareHandlers(id: String)(
-    implicit cs: ContextShift[IO],
-    tm: Timer[IO]
-  ): IO[Stuff] = {
+  def prepareHandlers[F[_]: Sync: Concurrent](id: String)(
+    implicit tm: Timer[F]
+  ): F[Stuff[F]] = {
     for {
-      refMap           <- Ref[IO].of(Map.empty[String, String])
-      refLog           <- Ref[IO].of(Seq.empty[RaftLog[Either[RegistryCmd, AddMemberRequest]]])
-      refMetadata      <- Ref[IO].of(Metadata(0, None))
-      refStrBuf        <- Ref[IO].of(new StringBuffer(10000))
+      refMap           <- Ref[F].of(Map.empty[String, String])
+      refLog           <- Ref[F].of(Seq.empty[RaftLog[Either[RegistryCmd, AddMemberRequest]]])
+      refMetadata      <- Ref[F].of(Metadata(0, None))
       fullStateMachine <- stateMachineWithMembership(id, RegistryMachine(refMap))
 
-      logsIO     = new TestLogsIO[IO, Cmd](refLog)
-      metadataIO = new TestMetadata[IO](refMetadata)
-      logger     = new InMemEventsLogger[IO, Cmd, State](id, refStrBuf)
-      state <- RaftNodeState.init[IO, Cmd](id, metadataIO, logsIO)
+      logsIO     = new TestLogsIO[F, Cmd](refLog)
+      metadataIO = new TestMetadata[F](refMetadata)
+      logger     = new Slf4jLogger[F, Cmd, State]
+      state <- RaftNodeState.init[F, Cmd](id, metadataIO, logsIO)
       appendHandler = new AppendRPCHandlerImpl(
         fullStateMachine,
         state,
         logger
-      ): AppendRPCHandler[IO, Cmd]
-      voteHandler = new VoteRPCHandlerImpl(state, logger): VoteRPCHandler[IO]
+      ): AppendRPCHandler[F, Cmd]
+      voteHandler = new VoteRPCHandlerImpl(state, logger): VoteRPCHandler[F]
     } yield {
-      Stuff(fullStateMachine, state, appendHandler, voteHandler, logger)
+      Stuff[F](fullStateMachine, state, appendHandler, voteHandler, logger)
     }
   }
 
   implicit val stateProjection: State => ClusterMembership = _._2
 
-  def prepareRaft(ids: List[String])(
-    implicit cs: ContextShift[IO],
-    tm: Timer[IO]
-  ): IO[Map[String, RaftProcess[IO, Cmd, State]]] = {
+  def prepareRaft[F[_]: Sync: Concurrent](ids: List[String], comm: CommutativeApplicative[F])(
+    implicit cs: ContextShift[F],
+    tm: Timer[F]
+  ): F[Map[String, RaftProcess[F, Cmd, State]]] = {
 
     for {
-      handlers <- ids.traverse(id => prepareHandlers(id).map(id -> _))
+      handlers <- ids.traverse(id => prepareHandlers[F](id).map(id -> _))
       handlersMap = handlers.toMap
       appends     = handlersMap.mapValues(_.append)
       votes       = handlersMap.mapValues(_.vote)
-      network     = new InMemNetwork[IO, Cmd, State](appends, votes)
-      cluster <- handlersMap.unorderedTraverse { stuff =>
+      network     = new InMemNetwork[F, Cmd, State](appends, votes)
+      cluster <- handlersMap.unorderedTraverse[F, RaftProcess[F, Cmd, State]] { stuff =>
                   RaftProcess(
                     stuff.sm,
                     stuff.nodeS,
@@ -131,7 +135,7 @@ object RegistrySpec {
                     stuff.vote,
                     stuff.logger
                   )
-                }
+                }(comm)
     } yield {
       cluster
     }

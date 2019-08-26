@@ -126,6 +126,7 @@ class BroadcastAppendImpl[F[_]: Timer: ContextShift, Cmd, State](
       case (_, matched) => matched > leader.commitIdx
     }
 
+    // add 1 to `replicatedNode` and `matchIdx` to include self
     val canCommit = (replicatedNode.size + 1) * 2 > matchIdx.size + 1
 
     if (canCommit) {

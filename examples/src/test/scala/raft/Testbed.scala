@@ -46,7 +46,7 @@ class Testbed extends Specification {
 
     val allResults = managedProcesses(tasksIO).use { raftComponents =>
       val clients = raftComponents.map { components =>
-        components.state.config.nodeId -> components.api
+        components.state.nodeId -> components.api
       }.toNem
 
       val commands = NonEmptyList.fromListUnsafe((0 to 20).map(i => s"Cmd$i").toList)

@@ -139,13 +139,15 @@ lazy val common = Def.settings(
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.0")
 )
 lazy val coreDeps = Seq(
-  "org.typelevel"  %% "cats-core"         % "1.6.0",
-  "org.typelevel"  %% "cats-free"         % "1.6.0",
-  "org.typelevel"  %% "cats-effect"       % "1.2.0",
-  "co.fs2"         %% "fs2-core"          % "1.0.4",
-  "ch.qos.logback" % "logback-classic"    % "1.2.3",
-  "org.slf4j"      % "slf4j-api"          % "1.7.25",
-  "org.typelevel"  %% "cats-core"         % "1.6.0" % Test,
-  "org.specs2"     %% "specs2-core"       % "4.3.4" % Test,
-  "org.specs2"     %% "specs2-scalacheck" % "4.3.4" % Test
+  "org.typelevel"              %% "cats-core"         % "1.6.0",
+  "org.typelevel"              %% "cats-free"         % "1.6.0",
+  "org.typelevel"              %% "cats-effect"       % "1.2.0",
+  "com.github.julien-truffaut" %% "monocle-core"      % "1.6.0",
+  "com.github.julien-truffaut" %% "monocle-macro"     % "1.6.0",
+  "co.fs2"                     %% "fs2-core"          % "1.0.4",
+  "ch.qos.logback"             % "logback-classic"    % "1.2.3",
+  "org.slf4j"                  % "slf4j-api"          % "1.7.25",
+  "org.typelevel"              %% "cats-core"         % "1.6.0" % Test,
+  "org.specs2"                 %% "specs2-core"       % "4.3.4" % Test,
+  "org.specs2"                 %% "specs2-scalacheck" % "4.3.4" % Test
 )

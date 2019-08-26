@@ -107,7 +107,7 @@ object RaftProcess extends RaftProcessInstances {
 
       val voteInitiator = new BroadcastVoteImpl(state, networkIO, eventLogger, stateMachine)
 
-      val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator)
+      val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator, stateMachine, eventLogger)
 
       val clientWrite = new ClientWriteImpl[F, Cmd](
         state,
@@ -122,21 +122,10 @@ object RaftProcess extends RaftProcessInstances {
       new RaftProcess[F, Cmd, State] {
         override def startRaft: Resource[F, Stream[F, Unit]] = {
 
+          // todo: randomly choosen magic number 5, fix me
           val rpcTasks = singleQueueForAll.dequeue.parEvalMapUnordered(5)(_.recoverWith {
             case err => eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
           })
-//          val rpcTasks = taskQueuePerPeer.values
-//            .foldLeft(Stream[F, Unit]()) {
-//              case (merged, queue) =>
-//                merged.merge(
-//                  queue.dequeue.evalMap(
-//                    _.recoverWith {
-//                      case err =>
-//                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
-//                    }
-//                  )
-//                )
-//            }
 
           val raftTask = poller.start
             .evalMap { heartBeatTask =>

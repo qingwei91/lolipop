@@ -2,26 +2,23 @@ package raft.grpc
 
 import java.nio.file.Paths
 
-import cats.effect.concurrent.{ MVar, Ref }
-import cats.effect.{ ExitCode, IO, IOApp }
-
+import cats.effect.concurrent.{MVar, Ref}
+import cats.effect.{ExitCode, IO, IOApp}
 import io.grpc.ManagedChannelBuilder
-
-import raft.{ RaftProcess, RawConfig }
+import raft.{RaftProcess, RawConfig}
 import pureconfig.generic.auto._
 import raft.algebra.StateMachine
-import raft.debug.Slf4jLogger
-import raft.grpc.command.{ Count, Increment }
+import raft.grpc.command.{Count, Increment}
 import raft.grpc.server.rpc.PeerRPCGrpc
-import raft.model.{ ClusterConfig, Metadata, RaftLog }
-import raft.persistent.{ SwayDBLogsApi, SwayDBPersist }
+import raft.model._
+import raft.persistent.{SwayDBLogsApi, SwayDBPersist}
 import swaydb.data.slice.Slice
 import swaydb.serializers.Default._
 import swaydb.serializers.Serializer
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import raft.Implicits._
+import raft.util.Slf4jLogger
 
 @SuppressWarnings(
   Array(
@@ -96,20 +93,21 @@ object RaftGrpcExample extends IOApp {
     }
   }
 
-  val config = ClusterConfig(nodeId, networkConfs.keySet - nodeId)
-  val grpcClients = config.peersId.map { nid =>
+  val peers = networkConfs.keySet - nodeId
+  val grpcClients = peers.map { nid =>
     val channel = ManagedChannelBuilder.forTarget(networkConfs(nid).toString()).usePlaintext().build
     nid -> PeerRPCGrpc.stub(channel)
   }.toMap
 
   override def run(args: List[String]): IO[ExitCode] = {
+    implicit val staticMembership: Count => ClusterMembership = _ => ClusterMembership(nodeId, peers)
     for {
       sm   <- counter
       logs <- logDB
       meta <- metadataDB
       network = new GrpcNetwork[IO](grpcClients)
       logger  = new Slf4jLogger[IO, Increment, Count]
-      proc <- RaftProcess.init[IO, Increment, Count](sm, config, logs, network, logger, meta)
+      proc <- RaftProcess.init[IO, Increment, Count](sm, nodeId, logs, network, logger, meta)
       code <- proc.startRaft
                .use(_.compile.drain.map(_ => ExitCode.Success))
     } yield {

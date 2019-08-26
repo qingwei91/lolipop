@@ -3,7 +3,7 @@ package proptest
 
 import cats.free.Free
 import cats._
-import cats.effect.{ ContextShift, IO, Timer }
+import cats.effect._
 import cats.effect.concurrent.Ref
 import raft.model.{ CommandCommitted, NoLeader, RedirectTo }
 
@@ -15,19 +15,19 @@ case object StopAll extends RegistryActionF[Unit]
 case class PutToReg(k: String, v: String) extends RegistryActionF[String]
 
 object RegistryActionF {
-  type Act[A] = Free[RegistryActionF, A]
+  type RegistryProgram[A] = Free[RegistryActionF, A]
 
   def startAll = Free.liftF(StartAll)
   def stopAll  = Free.liftF(StopAll)
 
   def putKV(k: String, v: String) = Free.liftF(PutToReg(k, v))
 
-  type RegistryRaft = RaftProcess[IO, RegistryCmd, Map[String, String]]
+  type RegistryRaft[F[_]] = RaftProcess[F, RegistryCmd, Map[String, String]]
 
   case class InternalState(finalizers: Map[String, IO[Unit]], runningNode: Set[String])
 
   @SuppressWarnings(Array("org.wartremover.warts.All"))
-  def compile(raftCluster: Map[String, RegistryRaft], states: Ref[IO, InternalState])(
+  def toIO(raftCluster: Map[String, RegistryRaft[IO]], states: Ref[IO, InternalState])(
     implicit cs: ContextShift[IO],
     tm: Timer[IO]
   ): RegistryActionF ~> IO =
@@ -37,9 +37,14 @@ object RegistryActionF {
         case StartAll =>
           val startAllNodes = for {
             allocated <- raftCluster.unorderedTraverse(_.startRaft.allocated)
-            finalizers = allocated.mapValues(_._2)
+            finalizers = allocated.map {
+              case (k, (_, release)) => k -> release
+            }
+            procs = allocated.map {
+              case (k, (proc, _)) => k -> proc
+            }
             _ <- states.update(_.copy(finalizers, finalizers.keySet))
-            _ <- allocated.mapValues(_._1).unorderedTraverse(_.compile.drain.start)
+            _ <- procs.unorderedTraverse(_.compile.lastOrError.start)
           } yield ()
 
           startAllNodes
@@ -67,4 +72,5 @@ object RegistryActionF {
           writeToNode(raftCluster.keySet.head).as(v)
       }
     }
+
 }

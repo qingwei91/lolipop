@@ -8,6 +8,13 @@ import raft.algebra.io.{ LogsApi, MetadataIO }
 
 import scala.concurrent.duration.MILLISECONDS
 
+/**
+  * RaftNodeState represent information stored by each node
+  *
+  * This trait is too tightly coupled for convenience
+  *
+  * todo: split it into smaller bits
+  */
 trait RaftNodeState[F[_], Cmd] {
   def nodeId: String
   def metadata: MetadataIO[F]

@@ -7,11 +7,12 @@ import cats.effect._
 import raft.algebra.event.EventsLogger
 import raft.algebra.io.NetworkIO
 import raft.model._
+import ClusterMembership._
 
 class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd, State](
   allState: RaftNodeState[F, Cmd],
   networkManager: NetworkIO[F, Cmd],
-  eventLogger: EventsLogger[F, Cmd, _],
+  eventLogger: EventsLogger[F, Cmd, State],
   queryState: QueryState[F, State]
 )(implicit F: MonadError[F, Throwable], stateToMembership: State => ClusterMembership)
     extends BroadcastVote[F] {
@@ -57,11 +58,11 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd, State
                            nState -> Some(nState)
                          case other => other -> None
                        }
-      _          <- eventLogger.voteRPCEnded(req, targetPeer, res)
-      persistent <- allState.metadata.get
-      lastLog    <- allState.logs.lastLog
+      _        <- eventLogger.voteRPCEnded(req, targetPeer, res)
+      metadata <- allState.metadata.get
+      lastLog  <- allState.logs.lastLog
 
-      currentCluster <- queryState.getCurrent.map(stateToMembership)
+      currentCluster <- queryState.getCurrent.map(_.getMembership)
       peersId = currentCluster.peersId
       // should we wrap this in critical region??
       // in theory we dont have to as the changes is convergent
@@ -72,9 +73,9 @@ class BroadcastVoteImpl[F[_]: Timer: ContextShift: Concurrent, FF[_], Cmd, State
               val totalVotes = cand.receivedVotes.count {
                 case (_, voted) => voted
               }
-              val enoughVotes = (totalVotes + 1) * 2 > peersId.size + 1
+              val enoughVotes = totalVotes * 2 > peersId.size + 1
               if (enoughVotes) {
-                eventLogger.elected(persistent.currentTerm, lastLog.map(_.idx)) *>
+                eventLogger.elected(metadata.currentTerm, lastLog.map(_.idx)) *>
                 allState.serverTpe.update {
                   case c: Candidate =>
                     val nextLogIdx = lastLog.map(_.idx).getOrElse(0) + 1
