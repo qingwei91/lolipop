@@ -4,13 +4,10 @@ import java.nio.file.Paths
 
 import cats.effect.concurrent.{ MVar, Ref }
 import cats.effect.{ ExitCode, IO, IOApp }
-
 import io.grpc.ManagedChannelBuilder
-
 import raft.{ RaftProcess, RawConfig }
 import pureconfig.generic.auto._
 import raft.algebra.StateMachine
-import raft.debug.Slf4jLogger
 import raft.grpc.command.{ Count, Increment }
 import raft.grpc.server.rpc.PeerRPCGrpc
 import raft.model.{ ClusterConfig, Metadata, RaftLog }
@@ -20,8 +17,8 @@ import swaydb.serializers.Default._
 import swaydb.serializers.Serializer
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import raft.Implicits._
+import raft.util.Slf4jLogger
 
 @SuppressWarnings(
   Array(
