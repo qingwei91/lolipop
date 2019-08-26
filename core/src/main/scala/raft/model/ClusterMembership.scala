@@ -1,6 +1,8 @@
 package raft.model
 
-case class ClusterMembership(selfId: String, peersId: Set[String])
+case class ClusterMembership(selfId: String, peersId: Set[String]) {
+  val allNodes: Set[String] = peersId + selfId
+}
 
 object ClusterMembership {
   implicit def toOps[St](st: St)(implicit stToMembership: St => ClusterMembership): ClusterMembershipOps =

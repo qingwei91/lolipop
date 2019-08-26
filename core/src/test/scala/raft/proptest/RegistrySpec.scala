@@ -14,6 +14,7 @@ import raft.algebra.event.EventsLogger
 import raft.algebra.membership.MembershipStateMachine
 import raft.model._
 import raft.setup._
+import raft.util.Slf4jLogger
 
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.global
@@ -100,7 +101,7 @@ object RegistrySpec {
 
       logsIO     = new TestLogsIO[F, Cmd](refLog)
       metadataIO = new TestMetadata[F](refMetadata)
-      logger     = new Slf4jLogger[F, Cmd, State]
+      logger     = new Slf4jLogger[F, Cmd, State](id)
       state <- RaftNodeState.init[F, Cmd](id, metadataIO, logsIO)
       appendHandler = new AppendRPCHandlerImpl(
         fullStateMachine,

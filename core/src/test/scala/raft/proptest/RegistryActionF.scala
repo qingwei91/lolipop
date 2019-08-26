@@ -64,7 +64,7 @@ object RegistryActionF {
           def writeToNode(nodeId: String): IO[Unit] = {
             raftCluster(nodeId).api.write(Put(k, v)).flatMap {
               case CommandCommitted => IO.unit
-              case RedirectTo(nodeID) => writeToNode(nodeID)
+              case RedirectTo(nodeID) => IO.sleep(2.seconds) *> writeToNode(nodeID)
               case NoLeader => IO.sleep(2.seconds) *> writeToNode(nodeId)
             }
           }

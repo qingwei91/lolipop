@@ -22,7 +22,7 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd, State](
 )(implicit timer: Timer[F], stateToMembership: State => ClusterMembership)
     extends RaftPoller[F] {
 
-  val timeoutBase = 100
+  val timeoutBase = 150
   def start: Stream[F, Map[String, F[Unit]]] = {
     Stream
       .awakeEvery[F](timeoutBase.millis)
@@ -56,7 +56,7 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd, State](
   private def startElection(nonLeader: NonLeader): F[Map[String, F[Unit]]] = {
     for {
       timeInMillis <- timer.clock.realTime(MILLISECONDS)
-      timeout        = Random.nextInt(timeoutBase) + (timeoutBase * 5)
+      timeout        = Random.nextInt(timeoutBase) + (timeoutBase * 3)
       timeoutReached = (timeInMillis - nonLeader.lastRPCTimeMillis) > timeout
       currentCluster <- queryState.getCurrent.map(_.getMembership)
       peersId = currentCluster.peersId
@@ -65,25 +65,22 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd, State](
       votingReq <- if (timeoutReached) {
                     val selfId        = allState.nodeId
                     val receivedVotes = Map(selfId -> true)
-
-                    val totalVotes = receivedVotes.count {
-                      case (_, voted) => voted
-                    }
-                    val enoughVotes = totalVotes * 2 > peersId.size + 1
+                    val singleNode    = peersId.isEmpty
                     val updateTerm = allState.metadata.update { p =>
                       val updated = p.copy(p.currentTerm + 1, votedFor = Some(selfId))
                       updated
                     }
 
-                    if (enoughVotes) {
-
-                      // this happens only when we have 1 node
+                    // if singleNode, we should become Leader directly
+                    if (singleNode) {
                       val becomeLeader = allState.serverTpe.set {
                         val nextLogIdx = lastLog.map(_.idx).getOrElse(0) + 1
                         Leader(
                           nonLeader.commitIdx,
                           nonLeader.lastApplied,
-                          peersId.map(_ -> nextLogIdx).toMap, // todo: using nextLogIdx might be wrong when there is no existing logs
+                          peersId
+                            .map(_ -> nextLogIdx)
+                            .toMap, // todo: using nextLogIdx might be wrong when there is no existing logs
                           peersId.map(_ -> 0).toMap
                         )
                       }

@@ -92,6 +92,15 @@ class AppendRPCHandlerImpl[F[_]: Timer, Cmd, State](
         case `prevLogMisMatch` => rejectAppend(currentTerm).pure[F]
 
         case _ =>
+
+          /**
+            * TODO: Can we further optimize to NOT block on commit and
+            * apply?
+            *
+            * In theory, as long as it is replicated, we can return to
+            * Leader, blocking certainly make things clearer and more
+            * deterministic
+            */
           allState.logs.overwrite(req.entries) *>
             commitAndExecCmd(req.leaderCommit, follower)
               .as(acceptAppend(currentTerm))

@@ -16,4 +16,6 @@ class TestMetadata[F[_]](ref: Ref[F, Metadata]) extends MetadataIO[F] {
     *   - embedded database
     */
   override def update(f: Metadata => Metadata): F[Unit] = ref.update(f)
+
+  override def modify[B](f: Metadata => (Metadata, B)): F[B] = ref.modify(f)
 }

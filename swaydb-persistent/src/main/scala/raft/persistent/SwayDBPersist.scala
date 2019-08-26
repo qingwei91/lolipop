@@ -13,11 +13,17 @@ class SwayDBPersist[F[_]: Monad](db: swaydb.Map[Int, Metadata, F], lock: MVar[F,
   override def get: F[Metadata] = db.get(singleKey).map(_.get)
 
   override def update(f: Metadata => Metadata): F[Unit] =
+    modify { m =>
+      (f(m), ())
+    }
+
+  override def modify[B](f: Metadata => (Metadata, B)): F[B] =
     for {
       _   <- lock.take
       old <- get
-      new_ = f(old)
+      (new_, b) = f(old)
       _ <- db.put(singleKey, new_)
       _ <- lock.put(())
-    } yield ()
+    } yield b
+
 }

@@ -15,4 +15,6 @@ trait MetadataIO[F[_]] {
     *   - embedded database
     */
   def update(f: Metadata => Metadata): F[Unit]
+
+  def modify[B](f: Metadata => (Metadata, B)): F[B]
 }

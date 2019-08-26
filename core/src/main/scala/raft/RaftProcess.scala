@@ -105,7 +105,8 @@ object RaftProcess extends RaftProcessInstances {
       val appendInitiator =
         new BroadcastAppendImpl(networkIO, stateMachine, state, committedTopic.publish1, eventLogger)
 
-      val voteInitiator = new BroadcastVoteImpl(state, networkIO, eventLogger, stateMachine)
+      val singleVoteHandler = new SingleVoteHandlerImpl(state, eventLogger, stateMachine)
+      val voteInitiator     = new BroadcastVoteImpl(state, networkIO, eventLogger, stateMachine, singleVoteHandler)
 
       val poller = new RaftPollerImpl(state, appendInitiator, voteInitiator, stateMachine, eventLogger)
 

@@ -22,11 +22,11 @@ class RaftTestDeps[F[_]](
   con: Concurrent[F]
 ) {
 
-  private val clientIds = {
+  private val nodeIds = {
     NonEmptySet.of(0, 1 to 4: _*).map(_.toString)
   }
 
-  val tasksIO: F[NonEmptyList[RaftTestComponents[F]]] = clientIds.toNonEmptyList
+  val tasksIO: F[NonEmptyList[RaftTestComponents[F]]] = nodeIds.toNonEmptyList
     .traverse { i =>
       for {
         time <- tm.clock.realTime(MILLISECONDS)
@@ -72,7 +72,7 @@ class RaftTestDeps[F[_]](
         case (_, voteHandler, AllState(stateMachine, allState, _, _), appendHandler, eventLogger) =>
           // TODO: hack to model static membership, fix it
           implicit val staticMembershipHack: String => ClusterMembership =
-            _ => ClusterMembership(allState.nodeId, clientIds - allState.nodeId)
+            _ => ClusterMembership(allState.nodeId, nodeIds - allState.nodeId)
 
           for {
             proc <- RaftProcess(

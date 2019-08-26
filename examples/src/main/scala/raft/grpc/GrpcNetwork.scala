@@ -10,6 +10,8 @@ import raft.model.{ AppendRequest, AppendResponse, VoteRequest, VoteResponse }
 import scala.concurrent.ExecutionContext
 import scala.util.{ Failure, Success }
 
+// todo: Handle self node id routing, which will a in-mem call to
+//  AppendHandler
 class GrpcNetwork[F[_]: Async](clients: Map[String, PeerRPCStub])(implicit ec: ExecutionContext)
     extends NetworkIO[F, Increment] {
   override def sendAppendRequest(nodeID: String, appendReq: AppendRequest[Increment]): F[AppendResponse] = {

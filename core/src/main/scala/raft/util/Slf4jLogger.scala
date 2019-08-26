@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory
 import raft.algebra.event.EventsLogger
 import raft.model._
 
-class Slf4jLogger[F[_]: Sync, Cmd, State] extends EventsLogger[F, Cmd, State] {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+class Slf4jLogger[F[_]: Sync, Cmd, State](nodeId: String) extends EventsLogger[F, Cmd, State] {
+  private val logger = LoggerFactory.getLogger(s"${this.getClass.getSimpleName}-$nodeId")
   private val F      = Sync[F]
 
   override def receivedClientCmd(cmd: Cmd): F[Unit] = F.delay(logger.info(s"Received command $cmd from client"))

@@ -25,6 +25,9 @@ lazy val core = project
   .settings(
     libraryDependencies ++= coreDeps
   )
+  .settings(
+    fork in Test := true
+  )
 
 lazy val swaydbPersisent = project
   .in(file("swaydb-persistent"))
