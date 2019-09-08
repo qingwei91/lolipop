@@ -105,7 +105,7 @@ object RaftGrpcExample extends IOApp {
       logs <- logDB
       meta <- metadataDB
       network = new GrpcNetwork[IO](grpcClients)
-      logger  = new Slf4jLogger[IO, Increment, Count]
+      logger  = new Slf4jLogger[IO, Increment, Count](nodeId)
       proc <- RaftProcess.init[IO, Increment, Count](sm, config, logs, network, logger, meta)
       code <- proc.startRaft
                .use(_.compile.drain.map(_ => ExitCode.Success))
