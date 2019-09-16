@@ -6,14 +6,14 @@
         </encoder>
     </appender>
 
-<!--    <logger name="BroadcastAppendImpl" level="WARN"/>-->
-<!--    <logger name="AppendRPCResponder" level="WARN"/>-->
-<!--    <logger name="VoteRPCInitiator" level="WARN"/>-->
-<!--    <logger name="VoteRPCResponder" level="WARN"/>-->
-<!--    <logger name="RaftPollerImpl" level="WARN"/>-->
-<!--    <logger name="ClientIncomingImpl" level="ERROR"/>-->
+    <logger name="BroadcastAppendImpl" level="WARN"/>
+    <logger name="AppendRPCResponder" level="WARN"/>
+    <logger name="VoteRPCInitiator" level="WARN"/>
+    <logger name="VoteRPCResponder" level="WARN"/>
+    <logger name="RaftPollerImpl" level="WARN"/>
+    <logger name="ClientIncomingImpl" level="ERROR"/>
 
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
