@@ -1,6 +1,7 @@
 *.class
 *.log
 
+.bloop
 **/events.json
 
 node_modules

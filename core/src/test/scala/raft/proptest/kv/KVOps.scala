@@ -92,7 +92,7 @@ object KVOps {
   val keysGen: Gen[String] = Gen.oneOf("k1", "k2", "k3")
   val opsGen: Gen[KVOps[String]] = for {
     k <- keysGen
-    v <- Gen.alphaStr
+    v <- Gen.alphaStr.map(_.take(6))
     op <- Gen.oneOf[KVCmd](
            Put(k, v): KVCmd,
            Get(k): KVCmd,
@@ -100,7 +100,13 @@ object KVOps {
          )
   } yield op
 
-  implicit val gen: Gen[List[KVOps[String]]] = {
-    Gen.listOfN(30, opsGen)
+  def gen(n: Int = 30): Gen[List[KVOps[String]]] = {
+    Gen.listOfN(n, opsGen)
+  }
+
+  implicit def showCmd[A]: Show[KVOps[A]] = Show.show {
+    case Get(k) => s"Read key $k"
+    case Put(k, v) => s"Update $k=$v"
+    case Delete(k) => s"Delete $k"
   }
 }

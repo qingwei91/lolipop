@@ -6,6 +6,40 @@ import cats.{ Eq, MonadError, Parallel }
 
 object LinearizationCheck {
 
+  def wingAndGong[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
+    implicit F: MonadError[F, Throwable]
+  ): F[Boolean] = {
+    def findOne(minimumOps: List[Invoke[Op]]): F[Boolean] = {
+      minimumOps match {
+        case (e @ Invoke(_, op)) :: t =>
+          for {
+            pair <- model.step(st, op)
+            (next, expected) = pair
+            actual <- history.ret(e)
+//            _ = {
+//              println(s"Invoked $op")
+//              println(s"Expect $expected")
+//              println(s"Got $actual")
+//            }
+            r <- if (actual.result === expected) {
+                  wingAndGong(history.linearize(e), model, next)
+                } else {
+                  findOne(t)
+                }
+          } yield r
+
+        case Nil => false.pure[F]
+      }
+    }
+
+    if (history.finished) {
+      true.pure[F]
+    } else {
+      findOne(history.minimumOps)
+    }
+
+  }
+
   /**
     * history + model => analysis
     *

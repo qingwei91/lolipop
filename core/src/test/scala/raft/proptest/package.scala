@@ -31,6 +31,14 @@ package object proptest {
     allIds: Map[String, StateMachine[F, Cmd, St]]
   ): F[Map[String, RaftProcess[F, Cmd, St]]] = {
 
+    // The whole construction is split into 2 steps
+    // because for in-mem RaftNode we need to 1st create all
+    // dependencies of a Node before creating an InMemNetwork
+    // in other words, the creation of In-Mem RaftNode is
+    // inter-dependent with other nodes
+    // this problem does not manifest in real networked setting because
+    // each real node will have some stable reference (eg. IP, HostName)
+
     val allRaftNodes = allIds.toList.traverse[F, (String, Stuff[F, Cmd, St])] {
       case (id, sm) =>
         val clusterConf = ClusterConfig(id, allIds.keySet - id)
