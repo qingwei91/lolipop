@@ -11,7 +11,7 @@ trait History[F[_], Op, Re] {
 
 object History {
   def fromList[F[_], O, R](l: List[Event[O, R]])(implicit F: MonadError[F, Throwable]): History[F, O, R] = {
-    val perThread = l.groupBy(_.threadId)
+    lazy val perThread = l.groupBy(_.threadId)
     new History[F, O, R] {
       override def minimumOps: List[Invoke[O]] = {
         perThread.collect {
@@ -28,9 +28,17 @@ object History {
       }
 
       override def linearize(ops: Invoke[O]): History[F, O, R] = {
-        perThread(ops.threadId) match {
-          case o :: Ret(_, _) :: t if o == ops => fromList(t)
-        }
+        val remaining = perThread
+          .map {
+            case (tid, events) if tid == ops.threadId =>
+              events match {
+                case o :: Ret(_, _) :: t if o == ops => t
+              }
+            case (_, other) => other
+          }
+          .flatten
+          .toList
+        fromList(remaining)
       }
 
       override def finished: Boolean = l.isEmpty

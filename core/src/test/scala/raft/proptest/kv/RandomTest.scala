@@ -33,7 +33,7 @@ class RandomTest extends Specification {
   private implicit val timer: Timer[IO]           = IO.timer(global)
   private implicit val kvEq: Eq[KVResult[String]] = Eq.fromUniversalEquals[KVResult[String]]
 
-  private implicit val opsGen = KVOps.gen(3)
+  private implicit val opsGen = KVOps.gen(30)
 
   private val parFactor = 0
 
@@ -87,8 +87,6 @@ class RandomTest extends Specification {
       val ops1 = opsGen.sample.get
       val ops2 = opsGen.sample.get
       multiThreadRun(List("001" -> ops1, "002" -> ops2)).flatMap { combined =>
-        println(combined.map(_.show).mkString("\n"))
-
         val history = History.fromList[IO, KVCmd, KVResult[String]](combined)
         LinearizationCheck
           .wingAndGong(history, model, Map.empty[String, String])

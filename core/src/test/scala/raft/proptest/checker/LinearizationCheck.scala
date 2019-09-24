@@ -6,38 +6,89 @@ import cats.{ Eq, MonadError, Parallel }
 
 object LinearizationCheck {
 
+  case class WGConfig[F[_], O, R, S](history: History[F, O, R], minOpsIdx: Int, state: S)
+  sealed trait Hint
+  case object Cont extends Hint
+  case object OK extends Hint
+  case object NOK extends Hint
+
   def wingAndGong[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
     implicit F: MonadError[F, Throwable]
   ): F[Boolean] = {
-    def findOne(minimumOps: List[Invoke[Op]]): F[Boolean] = {
-      minimumOps match {
-        case (e @ Invoke(_, op)) :: t =>
-          for {
-            pair <- model.step(st, op)
-            (next, expected) = pair
-            actual <- history.ret(e)
-//            _ = {
-//              println(s"Invoked $op")
-//              println(s"Expect $expected")
-//              println(s"Got $actual")
-//            }
-            r <- if (actual.result === expected) {
-                  wingAndGong(history.linearize(e), model, next)
-                } else {
-                  findOne(t)
+    type Stack = List[WGConfig[F, Op, Re, St]]
+
+    val init = List(WGConfig(history, 0, st))
+
+    F.iterateUntilM[(Stack, Hint)](init -> Cont) {
+        case p @ (_, NOK) => F.pure(p)
+        case p @ (_, OK) => F.pure(p)
+        case (Nil, Cont) => F.pure(Nil -> NOK)
+        case p @ (WGConfig(hist, minOpsIdx, state) :: stackTail, Cont) =>
+          if (hist.finished) {
+            F.pure(p._1 -> OK)
+          } else {
+            val minOp = hist.minimumOps.get(minOpsIdx.toLong)
+
+            println(s"Pick $minOp among ${hist.minimumOps}")
+
+            minOp match {
+              case None =>
+                stackTail match {
+                  case Nil => F.pure(Nil -> NOK) // nothing to branch, fail
+                  case prevHead :: tail =>
+                    // change minOps which change the branch
+                    // prevHead.minOps is not empty because if it is
+                    // empty it will be dropped earlier
+                    val dropMinOp = prevHead.minOpsIdx + 1
+                    val amended   = prevHead.copy(minOpsIdx = dropMinOp)
+                    F.pure(
+                      (amended :: tail) -> Cont
+                    )
                 }
-          } yield r
+              case Some(e @ Invoke(_, op)) =>
+                for {
+                  pair <- model.step(state, op)
+                  (next, expected) = pair
+                  actual <- hist.ret(e)
+                } yield {
+                  if (actual.result === expected) {
+                    println(s"Linearize $e -- $next")
+                    val nextHis   = hist.linearize(e)
+                    val nextEle   = WGConfig(nextHis, 0, next)
+                    val nextStack = nextEle :: p._1
+                    nextStack -> Cont
+                  } else {
 
-        case Nil => false.pure[F]
+                    // if current op does not work, try the other op
+                    // in the same config
+                    val replacingEle = WGConfig(hist, minOpsIdx + 1, state)
+
+                    println(s"Fail to linearize $e - backtrack to $replacingEle")
+
+                    (replacingEle :: stackTail) -> Cont
+                  }
+                }
+            }
+          }
+      } {
+        case (_, NOK) => true
+        case (_, OK) => true
+        case _ => false
       }
-    }
+      .flatMap {
+        case (_, NOK) => false.pure[F]
+        case (_, OK) => true.pure[F]
+        case (stack, Cont) =>
+          F.raiseError[Boolean](
+            new RuntimeException(s"Unexpected, got `Cont` after iteration terminates, stack = $stack")
+          )
+      }
+  }
 
-    if (history.finished) {
-      true.pure[F]
-    } else {
-      findOne(history.minimumOps)
-    }
-
+  def jitLinearize[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
+    implicit F: MonadError[F, Throwable]
+  ): F[Boolean] = {
+    ???
   }
 
   /**
