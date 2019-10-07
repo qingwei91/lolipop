@@ -4,7 +4,7 @@ import cats.MonadError
 
 trait History[F[_], Op, Re] {
   def minimumOps: List[Invoke[Op]]
-  def ret(ops: Invoke[Op]): F[Ret[Re]]
+  def ret(ops: Invoke[Op]): F[Either[Failure, Ret[Re]]]
   def linearize(ops: Invoke[Op]): History[F, Op, Re]
   def finished: Boolean
 }
@@ -19,10 +19,11 @@ object History {
         }.toList
       }
 
-      override def ret(ops: Invoke[O]): F[Ret[R]] = {
+      override def ret(ops: Invoke[O]): F[Either[Failure, Ret[R]]] = {
         perThread(ops.threadId)
           .collectFirst {
-            case r: Ret[R] => r
+            case r: Ret[R] => Right(r)
+            case f: Failure => Left(f)
           }
           .liftTo[F](new IllegalArgumentException(s"No corresponding Ret event found for $ops"))
       }

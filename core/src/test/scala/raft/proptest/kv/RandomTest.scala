@@ -89,7 +89,7 @@ class RandomTest extends Specification {
       multiThreadRun(List("001" -> ops1, "002" -> ops2)).flatMap { combined =>
         val history = History.fromList[IO, KVCmd, KVResult[String]](combined)
         LinearizationCheck
-          .wingAndGong(history, model, Map.empty[String, String])
+          .wingAndGongUnsafe(history, model, Map.empty[String, String])
       }
     }
     val expected = (0 to parFactor).toList.map(_ => true)
@@ -97,9 +97,9 @@ class RandomTest extends Specification {
   }
 
   // todo: Move to package object
-  private def parTest[F[_]: Monad, FF[_], R](
+  private def parTest[F[_]: Monad: Parallel, FF[_], R](
     n: Int
-  )(fn: () => F[R])(implicit Par: Parallel[F, FF]): F[List[R]] = {
+  )(fn: () => F[R]): F[List[R]] = {
     (0 to n).toList.parTraverse { _ =>
       fn()
     }

@@ -28,7 +28,8 @@ object Implicits {
       Metadata(currentT, votedFor)
     }
   }
-  implicit object IOTransformer extends FutureTransformer[IO] {
+  implicit def IOTransformer(implicit ec: ExecutionContext): FutureTransformer[IO] = new FutureTransformer[IO] {
+    implicit val cs                                   = IO.contextShift(ec)
     override def toOther[I](future: Future[I]): IO[I] = IO.fromFuture(IO(future))
 
     override def toFuture[I](io: IO[I]): Future[I] = io.unsafeToFuture()
