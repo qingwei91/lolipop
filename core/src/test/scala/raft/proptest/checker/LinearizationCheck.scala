@@ -123,30 +123,26 @@ object LinearizationCheck {
     if (history.finished) {
       F.pure(true)
     } else {
-      history.minimumOps.foldLeft(F.pure(false)) {
-        case (foundF, minOp) =>
-          foundF.flatMap {
-            case true => F.pure(true)
-            case false =>
-              for {
-                p <- model.step(st, minOp.op)
-                (newSt, expRet) = p
-                opsResult <- history.ret(minOp)
-                ans <- opsResult match {
-                        case Left(_) =>
-                          // if it failed, we dont know what it is, so
-                          // we try both
-                          (wingAndGongUnsafe(history.linearize(minOp), model, newSt), F.pure(false)).mapN(_ || _)
-                        case Right(actualRet) =>
-                          if (actualRet.result === expRet) {
-                            wingAndGongUnsafe(history.linearize(minOp), model, newSt)
-                          } else {
-                            F.pure(false)
-                          }
+      history.minimumOps.existsM {
+         minOp =>
+          for {
+            p <- model.step(st, minOp.op)
+            (newSt, expRet) = p
+            opsResult <- history.ret(minOp)
+            ans <- opsResult match {
+              case Left(_) =>
+                // if it failed, we dont know what it is, so
+                // we try both
+                (wingAndGongUnsafe(history.linearize(minOp), model, newSt), F.pure(false)).mapN(_ || _)
+              case Right(actualRet) =>
+                if (actualRet.result === expRet) {
+                  wingAndGongUnsafe(history.linearize(minOp), model, newSt)
+                } else {
+                  F.pure(false)
+                }
 
-                      }
-              } yield ans
-          }
+            }
+          } yield ans
       }
     }
   }
