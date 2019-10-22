@@ -8,6 +8,12 @@ sealed trait Event[+O, +R] {
 }
 case class Invoke[Op](threadId: String, op: Op) extends Event[Op, Nothing]
 case class Ret[R](threadId: String, result: R) extends Event[Nothing, R]
+
+// explicitly model Failure in event, because Event is a polymorphic
+// type that can be handled by checker without the knowledge of
+// the actual API protocol
+// by having Failure in Event, checker can handle Failure
+// explicitly and figure out how to handle it
 case class Failure(threadId: String, err: Throwable) extends Event[Nothing, Nothing]
 
 object Event {

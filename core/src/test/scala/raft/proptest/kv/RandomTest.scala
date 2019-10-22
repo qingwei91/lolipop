@@ -6,8 +6,9 @@ import cats.effect._
 import cats.effect.concurrent.Ref
 import cats.{ Eq, Monad, Parallel }
 import org.specs2.Specification
+import org.specs2.execute.Result
 import org.specs2.specification.core.SpecStructure
-import raft.proptest.checker.LinearizationCheck
+import raft.proptest.checker._
 import raft.proptest.cluster.ClusterOps.ClusterState
 import raft.proptest.cluster.{ ClusterOps, Sleep, StartAll, StopAll }
 import raft.proptest.kv.KVOps.{ KVCmd, KVEvent }
@@ -35,7 +36,7 @@ class RandomTest extends Specification {
 
   private implicit val opsGen = KVOps.gen(30)
 
-  private val parFactor = 0
+  private val parFactor = 10
 
   private def testRun = {
     val idStateMachines = List("0", "1", "2")
@@ -59,7 +60,6 @@ class RandomTest extends Specification {
                          )
                        )
         allNodes <- setupCluster(pairs)
-        _        <- timer.sleep(2.seconds) // why is it slow to get leader?
         clusterLifeCycleIO = testClusterAct.traverse(op => ClusterOps.execute(allNodes, clusterState)(op))
         testOpIO = opsPerThread.parFlatTraverse {
           case (threadId, ops) =>
@@ -91,9 +91,13 @@ class RandomTest extends Specification {
         LinearizationCheck
           .wingAndGongUnsafe(history, model, Map.empty[String, String])
       }
+    }.unsafeRunTimed(15.seconds).get
+
+    Result.forall(results) {
+      case Linearizable(_) => success
+      case NonLinearizable(longestAttempt, failed, exp, act) =>
+        failure(s"Failed to linearize, longestStreak = $longestAttempt, failed at $failed, expect $exp, got $act")
     }
-    val expected = (0 to parFactor).toList.map(_ => true)
-    results.unsafeRunTimed(15.seconds).get must_=== expected
   }
 
   // todo: Move to package object
@@ -104,4 +108,5 @@ class RandomTest extends Specification {
       fn()
     }
   }
+
 }

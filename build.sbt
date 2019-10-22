@@ -81,7 +81,8 @@ lazy val examples = project
   )
 
 lazy val http4sVersion = "0.20.0-M5"
-lazy val circeVersion  = "0.11.1"
+lazy val circeVersion  = "0.12.2"
+lazy val catsVersion   = "2.0.0"
 lazy val common = Def.settings(
   version := "1.0",
   scalaVersion := "2.12.8",
@@ -134,17 +135,19 @@ lazy val common = Def.settings(
     "-Ywarn-value-discard" // Warn when non-Unit expression results are unused.
   ),
   scalacOptions in Test ++= Seq("-Yrangepos"),
+  scalacOptions in Test -= "-Xfatal-warnings",
   testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "failtrace"),
   wartremoverErrors ++= Warts.unsafe,
-  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.0")
+  resolvers += Resolver.sonatypeRepo("releases"),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
 )
 lazy val coreDeps = Seq(
-  "org.typelevel"  %% "cats-core"         % "2.0.0",
-  "org.typelevel"  %% "cats-free"         % "2.0.0",
-  "org.typelevel"  %% "cats-effect"       % "2.0.0",
+  "org.typelevel"  %% "cats-core"         % catsVersion,
+  "org.typelevel"  %% "cats-free"         % catsVersion,
+  "org.typelevel"  %% "cats-effect"       % catsVersion,
   "co.fs2"         %% "fs2-core"          % "2.0.0",
   "ch.qos.logback" % "logback-classic"    % "1.2.3",
   "org.slf4j"      % "slf4j-api"          % "1.7.25",
-  "org.specs2"     %% "specs2-core"       % "4.3.4" % Test,
-  "org.specs2"     %% "specs2-scalacheck" % "4.3.4" % Test
+  "org.specs2"     %% "specs2-core"       % "4.7.1" % Test,
+  "org.specs2"     %% "specs2-scalacheck" % "4.7.1" % Test
 )

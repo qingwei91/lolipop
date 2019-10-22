@@ -2,107 +2,14 @@ package raft
 package proptest
 package checker
 
+import cats.data.{Chain, NonEmptyList}
 import cats.{ Eq, MonadError, Parallel }
 
+sealed trait LinearizedRes[+A]
+case class Linearizable[A](linearized: Chain[A]) extends LinearizedRes[A]
+case class NonLinearizable[A](longestStreak: Chain[A], failedOp: A, expected: A, actual: A) extends LinearizedRes[A]
+
 object LinearizationCheck {
-
-  case class WGConfig[F[_], O, R, S](history: History[F, O, R], minOpsIdx: Int, state: S)
-
-  /**
-    * this algorithm is a stacksafe implementation of W&G algo
-    * which is recursive, the idea is to store states on heap
-    * which is manually managed by the algo to simulate a stack
-    *
-    * The algo works like this
-    * 1. Start with an empty stack and full history
-    * 2. If hint is OK/NOK, return corresponding result
-    * 3. If hint is Cont, check if history is finished, if  finished, return as OK
-    * 4. If history not finished, get 1 minimal op from history, there can be multiple min-op, or no min-op, if no min op, it means the current config is not going to work, backtrack to previous config, but choose a different min-op
-    * 5. Apply chosen min-op on model, check if model aligns to actual history, if so, pop a new config on stack and go to step 2
-    */
-  def wingAndGongStackSafe[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
-    implicit F: MonadError[F, Throwable]
-  ): F[Boolean] = {
-
-    /**
-      * represent the result of W&G linearizability check
-      * Cont means the the algorithm should proceed
-      * Ok means it's finished and it is linearizable
-      * NOK means it's finished and nonlinearizable
-      */
-    sealed trait Hint
-    case object Cont extends Hint
-    case object OK extends Hint
-    case object NOK extends Hint
-
-    type Stack = List[WGConfig[F, Op, Re, St]]
-
-    val init = List(WGConfig(history, 0, st))
-
-    F.iterateUntilM[(Stack, Hint)](init -> Cont) {
-        case p @ (_, NOK) => F.pure(p)
-        case p @ (_, OK) => F.pure(p)
-        case (Nil, Cont) => F.pure(Nil -> NOK)
-        case p @ (WGConfig(hist, minOpsIdx, state) :: stackTail, Cont) =>
-          if (hist.finished) {
-            F.pure(p._1 -> OK)
-          } else {
-            val minOp = hist.minimumOps.get(minOpsIdx.toLong)
-
-            minOp match {
-              case None =>
-                stackTail match {
-                  case Nil => F.pure(Nil -> NOK) // nothing to branch, fail
-                  case prevHead :: tail =>
-                    // change minOps which change the branch
-                    // prevHead.minOps is not empty because if it is
-                    // empty it will be dropped earlier
-                    val dropMinOp = prevHead.minOpsIdx + 1
-                    val amended   = prevHead.copy(minOpsIdx = dropMinOp)
-                    F.pure(
-                      (amended :: tail) -> Cont
-                    )
-                }
-              case Some(e @ Invoke(_, op)) =>
-                for {
-                  pair <- model.step(state, op)
-                  (next, expected) = pair
-                  actual <- hist.ret(e)
-                } yield {
-                  actual match {
-                    case Right(r) =>
-                      if (r.result === expected) {
-                        val nextHis   = hist.linearize(e)
-                        val nextEle   = WGConfig(nextHis, 0, next)
-                        val nextStack = nextEle :: p._1
-                        nextStack -> Cont
-                      } else {
-                        // if current op does not work, try the other op
-                        // in the same config
-                        val replacingEle = WGConfig(hist, minOpsIdx + 1, state)
-                        (replacingEle :: stackTail) -> Cont
-                      }
-                    case Left(f) =>
-                      println(f)
-                      ???
-                  }
-                }
-            }
-          }
-      } {
-        case (_, NOK) => true
-        case (_, OK) => true
-        case _ => false
-      }
-      .flatMap {
-        case (_, NOK) => false.pure[F]
-        case (_, OK) => true.pure[F]
-        case (stack, Cont) =>
-          F.raiseError[Boolean](
-            new RuntimeException(s"Unexpected, got `Cont` after iteration terminates, stack = $stack")
-          )
-      }
-  }
 
   /**
     * The original form of W&G algo, it is recursive but not
@@ -119,32 +26,73 @@ object LinearizationCheck {
     */
   def wingAndGongUnsafe[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
     implicit F: MonadError[F, Throwable]
-  ): F[Boolean] = {
-    if (history.finished) {
-      F.pure(true)
-    } else {
-      history.minimumOps.existsM {
-         minOp =>
-          for {
-            p <- model.step(st, minOp.op)
-            (newSt, expRet) = p
-            opsResult <- history.ret(minOp)
-            ans <- opsResult match {
-              case Left(_) =>
-                // if it failed, we dont know what it is, so
-                // we try both
-                (wingAndGongUnsafe(history.linearize(minOp), model, newSt), F.pure(false)).mapN(_ || _)
-              case Right(actualRet) =>
-                if (actualRet.result === expRet) {
-                  wingAndGongUnsafe(history.linearize(minOp), model, newSt)
-                } else {
-                  F.pure(false)
-                }
+  ): F[LinearizedRes[Event[Op, Re]]] = {
 
-            }
-          } yield ans
+    def tryLinearize(minOp: Invoke[Op], st: St): F[LinearizedRes[Event[Op, Re]]] = {
+      for {
+        p <- model.step(st, minOp.op)
+        (newSt, expRet) = p
+        opsResult <- history.ret(minOp)
+        ans <- opsResult match {
+                case Left(_) =>
+                  val assumeLinearized = loop(history.linearize(minOp), newSt)
+
+                  val assumeFailed = loop(history.skip(minOp), st)
+
+                  (
+                    assumeLinearized,
+                    assumeFailed
+                  ).mapN[LinearizedRes[Event[Op, Re]]] {
+                    case (lin: Linearizable[Event[Op, Re]], _) =>
+                      lin
+                    case (_, notLin: Linearizable[Event[Op, Re]]) =>
+                      notLin
+                    case (lin: NonLinearizable[Event[Op, Re]], notLin: NonLinearizable[Event[Op, Re]]) =>
+                      if (lin.longestStreak.size > notLin.longestStreak.size) {
+                        lin
+                      } else {
+                        notLin
+                      }
+                  }
+
+                case Right(actualRet) =>
+                  if (actualRet.result === expRet) {
+                    val linearizedHs = history.linearize(minOp)
+                    loop(linearizedHs, newSt)
+                  } else {
+
+                    NonLinearizable(history.linearized, minOp, actualRet.copy(result = expRet), actualRet)
+                      .pure[F]
+                      .widen[LinearizedRes[Event[Op, Re]]]
+                  }
+              }
+      } yield ans
+
+    }
+
+    def loop(history: History[F, Op, Re], st: St): F[LinearizedRes[Event[Op, Re]]] = {
+      if (history.finished) {
+        Linearizable(history.linearized).pure[F].widen
+      } else {
+
+        NonEmptyList
+          .fromListUnsafe(history.minimumOps)
+          .reduceLeftM(minOp => tryLinearize(minOp, st)) {
+            case (lin @ Linearizable(_), _) => lin.pure[F].widen
+            case (prevFailure @ NonLinearizable(longestSoFar, _, _, _), minOp) =>
+              tryLinearize(minOp, st).map {
+                case curFailure @ NonLinearizable(newLongest, _, _, _) =>
+                  if (longestSoFar.size > newLongest.size) {
+                    prevFailure
+                  } else {
+                    curFailure
+                  }
+                case other => other
+              }
+          }
       }
     }
+    loop(history, st)
   }
 
   def jitLinearize[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
