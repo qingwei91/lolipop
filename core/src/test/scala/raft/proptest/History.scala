@@ -45,7 +45,7 @@ object History {
           inner(remaining, linearizedOps.append(op).append(re))
         }
 
-        override def finished: Boolean = l.isEmpty
+        override def finished: Boolean = perThread.forall(_._2.isEmpty)
 
         override def skip(op: Invoke[O]): History[F, O, R] = {
           val remaining = dropOp(op)

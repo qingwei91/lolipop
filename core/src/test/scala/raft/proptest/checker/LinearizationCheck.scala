@@ -2,7 +2,7 @@ package raft
 package proptest
 package checker
 
-import cats.data.{Chain, NonEmptyList}
+import cats.data.{ Chain, NonEmptyList }
 import cats.{ Eq, MonadError, Parallel }
 
 sealed trait LinearizedRes[+A]
@@ -28,7 +28,7 @@ object LinearizationCheck {
     implicit F: MonadError[F, Throwable]
   ): F[LinearizedRes[Event[Op, Re]]] = {
 
-    def tryLinearize(minOp: Invoke[Op], st: St): F[LinearizedRes[Event[Op, Re]]] = {
+    def tryLinearize(minOp: Invoke[Op], history: History[F, Op, Re], st: St): F[LinearizedRes[Event[Op, Re]]] = {
       for {
         p <- model.step(st, minOp.op)
         (newSt, expRet) = p
@@ -77,10 +77,10 @@ object LinearizationCheck {
 
         NonEmptyList
           .fromListUnsafe(history.minimumOps)
-          .reduceLeftM(minOp => tryLinearize(minOp, st)) {
+          .reduceLeftM(minOp => tryLinearize(minOp, history, st)) {
             case (lin @ Linearizable(_), _) => lin.pure[F].widen
             case (prevFailure @ NonLinearizable(longestSoFar, _, _, _), minOp) =>
-              tryLinearize(minOp, st).map {
+              tryLinearize(minOp, history, st).map {
                 case curFailure @ NonLinearizable(newLongest, _, _, _) =>
                   if (longestSoFar.size > newLongest.size) {
                     prevFailure
