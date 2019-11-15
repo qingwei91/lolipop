@@ -79,7 +79,7 @@ class RaftReplicationSpec extends Specification {
 
           val elected = writeRes.map(_ must_!== NoLeader).reduce
 
-          val finalState = readRes.asInstanceOf[Read[String]].state
+          val finalState = readRes.asInstanceOf[Query[String]].result
 
           val stateContainsAllCommands = commands.map(cmd => finalState must contain(cmd)).reduce
 

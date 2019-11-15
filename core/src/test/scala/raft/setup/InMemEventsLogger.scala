@@ -19,7 +19,7 @@ class InMemEventsLogger[F[_]: Applicative, Cmd: Show, State: Show](val nodeId: S
   override def receivedClientCmd(cmd: Cmd): F[Unit] = {
     add(s"Received ${cmd.show} from client")
   }
-  override def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit] = {
+  override def replyClientWriteReq(req: Cmd, res: WriteResponse[State]): F[Unit] = {
     add(s"Reply $res to client for $req")
   }
 

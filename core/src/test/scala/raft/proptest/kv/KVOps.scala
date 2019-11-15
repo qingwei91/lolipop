@@ -20,16 +20,16 @@ case class Delete[V](k: String) extends KVOps[V]
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 object KVOps {
-  type InnerSt       = Map[String, String]
+  type KVResponse    = Map[String, String]
   type KVCmd         = KVOps[String]
   type KVEvent       = Event[KVCmd, KVResult[String]]
   type KVHist        = List[KVEvent]
-  type KVRaft[F[_]]  = ClientWrite[F, KVCmd] with ClientRead[F, KVCmd, InnerSt]
+  type KVRaft[F[_]]  = ClientWrite[F, KVCmd, KVResponse] with ClientRead[F, KVCmd, KVResponse]
   type Cluster[F[_]] = Map[String, KVRaft[F]]
 
   implicit val eqKVCmd: Eq[KVCmd] = Eq.fromUniversalEquals[KVCmd]
 
-  def stateMachine[F[_]](ref: Ref[F, InnerSt]): StateMachine[F, KVCmd, InnerSt] =
+  def stateMachine[F[_]](ref: Ref[F, KVResponse]): StateMachine[F, KVCmd, KVResponse] =
     StateMachine.fromRef(ref) { st =>
       {
         case Put(k, v) => st.updated(k, v)
@@ -51,7 +51,7 @@ object KVOps {
           api.write(op).flatMap {
             case RedirectTo(nodeID) => loop(cluster(nodeID))
             case NoLeader => t.sleep(sleepTime) *> loop(api)
-            case CommandCommitted => Monad[F].unit
+            case CommandCommitted(_) => Monad[F].unit
           }
         }
         val (_, api) = cluster.head
@@ -66,11 +66,11 @@ object KVOps {
           List(Invoke(threadId, op), res)
         }
       case op @ Get(k) =>
-        def loop(api: KVRaft[F]): F[InnerSt] = {
+        def loop(api: KVRaft[F]): F[KVResponse] = {
           api.read(op).flatMap {
             case RedirectTo(nodeID) => loop(cluster(nodeID))
             case NoLeader => t.sleep(sleepTime) *> loop(api)
-            case Read(v) => F.pure(v)
+            case Query(v) => F.pure(v)
           }
         }
         val (_, api) = cluster.head

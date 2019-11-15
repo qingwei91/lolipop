@@ -19,7 +19,7 @@ class ClientReadImpl[F[_]: Monad, Cmd, State](
               // WARNING: using stateMachine.execute here is dangerous
               // it assumes the cmd is a read-only, for now it works by
               // we can fix it by having another type for ReadCmd/ReadQuery
-              case _: Leader => stateMachine.execute(readCmd).map(s => Read(s): ReadResponse[State])
+              case _: Leader => stateMachine.execute(readCmd).map(s => Query(s): ReadResponse[State])
               case _: Candidate => Monad[F].pure[ReadResponse[State]](NoLeader)
               case f: Follower =>
                 f.leaderId

@@ -18,7 +18,7 @@ class JsonEventsLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFi
     )
   }
 
-  override def replyClientWriteReq(req: Cmd, res: WriteResponse): F[Unit] = jsonToFile {
+  override def replyClientWriteReq(req: Cmd, res: WriteResponse[State]): F[Unit] = jsonToFile {
     Json.obj(
       "tpe" -> "ReplyClientWrite".asJson,
       "req" -> req.asJson,

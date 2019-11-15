@@ -9,17 +9,17 @@ import raft.algebra.event.{ EventsLogger, RPCTaskScheduler }
 import raft.model._
 
 @SuppressWarnings(Array("org.wartremover.warts.Any"))
-class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
+class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq, Res](
   allState: RaftNodeState[F, Cmd],
   broadcast: BroadcastAppend[F],
-  getCommittedStream: () => Resource[F, Stream[F, Cmd]],
+  getCommittedStream: () => Resource[F, Stream[F, (Cmd, Res)]],
   rpcScheduler: RPCTaskScheduler[F],
-  eventLogger: EventsLogger[F, Cmd, _]
-) extends ClientWrite[F, Cmd] {
+  eventLogger: EventsLogger[F, Cmd, Res]
+) extends ClientWrite[F, Cmd, Res] {
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent
   // Cons: this will push the responsibility of replying to client else where
-  def write(cmd: Cmd): F[WriteResponse] = {
+  def write(cmd: Cmd): F[WriteResponse[Res]] = {
     for {
       _         <- eventLogger.receivedClientCmd(cmd)
       serverTpe <- allState.serverTpe.get
@@ -36,17 +36,19 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq](
                 getCommittedStream().use { stream =>
                   for {
                     _ <- dispatchReq
-                    _ <- stream
-                          .find(_ === cmd)
+                    res <- stream
+                          .collectFirst {
+                            case (_cmd, res) if cmd === _cmd => res
+                          }
                           .compile
                           .lastOrError
-                  } yield CommandCommitted: WriteResponse
+                  } yield CommandCommitted(res): WriteResponse[Res]
                 }
 
-              case _: Candidate => Monad[F].pure[WriteResponse](NoLeader)
+              case _: Candidate => Monad[F].pure[WriteResponse[Res]](NoLeader)
               case f: Follower =>
                 f.leaderId
-                  .fold[WriteResponse](NoLeader)(RedirectTo)
+                  .fold[WriteResponse[Res]](NoLeader)(RedirectTo)
                   .pure[F]
             }
       _ <- eventLogger.replyClientWriteReq(cmd, res)
