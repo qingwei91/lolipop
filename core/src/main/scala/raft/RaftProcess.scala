@@ -83,7 +83,7 @@ object RaftProcess {
         eventLogger
       )
 
-      val clientRead = new ClientReadImpl[F, State](stateMachine, state, eventLogger)
+      val clientRead = new ClientReadImpl[F, Cmd, State](stateMachine, state, eventLogger)
 
       new RaftProcess[F, Cmd, State] {
         override def startRaft: Resource[F, Stream[F, Unit]] = {
@@ -132,12 +132,13 @@ object RaftProcess {
         override def api: RaftApi[F, Cmd, State] = new RaftApi[F, Cmd, State] {
           override def write(cmd: Cmd): F[WriteResponse] = clientWrite.write(cmd)
 
-          override def read: F[ReadResponse[State]] = clientRead.read
 
           override def requestVote(req: VoteRequest): F[VoteResponse] = voteHandler.requestVote(req)
 
           override def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse] =
             appendHandler.requestAppend(req)
+
+          override def read(readCmd: Cmd): F[ReadResponse[State]] = clientRead.read(readCmd)
         }
       }
     }

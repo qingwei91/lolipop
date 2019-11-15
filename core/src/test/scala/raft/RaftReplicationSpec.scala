@@ -56,7 +56,7 @@ class RaftReplicationSpec extends Specification {
         val writeRequests = commands.parTraverse { cmd =>
           TestClient.writeToLeader(clients.toSortedMap)("0", cmd)
         }
-        val readReq = TestClient.readFromLeader(clients.toSortedMap)("0")
+        val readReq = TestClient.readFromLeader(clients.toSortedMap)("0", "read")
 
         val assertions = for {
           _        <- ioTM.sleep(timeToReplication) // allow time for election to avoid contention

@@ -24,7 +24,7 @@ object KVOps {
   type KVCmd         = KVOps[String]
   type KVEvent       = Event[KVCmd, KVResult[String]]
   type KVHist        = List[KVEvent]
-  type KVRaft[F[_]]  = ClientWrite[F, KVCmd] with ClientRead[F, InnerSt]
+  type KVRaft[F[_]]  = ClientWrite[F, KVCmd] with ClientRead[F, KVCmd, InnerSt]
   type Cluster[F[_]] = Map[String, KVRaft[F]]
 
   implicit val eqKVCmd: Eq[KVCmd] = Eq.fromUniversalEquals[KVCmd]
@@ -67,7 +67,7 @@ object KVOps {
         }
       case op @ Get(k) =>
         def loop(api: KVRaft[F]): F[InnerSt] = {
-          api.read.flatMap {
+          api.read(op).flatMap {
             case RedirectTo(nodeID) => loop(cluster(nodeID))
             case NoLeader => t.sleep(sleepTime) *> loop(api)
             case Read(v) => F.pure(v)

@@ -15,6 +15,4 @@ class TestStateMachine[F[_]: Monad: Sync](state: Ref[F, String]) extends StateMa
                 }
     } yield updated
   }
-
-  override def getCurrent: F[String] = state.get
 }

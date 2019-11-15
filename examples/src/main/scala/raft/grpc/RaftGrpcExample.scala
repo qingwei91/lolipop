@@ -67,8 +67,6 @@ object RaftGrpcExample extends IOApp {
           j -> j
         }
       }
-
-      override def getCurrent: IO[Count] = state.get
     }
   }
 

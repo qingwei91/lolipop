@@ -5,7 +5,7 @@ case class Metadata(currentTerm: Int, votedFor: Option[String])
 
 object Metadata {
   def init = Metadata(
-    0,
-    None
+    currentTerm = 0,
+    votedFor = None
   )
 }

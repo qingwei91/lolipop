@@ -27,12 +27,12 @@ object TestClient {
     }
   }
 
-  def readFromLeader[F[_]: Monad: Timer, State](
-    clients: Map[String, ClientRead[F, State]]
-  )(nodeId: String): F[ReadResponse[State]] = {
-    clients(nodeId).read.flatMap {
+  def readFromLeader[F[_]: Monad: Timer, State, Cmd](
+    clients: Map[String, ClientRead[F, Cmd, State]]
+  )(nodeId: String, cmd: Cmd): F[ReadResponse[State]] = {
+    clients(nodeId).read(cmd).flatMap {
       case RedirectTo(leaderId) =>
-        Timer[F].sleep(300.millis) *> readFromLeader(clients)(leaderId)
+        Timer[F].sleep(300.millis) *> readFromLeader(clients)(leaderId, cmd)
       case r @ Read(_) => Monad[F].pure(r)
       case NoLeader =>
         val total   = clients.size
@@ -41,7 +41,7 @@ object TestClient {
         val nextIdx = (currIdx + 1) % total
         val nextId  = keyList(nextIdx)
 
-        Timer[F].sleep(300.millis) *> readFromLeader(clients)(nextId)
+        Timer[F].sleep(300.millis) *> readFromLeader(clients)(nextId, cmd)
     }
   }
 
