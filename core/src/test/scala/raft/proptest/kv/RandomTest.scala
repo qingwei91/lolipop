@@ -9,8 +9,7 @@ import org.specs2.Specification
 import org.specs2.execute.Result
 import org.specs2.specification.core.SpecStructure
 import raft.proptest.checker._
-import raft.proptest.cluster.ClusterOps.ClusterState
-import raft.proptest.cluster.{ ClusterOps, Sleep, StartAll, StopAll }
+import raft.proptest.cluster._
 import raft.proptest.kv.KVOps.{ KVCmd, KVEvent }
 
 import scala.concurrent.ExecutionContext.global
@@ -46,8 +45,8 @@ class RandomTest extends Specification {
         } yield (id, KVOps.stateMachine(ref))
       }
       .map(_.toMap)
-    val testClusterAct = List(StartAll, Sleep(5.seconds), StopAll)
-    val model          = new KVModel[IO]
+
+    val model = new KVDistributedModel[IO]
 
     def multiThreadRun(opsPerThread: List[(String, List[KVOps[String]])]): IO[List[KVEvent]] = {
       for {
@@ -60,24 +59,23 @@ class RandomTest extends Specification {
                          )
                        )
         allNodes <- setupCluster(pairs)
-        clusterLifeCycleIO = testClusterAct.traverse(op => ClusterOps.execute(allNodes, clusterState)(op))
-        testOpIO = opsPerThread.parFlatTraverse {
-          case (threadId, ops) =>
-            ops.traverse(
-              op =>
-                KVOps
-                  .execute[IO](
-                    ops       = op,
-                    cluster   = allNodes.mapValues(_.api),
-                    threadId  = threadId,
-                    sleepTime = 300.millis,
-                    timeout   = 3.seconds
-                )
-            )
-        }
-        results <- (testOpIO, clusterLifeCycleIO).parMapN {
-                    case (opsResult, _) => opsResult
-                  }
+        clusterOps = ClusterManager(allNodes, clusterState)
+        _ <- clusterOps.start
+        results <- opsPerThread.parFlatTraverse {
+                   case (threadId, ops) =>
+                     ops.traverse(
+                       op =>
+                         KVOps
+                           .execute[IO](
+                             ops       = op,
+                             cluster   = allNodes.mapValues(_.api),
+                             threadId  = threadId,
+                             sleepTime = 300.millis,
+                             timeout   = 3.seconds
+                         )
+                     )
+                 }
+        _ <- clusterOps.stop
       } yield {
         results.flatten
       }

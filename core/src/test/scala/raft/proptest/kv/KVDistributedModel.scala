@@ -4,7 +4,7 @@ package kv
 
 import cats.Applicative
 
-class KVModel[F[_]: Applicative] extends Model[F, KVOps[String], KVResult[String], Map[String, String]] {
+class KVDistributedModel[F[_]: Applicative] extends Model[F, KVOps[String], KVResult[String], Map[String, String]] {
   override def step(st: Map[String, String], op: KVOps[String]): F[(Map[String, String], KVResult[String])] =
     Applicative[F].pure {
       op match {

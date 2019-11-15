@@ -23,6 +23,8 @@ object LinearizationCheck {
     * 3. If model return match actual return, remove min-op from history, and go back to step 1
     * 4. If model return does not match actual return, blacklist the min-op and go to step 1
     * 5. If no min-op can be used, ie. all blacklisted or there's none, then it is not linearizable
+    *
+    * Ref: http://www.cs.ox.ac.uk/people/gavin.lowe/LinearizabiltyTesting/paper.pdf
     */
   def wingAndGongUnsafe[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
     implicit F: MonadError[F, Throwable]
