@@ -158,14 +158,14 @@ object RaftProcess {
         }
 
         override def api: RaftApi[F, Cmd, Res] = new RaftApi[F, Cmd, Res] {
-          override def write(cmd: Cmd): F[WriteResponse[Res]] = clientWrite.write(cmd)
+          override def write(cmd: Cmd): F[ClientResponse[Res]] = clientWrite.write(cmd)
 
           override def requestVote(req: VoteRequest): F[VoteResponse] = voteHandler.requestVote(req)
 
           override def requestAppend(req: AppendRequest[Cmd]): F[AppendResponse] =
             appendHandler.requestAppend(req)
 
-          override def read(readCmd: Cmd): F[ReadResponse[Res]] = clientRead.read(readCmd)
+          override def staleRead(readCmd: Cmd): F[ClientResponse[Res]] = clientRead.staleRead(readCmd)
         }
       }
     }

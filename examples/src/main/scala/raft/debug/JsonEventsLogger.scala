@@ -18,7 +18,7 @@ class JsonEventsLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFi
     )
   }
 
-  override def replyClientWriteReq(req: Cmd, res: WriteResponse[State]): F[Unit] = jsonToFile {
+  override def replyClientWriteReq(req: Cmd, res: ClientResponse[State]): F[Unit] = jsonToFile {
     Json.obj(
       "tpe" -> "ReplyClientWrite".asJson,
       "req" -> req.asJson,
@@ -28,7 +28,7 @@ class JsonEventsLogger[F[_]: Applicative, Cmd: Encoder, State: Encoder](jsonToFi
 
   override def receivedClientRead: F[Unit] = Applicative[F].unit
 
-  override def replyClientRead(res: ReadResponse[State]): F[Unit] = Applicative[F].unit
+  override def replyClientRead(res: ClientResponse[State]): F[Unit] = Applicative[F].unit
 
   override def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit] = jsonToFile(
     Json.obj(

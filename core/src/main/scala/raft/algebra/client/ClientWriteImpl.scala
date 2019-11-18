@@ -19,7 +19,7 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq, Res](
   // todo: Consider rework the implementation to be queue based?
   // Pros: the rest of the component are queue based, so it is more consistent
   // Cons: this will push the responsibility of replying to client else where
-  def write(cmd: Cmd): F[WriteResponse[Res]] = {
+  def write(cmd: Cmd): F[ClientResponse[Res]] = {
     for {
       _         <- eventLogger.receivedClientCmd(cmd)
       serverTpe <- allState.serverTpe.get
@@ -37,24 +37,25 @@ class ClientWriteImpl[F[_]: Concurrent, Cmd: Eq, Res](
                   for {
                     _ <- dispatchReq
                     res <- stream
-                          .collectFirst {
-                            case (_cmd, res) if cmd === _cmd => res
-                          }
-                          .compile
-                          .lastOrError
-                  } yield CommandCommitted(res): WriteResponse[Res]
+                            .collectFirst {
+                              case (_cmd, res) if cmd === _cmd => res
+                            }
+                            .compile
+                            .lastOrError
+                  } yield CommandCommitted(res): ClientResponse[Res]
                 }
 
-              case _: Candidate => Monad[F].pure[WriteResponse[Res]](NoLeader)
+              case _: Candidate => Monad[F].pure[ClientResponse[Res]](NoLeader)
               case f: Follower =>
                 f.leaderId
-                  .fold[WriteResponse[Res]](NoLeader)(RedirectTo)
+                  .fold[ClientResponse[Res]](NoLeader)(RedirectTo)
                   .pure[F]
             }
       _ <- eventLogger.replyClientWriteReq(cmd, res)
     } yield res
   }
 
+  // todo: Does it need to be atomic?
   private def appendToLocalLog(cmd: Cmd): F[Unit] = allState.serverTpeMutex {
     for {
       persistent <- allState.metadata.get

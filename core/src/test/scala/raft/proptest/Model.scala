@@ -1,4 +1,7 @@
-package raft.proptest
+package raft
+package proptest
+
+import cats.Applicative
 
 /*
   Model does not encapsulate state, this is to allow
@@ -11,8 +14,15 @@ package raft.proptest
 
   Another consequence of such design is that Model is sequential but
   StateMachine can be concurrent
-*/
-trait Model[F[_], Op, Res, St] {
-  def step(st: St, op: Op): F[(St, Res)]
+ */
+trait Model[Op, Res, St] {
+  def step(st: St, op: Op): (St, Res)
 }
 
+object Model {
+  def from[ Op, Res, St](f: St => Op => (St, Res)): Model[Op, Res, St] = new Model[Op, Res, St] {
+    override def step(st: St, op: Op): (St, Res) = {
+      f(st)(op)
+    }
+  }
+}

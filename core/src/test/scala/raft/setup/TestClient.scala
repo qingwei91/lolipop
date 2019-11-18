@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 object TestClient {
   def writeToLeader[F[_]: Monad: Timer, Cmd, Res](
     clients: Map[String, ClientWrite[F, Cmd, Res]]
-  )(nodeId: String, cmd: Cmd): F[WriteResponse[Res]] = {
+  )(nodeId: String, cmd: Cmd): F[ClientResponse[Res]] = {
     clients(nodeId).write(cmd).flatMap {
       case RedirectTo(leaderId) =>
         Timer[F].sleep(300.millis) *> writeToLeader(clients)(leaderId, cmd)
@@ -29,11 +29,11 @@ object TestClient {
 
   def readFromLeader[F[_]: Monad: Timer, State, Cmd](
     clients: Map[String, ClientRead[F, Cmd, State]]
-  )(nodeId: String, cmd: Cmd): F[ReadResponse[State]] = {
-    clients(nodeId).read(cmd).flatMap {
+  )(nodeId: String, cmd: Cmd): F[ClientResponse[State]] = {
+    clients(nodeId).staleRead(cmd).flatMap {
       case RedirectTo(leaderId) =>
         Timer[F].sleep(300.millis) *> readFromLeader(clients)(leaderId, cmd)
-      case r @ Query(_) => Monad[F].pure(r)
+      case r @ CommandCommitted(_) => Monad[F].pure(r)
       case NoLeader =>
         val total   = clients.size
         val keyList = clients.keySet.toList

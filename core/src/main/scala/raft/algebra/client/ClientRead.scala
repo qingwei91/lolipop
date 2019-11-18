@@ -1,7 +1,8 @@
 package raft.algebra.client
 
-import raft.model.ReadResponse
+import raft.model.ClientResponse
 
 trait ClientRead[F[_], Cmd, Res] {
-  def read(readCmd: Cmd): F[ReadResponse[Res]]
+  // todo: Implement linearizable read
+  def staleRead(readCmd: Cmd): F[ClientResponse[Res]]
 }

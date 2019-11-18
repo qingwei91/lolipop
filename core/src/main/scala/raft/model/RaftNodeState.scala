@@ -15,6 +15,8 @@ trait RaftNodeState[F[_], Cmd] {
   def serverTpeLock: MVar[F, Unit]
   def logs: LogsApi[F, Cmd]
 
+  // TODO: this is buggy, we should use bracket
+  // TODO: this is error prone, think about avoding MVar?
   def serverTpeMutex[A](fa: F[A])(implicit F: Monad[F]): F[A] = {
     for {
       _ <- serverTpeLock.take

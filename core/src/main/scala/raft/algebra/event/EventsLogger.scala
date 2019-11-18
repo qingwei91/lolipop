@@ -4,10 +4,10 @@ import raft.model._
 
 trait EventsLogger[F[_], Cmd, Res] {
   def receivedClientCmd(cmd: Cmd): F[Unit]
-  def replyClientWriteReq(req: Cmd, res: WriteResponse[Res]): F[Unit]
+  def replyClientWriteReq(req: Cmd, res: ClientResponse[Res]): F[Unit]
 
   def receivedClientRead: F[Unit]
-  def replyClientRead(res: ReadResponse[Res]): F[Unit]
+  def replyClientRead(res: ClientResponse[Res]): F[Unit]
 
   def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit]
   def voteRPCReplied(voteRequest: VoteRequest, response: VoteResponse): F[Unit]

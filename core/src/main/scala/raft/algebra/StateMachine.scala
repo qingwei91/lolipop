@@ -20,11 +20,10 @@ trait StateMachine[F[_], Cmd, Res] {
 }
 
 object StateMachine {
-  def fromRef[F[_], Cmd, St](ref: Ref[F, St])(mod: St => Cmd => St): StateMachine[F, Cmd, St] =
-    new StateMachine[F, Cmd, St] {
-      override def execute(cmd: Cmd): F[St] = ref.modify { st =>
-        val updated = mod(st)(cmd)
-        updated -> updated
+  def fromRef[F[_], Cmd, St, Res](ref: Ref[F, St])(mod: St => Cmd => (St, Res)): StateMachine[F, Cmd, Res] =
+    new StateMachine[F, Cmd, Res] {
+      override def execute(cmd: Cmd): F[Res] = ref.modify { st =>
+        mod(st)(cmd)
       }
     }
 }

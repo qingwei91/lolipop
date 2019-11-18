@@ -12,12 +12,12 @@ class Slf4jLogger[F[_]: Sync, Cmd, State](nodeId: String) extends EventsLogger[F
 
   override def receivedClientCmd(cmd: Cmd): F[Unit] = F.delay(logger.info(s"Received command $cmd from client"))
 
-  override def replyClientWriteReq(req: Cmd, res: WriteResponse[State]): F[Unit] =
+  override def replyClientWriteReq(req: Cmd, res: ClientResponse[State]): F[Unit] =
     F.delay(logger.info(s"Replied client, incoming cmd = $req, response = $res"))
 
   override def receivedClientRead: F[Unit] = F.delay(logger.debug("Received client read request"))
 
-  override def replyClientRead(res: ReadResponse[State]): F[Unit] =
+  override def replyClientRead(res: ClientResponse[State]): F[Unit] =
     F.delay(logger.debug(s"Replied read request with $res"))
 
   override def voteRPCStarted(voteRequest: VoteRequest, receiverId: String): F[Unit] =

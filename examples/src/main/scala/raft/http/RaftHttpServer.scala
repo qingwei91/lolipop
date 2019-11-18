@@ -65,7 +65,7 @@ object RaftHttpServer extends CirceEntityDecoder with KleisliSyntax {
           case req @ GET -> Root / "state" =>
             for {
               query <- req.as[Cmd]
-              reply <- api.read(query)
+              reply <- api.staleRead(query)
               res   <- Ok(reply.asJson)
             } yield res
         }

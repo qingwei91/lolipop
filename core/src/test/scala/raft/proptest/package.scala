@@ -1,8 +1,12 @@
 package raft
 
-import cats.{ Eq, MonadError }
+import java.io.{ File, PrintWriter }
+
+import cats.{ Eq, Monad, MonadError, Parallel }
 import cats.effect.concurrent.Ref
-import cats.effect.{ Concurrent, ContextShift, Sync, Timer }
+import cats.effect.{ Concurrent, ContextShift, IO, Sync, Timer }
+import io.circe.Json
+import io.circe.parser.parse
 import raft.algebra.StateMachine
 import raft.algebra.append.{ AppendRPCHandler, AppendRPCHandlerImpl }
 import raft.algebra.election.{ VoteRPCHandler, VoteRPCHandlerImpl }
@@ -11,11 +15,13 @@ import raft.setup.{ InMemNetwork, TestLogsIO, TestMetadata }
 import raft.util.Slf4jLogger
 
 import scala.concurrent.TimeoutException
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
+import scala.io.Source
 
 package object proptest {
   implicit class TimeoutUnlawful[F[_], A](fa: F[A])(implicit F: MonadError[F, Throwable]) {
     def timeout(duration: FiniteDuration)(implicit tm: Timer[F], cs: Concurrent[F]): F[A] = {
+
       cs.race(
           fa,
           tm.sleep(duration)
@@ -24,6 +30,16 @@ package object proptest {
           case Left(a) => F.pure(a)
           case Right(_) => F.raiseError(new TimeoutException(s"Didn't finished in $duration"))
         }
+    }
+    def time(name: String)(implicit t: Timer[F]): F[A] = {
+      for {
+        start <- t.clock.realTime(MILLISECONDS)
+        a     <- fa
+        end   <- t.clock.realTime(MILLISECONDS)
+      } yield {
+        println(s"$name took ${end - start} millis")
+        a
+      }
     }
   }
 
@@ -89,4 +105,27 @@ package object proptest {
     }
   }
 
+  def parTest[F[_]: Monad: Parallel, FF[_], R](
+    n: Int
+  )(fn: Int => F[R]): F[List[R]] = {
+    (0 to n).toList.parTraverse { id =>
+      fn(id)
+    }
+  }
+
+  def time[A](name: String)(a: () => A): A = {
+    val start = System.currentTimeMillis()
+    val r     = a()
+    val end   = System.currentTimeMillis()
+    println(s"$name took ${end - start} millis")
+    r
+  }
+
+  def toFile(file: File)(json: Json): IO[Unit] = {
+    IO(new PrintWriter(file)).bracket(w => IO(w.println(json.spaces2)))(w => IO(w.close()))
+  }
+
+  def fromFile(file: File): IO[Json] = {
+    IO(Source.fromFile(file)).bracket(src => IO.fromEither(parse(src.mkString)))(src => IO(src.close()))
+  }
 }

@@ -3,6 +3,7 @@ package proptest
 package checker
 
 import cats.data.{ Chain, NonEmptyList }
+import cats.effect.Concurrent
 import cats.{ Eq, MonadError, Parallel }
 
 sealed trait LinearizedRes[+A]
@@ -26,58 +27,50 @@ object LinearizationCheck {
     *
     * Ref: http://www.cs.ox.ac.uk/people/gavin.lowe/LinearizabiltyTesting/paper.pdf
     */
-  def wingAndGongUnsafe[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
-    implicit F: MonadError[F, Throwable]
-  ): F[LinearizedRes[Event[Op, Re]]] = {
+  def wingAndGongUnsafe[F[_], Op, Re: Eq, St](
+    history: History[Op, Re],
+    model: Model[Op, Re, St],
+    st: St
+  )(implicit F: Concurrent[F], P: Parallel[F]): F[LinearizedRes[Event[Op, Re]]] = {
 
-    def tryLinearize(minOp: Invoke[Op], history: History[F, Op, Re], st: St): F[LinearizedRes[Event[Op, Re]]] = {
-      for {
-        p <- model.step(st, minOp.op)
-        (newSt, expRet) = p
-        opsResult <- history.ret(minOp)
-        ans <- opsResult match {
-                case Left(_) =>
-                  val assumeLinearized = loop(history.linearize(minOp), newSt)
+    def tryLinearize(
+      minOp: Invoke[Op],
+      history: History[Op, Re],
+      st: St
+    ): F[LinearizedRes[Event[Op, Re]]] = {
+      val (newSt, expRet) = model.step(st, minOp.op)
+      val opsResult       = history.ret(minOp)
+      opsResult match {
+        case Left(_) =>
+          val assumeLinearized = loop(history.linearize(minOp), newSt)
+          val assumeFailed     = loop(history.skip(minOp), st)
 
-                  val assumeFailed = loop(history.skip(minOp), st)
-
-                  (
-                    assumeLinearized,
-                    assumeFailed
-                  ).mapN[LinearizedRes[Event[Op, Re]]] {
-                    case (lin: Linearizable[Event[Op, Re]], _) =>
-                      lin
-                    case (_, notLin: Linearizable[Event[Op, Re]]) =>
-                      notLin
-                    case (lin: NonLinearizable[Event[Op, Re]], notLin: NonLinearizable[Event[Op, Re]]) =>
-                      if (lin.longestStreak.size > notLin.longestStreak.size) {
-                        lin
-                      } else {
-                        notLin
-                      }
-                  }
-
-                case Right(actualRet) =>
-                  if (actualRet.result === expRet) {
-                    val linearizedHs = history.linearize(minOp)
-                    loop(linearizedHs, newSt)
-                  } else {
-
-                    NonLinearizable(history.linearized, minOp, actualRet.copy(result = expRet), actualRet)
-                      .pure[F]
-                      .widen[LinearizedRes[Event[Op, Re]]]
-                  }
+          (assumeLinearized, assumeFailed).parMapN {
+            case (lin: Linearizable[Event[Op, Re]], _) => lin
+            case (_, notLin: Linearizable[Event[Op, Re]]) => notLin
+            case (lin: NonLinearizable[Event[Op, Re]], notLin: NonLinearizable[Event[Op, Re]]) =>
+              if (lin.longestStreak.size > notLin.longestStreak.size) {
+                lin
+              } else {
+                notLin
               }
-      } yield ans
+          }
 
+        case Right(actualRet) =>
+          if (actualRet.result === expRet) {
+            val linearizedHs = history.linearize(minOp)
+            loop(linearizedHs, newSt)
+          } else {
+            NonLinearizable(history.linearized, minOp, actualRet.copy(result = expRet), actualRet).pure[F].widen
+          }
+      }
     }
 
-    def loop(history: History[F, Op, Re], st: St): F[LinearizedRes[Event[Op, Re]]] = {
+    def loop(history: History[Op, Re], st: St): F[LinearizedRes[Event[Op, Re]]] = {
       if (history.finished) {
         Linearizable(history.linearized).pure[F].widen
       } else {
-
-        NonEmptyList
+        val result = NonEmptyList
           .fromListUnsafe(history.minimumOps)
           .reduceLeftM(minOp => tryLinearize(minOp, history, st)) {
             case (lin @ Linearizable(_), _) => lin.pure[F].widen
@@ -92,59 +85,141 @@ object LinearizationCheck {
                 case other => other
               }
           }
+        result
       }
     }
+
     loop(history, st)
   }
 
-  def jitLinearize[F[_], Op, Re: Eq, St](history: History[F, Op, Re], model: Model[F, Op, Re, St], st: St)(
-    implicit F: MonadError[F, Throwable]
-  ): F[Boolean] = {
-    ???
-  }
+  @SuppressWarnings(
+    Array(
+      "org.wartremover.warts.All"
+    )
+  )
+  def wingAndGongUnsafeNew[Op, Re: Eq, St](
+    history: History[Op, Re],
+    model: Model[Op, Re, St],
+    st: St
+  ): LinearizedRes[Event[Op, Re]] = {
 
-  /**
-    * history + model => analysis
-    *
-    * 1. linearize history (NP hard problem)
-    * 2. use the history, replay it with model
-    * 3.
-    */
-  def analyse[F[_]: Parallel, Op, Res: Eq, St](history: List[Event[Op, Res]], model: Model[F, Op, Res, St], st: St)(
-    implicit F: MonadError[F, Throwable]
-  ): F[Boolean] = {
+    def tryLinearize(
+      minOp: Invoke[Op],
+      history: History[Op, Re],
+      st: St
+    ): LinearizedRes[Event[Op, Re]] = {
+      val (newSt, expRet) = model.step(st, minOp.op)
+      val opsResult       = history.ret(minOp)
+      opsResult match {
+        case Left(_) =>
+          val assumeLinearized = loop(history.linearize(minOp), newSt)
+          val assumeFailed     = loop(history.skip(minOp), st)
 
-    def loop(subHistory: List[Event[Op, Res]], st: St): F[Boolean] = {
-      subHistory match {
-        case Invoke(_, op) :: Ret(_, result) :: tail =>
-          for {
-            pair <- model.step(st, op)
-            (st, expected) = pair
-            r <- if (expected === result) {
-                  loop(tail, st)
-                } else {
-                  false.pure[F]
-                }
-          } yield r
-        case Invoke(_, op) :: Failure(_, _) :: tail =>
-          /**
-            * When failure, the operation may either took place or
-            * did not take place, so we fork into both possibility
-            * and continue our search
-            * TODO: this seems inefficient, try to optimize
-            */
-          for {
-            pair <- model.step(st, op)
-            (newSt, _) = pair
-            r <- (loop(tail, newSt), loop(tail, st)).parMapN {
-                  case (a, b) => a || b
-                }
-          } yield r
+          (assumeLinearized, assumeFailed) match {
+            case (lin: Linearizable[Event[Op, Re]], _) => lin
+            case (_, notLin: Linearizable[Event[Op, Re]]) => notLin
+            case (lin: NonLinearizable[Event[Op, Re]], notLin: NonLinearizable[Event[Op, Re]]) =>
+              if (lin.longestStreak.size > notLin.longestStreak.size) {
+                lin
+              } else {
+                notLin
+              }
+          }
 
-        case Nil => true.pure[F]
-        case other => F.raiseError(new Exception(s"Unexpected incomplete history ${other.take(2)}"))
+        case Right(actualRet) =>
+          if (actualRet.result === expRet) {
+            val linearizedHs = history.linearize(minOp)
+            loop(linearizedHs, newSt)
+          } else {
+            NonLinearizable(history.linearized, minOp, actualRet.copy(result = expRet), actualRet)
+          }
       }
     }
+
+    def loop(history: History[Op, Re], st: St): LinearizedRes[Event[Op, Re]] = {
+      if (history.finished) {
+        Linearizable(history.linearized)
+      } else {
+        /*
+        1. take 1 from minOp
+        2. try to linearize minOp
+        3. If success, continue linearize the rest, go to 1
+        4. If failed, jump to next minOp
+        5. If no more minOp, return the best try
+         */
+
+        var foundResult                          = false
+        var cur                                  = 0
+        var result: LinearizedRes[Event[Op, Re]] = null
+
+        while (!foundResult && cur != history.minimumOps.size) {
+          val currMinOp = history.minimumOps(cur)
+          cur = cur + 1
+          val (newSt, expRet) = model.step(st, currMinOp.op)
+          val actualResult    = history.ret(currMinOp)
+          actualResult match {
+            case Left(_) =>
+              val assumeLinearized = loop(history.linearize(minOp), newSt)
+              val assumeFailed     = loop(history.skip(minOp), st)
+
+              result = (assumeLinearized, assumeFailed) match {
+                case (lin @ Linearizable(_), _) => lin
+                case (_, notLin @ Linearizable(_)) => notLin
+                case (lin: NonLinearizable[Event[Op, Re]], notLin: NonLinearizable[Event[Op, Re]]) =>
+                  if (lin.longestStreak.size > notLin.longestStreak.size) {
+                    lin
+                  } else {
+                    notLin
+                  }
+
+                case Right(succeeded) =>
+              if (succeeded.result === expRet) {
+                val linearizedHs = history.linearize(currMinOp)
+                loop(linearizedHs, newSt) match {
+                  case lin @ Linearizable(_) =>
+                    result      = lin
+                    foundResult = true
+                  case non @ NonLinearizable(newLongest, _, _, _) =>
+                    if (result == null) {
+                      result = non
+                    } else {
+                      val longestSoFar = result.asInstanceOf[NonLinearizable[Event[Op, Re]]].longestStreak
+
+                      result = if (longestSoFar.size > newLongest.size) {
+                        result
+                      } else {
+                        non
+                      }
+                    }
+                }
+              } else {
+                result = NonLinearizable(history.linearized, currMinOp, succeeded.copy(result = expRet), succeeded)
+              }
+          }
+        }
+        result
+
+//            val result = history.minimumOps match {
+//              case minOp :: tail =>
+//                tail.foldLeft(tryLinearize(minOp, history, st)) {
+//                  case (lin @ Linearizable(_), _) => lin
+//                  case (prevFailure @ NonLinearizable(longestSoFar, _, _, _), nextMinOp) =>
+//                    println(s"Failed to linearize 1st MinOP of ${tail}, ${history.linearized.size} ...........")
+//                    tryLinearize(nextMinOp, history, st) match {
+//                      case curFailure @ NonLinearizable(newLongest, _, _, _) =>
+//                        if (longestSoFar.size > newLongest.size) {
+//                          prevFailure
+//                        } else {
+//                          curFailure
+//                        }
+//                      case other => other
+//                    }
+//                }
+//            }
+      }
+    }
+
     loop(history, st)
   }
+
 }
