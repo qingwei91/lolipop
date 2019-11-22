@@ -32,7 +32,7 @@ import scala.concurrent.duration._
 class RandomTest extends Specification {
   override def is: SpecStructure =
     s2"""
-      KVStore should be linearizable - $replayHist
+      KVStore should be linearizable - $testRun
       """
 
   private implicit val cs: ContextShift[IO]       = IO.contextShift(global)
@@ -41,7 +41,7 @@ class RandomTest extends Specification {
 
   private implicit val opsGen: Gen[List[KVOps]] = KVOps.gen(30)
   private implicit val strCodec                 = Codec.from(Decoder[String], Encoder[String])
-  private val parFactor                         = 10
+  private val parFactor                         = 30
 
   private def testRun = {
     val idStateMachines = List("0", "1", "2")
@@ -81,7 +81,7 @@ class RandomTest extends Specification {
                   }
         _ <- clusterOps.stop.time("Stop cluster")
       } yield {
-        results.flatten
+        results
       }
     }
 
@@ -92,9 +92,12 @@ class RandomTest extends Specification {
         .flatMap { combined =>
           val history = History.fromList[KVOps, KVResult[String]](combined)
 
-          LinearizationCheck
-            .wingAndGongUnsafe[IO, KVOps, KVResult[String], KVMap](history, KVOps.model, Map.empty[String, String])
-            .time(s"Linearization Check of $parId")
+          // todo: this isn't gonna kill the task
+          // implement cancellation in loop
+          IO {
+            LinearizationCheck
+              .betterWingAndGong[KVOps, KVResult[String], KVMap](history, KVOps.model, Map.empty[String, String])
+          }.time(s"Linearization Check of $parId")
             .timeout(20.seconds)
             .recoverWith {
               case err: TimeoutException =>
@@ -106,8 +109,11 @@ class RandomTest extends Specification {
 
     Result.forall(results) {
       case Linearizable(_) => success
-      case NonLinearizable(longestAttempt, failed, exp, act) =>
-        failure(s"Failed to linearize, longestStreak = $longestAttempt, failed at $failed, expect $exp, got $act")
+      case NonLinearizable(longestAttempt, failed, exp) =>
+        failure(
+          s"""Failed to linearize, longestStreak = ${longestAttempt.show}
+             |failed at $failed,
+             |expect $exp as result""".stripMargin)
     }
   }
 
@@ -118,7 +124,7 @@ class RandomTest extends Specification {
     } yield {
       val history = History.fromList[KVOps, KVResult[String]](events)
       LinearizationCheck
-        .wingAndGongUnsafeNew[KVOps, KVResult[String], KVMap](
+        .betterWingAndGong[KVOps, KVResult[String], KVMap](
           history,
           KVOps.model,
           Map.empty[String, String]
@@ -126,8 +132,8 @@ class RandomTest extends Specification {
     }
     task.unsafeRunSync() match {
       case Linearizable(_) => success
-      case NonLinearizable(longestAttempt, failed, exp, act) =>
-        failure(s"Failed to linearize, longestStreak = $longestAttempt, failed at $failed, expect $exp, got $act")
+      case NonLinearizable(longestAttempt, failed, exp) =>
+        failure(s"Failed to linearize, longestStreak = $longestAttempt, failed at $failed, expect $exp")
     }
   }
 }

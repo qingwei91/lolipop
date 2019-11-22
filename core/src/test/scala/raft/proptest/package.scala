@@ -7,6 +7,7 @@ import cats.effect.concurrent.Ref
 import cats.effect.{ Concurrent, ContextShift, IO, Sync, Timer }
 import io.circe.Json
 import io.circe.parser.parse
+import org.slf4j.LoggerFactory
 import raft.algebra.StateMachine
 import raft.algebra.append.{ AppendRPCHandler, AppendRPCHandlerImpl }
 import raft.algebra.election.{ VoteRPCHandler, VoteRPCHandlerImpl }
@@ -19,6 +20,7 @@ import scala.concurrent.duration._
 import scala.io.Source
 
 package object proptest {
+  val logger = LoggerFactory.getLogger("PropTest")
   implicit class TimeoutUnlawful[F[_], A](fa: F[A])(implicit F: MonadError[F, Throwable]) {
     def timeout(duration: FiniteDuration)(implicit tm: Timer[F], cs: Concurrent[F]): F[A] = {
 
@@ -37,7 +39,7 @@ package object proptest {
         a     <- fa
         end   <- t.clock.realTime(MILLISECONDS)
       } yield {
-        println(s"$name took ${end - start} millis")
+        logger.info(s"$name took ${end - start} millis")
         a
       }
     }
@@ -117,7 +119,7 @@ package object proptest {
     val start = System.currentTimeMillis()
     val r     = a()
     val end   = System.currentTimeMillis()
-    println(s"$name took ${end - start} millis")
+    logger.info(s"$name took ${end - start} millis")
     r
   }
 

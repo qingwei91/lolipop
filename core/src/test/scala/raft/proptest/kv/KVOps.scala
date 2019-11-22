@@ -24,7 +24,7 @@ case class Delete(del: String) extends KVOps
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 object KVOps {
   type KVMap         = Map[String, String]
-  type KVEvent       = Event[KVOps, KVResult[String]]
+  type KVEvent       = FullOperation[KVOps, KVResult[String]]
   type KVHist        = List[KVEvent]
   type KVRaft[F[_]]  = ClientWrite[F, KVOps, KVResult[String]] with ClientRead[F, KVOps, KVResult[String]]
   type Cluster[F[_]] = Map[String, KVRaft[F]]
@@ -60,12 +60,12 @@ object KVOps {
 
   val model: Model[KVOps, KVResult[String], KVMap] = Model.from(stateTransition)
 
-  private def loopOverApi[F[_]](
+  private def loopOverApi[F[_]: Monad](
     api: KVRaft[F],
     fireRequest: KVRaft[F] => F[ClientResponse[KVResult[String]]],
     cluster: Cluster[F],
-    sleepTime: FiniteDuration = 200.millis
-  )(implicit F: MonadError[F, Throwable], t: Timer[F], con: Concurrent[F]): F[KVResult[String]] = {
+    sleepTime: FiniteDuration
+  )(implicit t: Timer[F], con: Concurrent[F]): F[KVResult[String]] = {
     fireRequest(api).flatMap {
       case RedirectTo(nodeID) => loopOverApi(cluster(nodeID), fireRequest, cluster, sleepTime)
       case NoLeader => t.sleep(sleepTime) *> loopOverApi(api, fireRequest, cluster, sleepTime)
@@ -78,27 +78,31 @@ object KVOps {
     threadId: String,
     sleepTime: FiniteDuration = 200.millis,
     timeout: FiniteDuration   = 2.seconds
-  )(implicit F: MonadError[F, Throwable], t: Timer[F], con: Concurrent[F]): F[KVHist] = {
+  )(implicit t: Timer[F], con: Concurrent[F]): F[KVEvent] = {
 
-    val execution: F[KVEvent] = ops match {
+    val execution: F[Either[Throwable, KVResult[String]]] = (ops match {
       case Put(_, _) | Delete(_) =>
         val (_, api) = cluster.head
+
         loopOverApi[F](api, api => api.write(ops), cluster, sleepTime)
-          .map(res => Ret(threadId, res))
+          .map(Either.right[Throwable, KVResult[String]](_))
 
       case op @ Get(_) =>
         val (_, api) = cluster.head
-
         loopOverApi[F](api, api => api.staleRead(op), cluster, sleepTime)
-          .map(res => Ret(threadId, res))
-    }
-
-    execution
-      .timeout(timeout)
+          .map(Either.right[Throwable, KVResult[String]](_))
+    }).timeout(timeout)
       .recover {
-        case err: Throwable => Failed(threadId, err)
+        case err: Throwable => Either.left[Throwable, KVResult[String]](err)
       }
-      .map(ret => List(Invoke(threadId, ops), ret))
+
+    for {
+      startTime <- t.clock.monotonic(MICROSECONDS)
+      retEv     <- execution
+      endTime   <- t.clock.monotonic(MICROSECONDS)
+    } yield {
+      FullOperation(threadId, ops, retEv, startTime, endTime)
+    }
   }
 
   val keysGen: Gen[String] = Gen.oneOf("k1", "k2", "k3")

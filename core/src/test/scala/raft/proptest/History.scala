@@ -1,16 +1,6 @@
 package raft.proptest
 
 import cats.data.Chain
-
-trait History[Op, Re] {
-  def minimumOps: List[Invoke[Op]]
-  def ret(ops: Invoke[Op]): Either[Failed, Ret[Re]]
-  def linearize(ops: Invoke[Op]): History[Op, Re]
-  def skip(ops: Invoke[Op]): History[Op, Re]
-  def finished: Boolean
-  def linearized: Chain[Event[Op, Re]]
-}
-
 @SuppressWarnings(
   Array(
     "org.wartremover.warts.TraversableOps",
@@ -20,54 +10,50 @@ trait History[Op, Re] {
   )
 )
 object History {
-  case class ConcreteHistory[O, R](perThread: Map[String, List[Event[O, R]]], linearizedOps: Chain[Event[O, R]])
-      extends History[O, R] {
-    override def minimumOps: List[Invoke[O]] = {
-      perThread.collect {
-        case (_, (h: Invoke[O]) :: _) => h
-      }.toList
-    }
 
-    override def ret(ops: Invoke[O]): Either[Failed, Ret[R]] = {
-      perThread(ops.threadId)
-        .collectFirst {
-          case r: Ret[R] => Right(r)
-          case f: Failed => Left(f)
+  def fromList[O, R](l: List[FullOperation[O, R]]): History[O, R] = {
+    ListHistory(l.sortBy(_.startTime), Chain.empty)
+  }
+}
+
+trait History[Op, Re] {
+  type FO = FullOperation[Op, Re]
+  def minimumOps: List[FO]
+  def linearize(ops: FO): History[Op, Re]
+  def skip(ops: FO): History[Op, Re]
+  def finished: Boolean
+  def linearized: Chain[FO]
+}
+
+/**
+  * @param remaining remain Ops sorted by startTime
+  *                  Potential perf boost by using treeMap, where each
+  *                  key map to all concurrent ops, then remove is
+  *                  O(nlogn) instead of O(n) and constructing the
+  *                  whole map is probably O(n^2) for once?
+  */
+case class ListHistory[O, R](remaining: List[FullOperation[O, R]], _linearized: Chain[FullOperation[O, R]])
+    extends History[O, R] {
+  override def minimumOps: List[FO] = {
+    remaining match {
+      case oldestStart :: rest =>
+        //TODO potential perf boost by not allocating
+        val overlapped = rest.filter {
+          case FullOperation(tid, _, _, start, _) =>
+            start <= oldestStart.endTime && tid != oldestStart.threadId
         }
-        .getOrElse(throw new IllegalArgumentException(s"No corresponding Ret event found for $ops"))
-    }
-
-    override def linearize(op: Invoke[O]): History[O, R] = {
-      val (re, remaining) = dropOp(op)
-      ConcreteHistory(remaining, linearizedOps.append(op).append(re))
-    }
-
-    override def finished: Boolean = perThread.forall(_._2.isEmpty)
-
-    override def skip(op: Invoke[O]): History[O, R] = {
-      val remaining = dropOp(op)
-
-      ConcreteHistory(remaining._2, linearizedOps)
-    }
-
-    override def linearized: Chain[Event[O, R]] = linearizedOps
-
-    private def dropOp(op: Invoke[O]): (Event[O, R], Map[String, List[Event[O, R]]]) = {
-      val events = perThread(op.threadId)
-      val first  = events.head
-      val (droppedRet, updated) = if (first != op) {
-        throw new IllegalArgumentException(s"Cannot drop $op because it is not the 1st op, 1st op is $first")
-      } else {
-        events(1) match {
-          case r: Ret[R] => r -> events.drop(2)
-          case f: Failed => f -> events.drop(2)
-        }
-      }
-      droppedRet -> perThread.updated(op.threadId, updated)
+        oldestStart :: overlapped
+      case Nil => Nil
     }
   }
 
-  def fromList[O, R](l: List[Event[O, R]]): History[O, R] = {
-    ConcreteHistory(l.groupBy(_.threadId), Chain.empty)
+  override def linearize(ops: FO): History[O, R] = {
+    ListHistory(remaining.filterNot(_ == ops), _linearized.append(ops))
   }
+
+  override def skip(ops: FO): History[O, R] = ListHistory(remaining.filterNot(_ == ops), _linearized)
+
+  override def finished: Boolean = remaining == Nil
+
+  override def linearized: Chain[FO] = _linearized
 }
