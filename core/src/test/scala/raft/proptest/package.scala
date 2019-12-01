@@ -107,7 +107,7 @@ package object proptest {
     }
   }
 
-  def parTest[F[_]: Monad: Parallel, FF[_], R](
+  def parTest[F[_]: Monad: Parallel, R](
     n: Int
   )(fn: Int => F[R]): F[List[R]] = {
     (0 to n).toList.parTraverse { id =>

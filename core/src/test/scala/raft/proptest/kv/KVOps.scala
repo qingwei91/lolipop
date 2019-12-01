@@ -60,51 +60,6 @@ object KVOps {
 
   val model: Model[KVOps, KVResult[String], KVMap] = Model.from(stateTransition)
 
-  private def loopOverApi[F[_]: Monad](
-    api: KVRaft[F],
-    fireRequest: KVRaft[F] => F[ClientResponse[KVResult[String]]],
-    cluster: Cluster[F],
-    sleepTime: FiniteDuration
-  )(implicit t: Timer[F], con: Concurrent[F]): F[KVResult[String]] = {
-    fireRequest(api).flatMap {
-      case RedirectTo(nodeID) => loopOverApi(cluster(nodeID), fireRequest, cluster, sleepTime)
-      case NoLeader => t.sleep(sleepTime) *> loopOverApi(api, fireRequest, cluster, sleepTime)
-      case CommandCommitted(res) => res.pure[F]
-    }
-  }
-  def execute[F[_]: Monad](
-    ops: KVOps,
-    cluster: Cluster[F],
-    threadId: String,
-    sleepTime: FiniteDuration = 200.millis,
-    timeout: FiniteDuration   = 2.seconds
-  )(implicit t: Timer[F], con: Concurrent[F]): F[KVEvent] = {
-
-    val execution: F[Either[Throwable, KVResult[String]]] = (ops match {
-      case Put(_, _) | Delete(_) =>
-        val (_, api) = cluster.head
-
-        loopOverApi[F](api, api => api.write(ops), cluster, sleepTime)
-          .map(Either.right[Throwable, KVResult[String]](_))
-
-      case op @ Get(_) =>
-        val (_, api) = cluster.head
-        loopOverApi[F](api, api => api.staleRead(op), cluster, sleepTime)
-          .map(Either.right[Throwable, KVResult[String]](_))
-    }).timeout(timeout)
-      .recover {
-        case err: Throwable => Either.left[Throwable, KVResult[String]](err)
-      }
-
-    for {
-      startTime <- t.clock.monotonic(MICROSECONDS)
-      retEv     <- execution
-      endTime   <- t.clock.monotonic(MICROSECONDS)
-    } yield {
-      FullOperation(threadId, ops, retEv, startTime, endTime)
-    }
-  }
-
   val keysGen: Gen[String] = Gen.oneOf("k1", "k2", "k3")
   val opsGen: Gen[KVOps] = for {
     k <- keysGen

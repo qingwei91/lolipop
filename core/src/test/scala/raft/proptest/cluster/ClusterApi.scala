@@ -2,24 +2,26 @@ package raft
 package proptest
 package cluster
 
+import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.effect.{ Concurrent, Sync, Timer }
-import cats.Monad
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
-trait ClusterManager[F[_]] {
+trait ClusterApi[F[_], Req, Res] {
   def start: F[Unit]
   def sleep(duration: FiniteDuration): F[Unit]
   def stop: F[Unit]
+  def read(req: Req): F[Res]
+  def write(req: Req): F[Res]
 }
 
-object ClusterManager {
+object ClusterApi {
   @SuppressWarnings(Array("org.wartremover.warts.Any"))
   def apply[F[_]: Sync: Concurrent: Timer, Cmd, State](
     cluster: Map[String, RaftProcess[F, Cmd, State]],
     clusterState: Ref[F, ClusterState[F]]
-  ): ClusterManager[F] = new ClusterManager[F] {
+  ): ClusterApi[F, Cmd, State] = new ClusterApi[F, Cmd, State] {
     override def start: F[Unit] = {
       cluster.toList.traverse_ {
         case (id, proc) =>
@@ -64,8 +66,18 @@ object ClusterManager {
               }
         } yield ()
     }
+
+    override def read(req: Cmd): F[State] = {
+      client.loopOverApi[F, Cmd, State](_.staleRead(req), cluster.mapValues(_.api), 200.millis)
+    }
+    override def write(req: Cmd): F[State] = {
+      client.loopOverApi[F, Cmd, State](_.write(req), cluster.mapValues(_.api), 200.millis)
+    }
   }
 }
 
 case class ClusterState[F[_]](running: Set[String], stopped: Set[String], terminators: Map[String, F[Unit]])
 
+object ClusterState {
+  def init[F[_]]: ClusterState[F] = ClusterState(Set.empty, Set.empty, Map.empty)
+}
