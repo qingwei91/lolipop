@@ -1,8 +1,6 @@
 package raft
 package proptest
 
-import cats.Applicative
-
 /*
   Model does not encapsulate state, this is to allow
   caller (checker specifically) to be able to
@@ -20,7 +18,7 @@ trait Model[Op, Res, St] {
 }
 
 object Model {
-  def from[ Op, Res, St](f: St => Op => (St, Res)): Model[Op, Res, St] = new Model[Op, Res, St] {
+  def from[Op, Res, St](f: St => Op => (St, Res)): Model[Op, Res, St] = new Model[Op, Res, St] {
     override def step(st: St, op: Op): (St, Res) = {
       f(st)(op)
     }

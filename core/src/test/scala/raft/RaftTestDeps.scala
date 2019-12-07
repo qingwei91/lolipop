@@ -43,7 +43,7 @@ class RaftTestDeps[F[_]](
         val stateMachine = new TestStateMachine[F](testState)
         val state = TestState(
           clusterConf,
-          new TestMetadata(persist),
+          new InMemMetadata(persist),
           servTpe,
           lock,
           new TestLogsIO(baseLog)

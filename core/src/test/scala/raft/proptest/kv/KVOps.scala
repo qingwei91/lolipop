@@ -4,7 +4,6 @@ package kv
 
 import cats._
 import cats.effect.concurrent.Ref
-import cats.effect.{ Concurrent, Timer }
 import cats.kernel.Eq
 import io.circe.{ Codec, Decoder, Encoder }
 import io.circe.generic.auto._
@@ -12,9 +11,6 @@ import io.circe.syntax._
 import org.scalacheck.Gen
 import raft.algebra.StateMachine
 import raft.algebra.client.{ ClientRead, ClientWrite }
-import raft.model._
-
-import scala.concurrent.duration._
 
 sealed trait KVOps
 case class Put(k: String, v: String) extends KVOps
@@ -66,8 +62,7 @@ object KVOps {
     v <- Gen.alphaStr.map(_.take(6))
     op <- Gen.oneOf[KVOps](
            Put(k, v): KVOps,
-           Get(k): KVOps,
-           Delete(k): KVOps
+           Get(k): KVOps
          )
   } yield op
 

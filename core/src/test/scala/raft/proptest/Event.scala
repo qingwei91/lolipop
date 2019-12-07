@@ -7,6 +7,7 @@ import cats.Show
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
+import java.time.format.DateTimeFormatter
 
 /**
   *  Decision: Should we model Invoke and Return in 1 data structure?
@@ -56,12 +57,11 @@ object Event {
   )
 }
 
-case class FullOperation[O, R](threadId: String, op: O, ret: Either[Throwable, R], startTime: Long, endTime: Long)
+case class FullOperation[O, R](threadId: String, op: O, ret: Either[Throwable, R], startTime: Instant, endTime: Instant)
 
 object FullOperation {
-  implicit def showFullOp[A: Show, B: Show]: Show[FullOperation[A, B]] = Show.show {
-    fullOp =>
-      s"""
+  implicit def showFullOp[A: Show, B: Show]: Show[FullOperation[A, B]] = Show.show { fullOp =>
+    s"""
          |Thread ${fullOp.threadId}
          |- invoked ${fullOp.op}
          |- return ${fullOp.ret}""".stripMargin
@@ -72,11 +72,40 @@ object FullOperation {
     def apply(a: Throwable): Json                    = Json.fromString(a.getMessage)
   }
 
-  implicit def codec[A: Codec, B: Codec]: Codec[FullOperation[A, B]] = {
-    Codec.from(
-      Decoder[FullOperation[A, B]],
-      Encoder[FullOperation[A, B]]
+  val timeFormatter = DateTimeFormatter.ISO_INSTANT
+
+  implicit val instantCodec: Codec[Instant] = Codec.from(
+    Decoder.instance(hcursor => hcursor.as[String].map(s => Instant.parse(s))),
+    Encoder.instance(
+      ins => timeFormatter.format(ins).asJson
     )
+  )
+
+  implicit def fullOpEncoder[O: Encoder, R: Encoder]: Encoder[FullOperation[O, R]] = Encoder.instance { fullOp =>
+    import fullOp._
+    Json.obj(
+      "threadId" -> threadId.asJson,
+      "op"       -> op.asJson,
+      "ret"      -> ret.asJson,
+      "start"    -> startTime.asJson,
+      "end"      -> endTime.asJson
+    )
+  }
+
+  implicit def fullOpDecoder[O: Decoder, R: Decoder]: Decoder[FullOperation[O, R]] = Decoder.instance { cursor =>
+    for {
+      tid   <- cursor.downField("threadId").as[String]
+      op    <- cursor.downField("op").as[O]
+      ret   <- cursor.downField("ret").as[Either[Throwable, R]]
+      start <- cursor.downField("start").as[Instant]
+      end   <- cursor.downField("end").as[Instant]
+    } yield {
+      FullOperation(tid, op, ret, start, end)
+    }
+  }
+
+  implicit def codec[A: Codec, B: Codec]: Codec[FullOperation[A, B]] = {
+    Codec.from(fullOpDecoder, fullOpEncoder)
   }
 
 }

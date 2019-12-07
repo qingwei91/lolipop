@@ -116,19 +116,6 @@ object RaftProcess {
             }: _*
           ).parJoinUnbounded
 
-//          val rpcTasks = taskQueuePerPeer.values
-//            .foldLeft(Stream[F, Unit]()) {
-//              case (merged, queue) =>
-//                merged.merge(
-//                  queue.dequeue.evalMap(
-//                    _.recoverWith {
-//                      case err =>
-//                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
-//                    }
-//                  )
-//                )
-//            }
-
           val raftTask = poller.start
             .evalMap { pollerTasks =>
               pollerTasks.toList.traverse_ {

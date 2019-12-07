@@ -12,7 +12,7 @@ import raft.algebra.StateMachine
 import raft.algebra.append.{ AppendRPCHandler, AppendRPCHandlerImpl }
 import raft.algebra.election.{ VoteRPCHandler, VoteRPCHandlerImpl }
 import raft.model.{ ClusterConfig, Metadata, RaftLog, RaftNodeState }
-import raft.setup.{ InMemNetwork, TestLogsIO, TestMetadata }
+import raft.setup.{ InMemNetwork, TestLogsIO, InMemMetadata }
 import raft.util.Slf4jLogger
 
 import scala.concurrent.TimeoutException
@@ -64,7 +64,7 @@ package object proptest {
           refLog      <- Ref[F].of(Seq.empty[RaftLog[Cmd]])
           refMetadata <- Ref[F].of(Metadata(0, None))
           logsIO     = new TestLogsIO[F, Cmd](refLog)
-          metadataIO = new TestMetadata[F](refMetadata)
+          metadataIO = new InMemMetadata[F](refMetadata)
           logger     = new Slf4jLogger[F, Cmd, St](clusterConf.nodeId)
           state <- RaftNodeState.init[F, Cmd](clusterConf, metadataIO, logsIO)
           appendHandler = new AppendRPCHandlerImpl(
@@ -110,7 +110,7 @@ package object proptest {
   def parTest[F[_]: Monad: Parallel, R](
     n: Int
   )(fn: Int => F[R]): F[List[R]] = {
-    (0 to n).toList.parTraverse { id =>
+    (1 to n).toList.parTraverse { id =>
       fn(id)
     }
   }

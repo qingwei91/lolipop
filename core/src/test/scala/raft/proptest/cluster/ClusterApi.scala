@@ -9,9 +9,10 @@ import cats.effect.{ Concurrent, Sync, Timer }
 import scala.concurrent.duration._
 
 trait ClusterApi[F[_], Req, Res] {
-  def start: F[Unit]
-  def sleep(duration: FiniteDuration): F[Unit]
-  def stop: F[Unit]
+  def startAll: F[Unit]
+  def stopAll: F[Unit]
+  def stop(id: String): F[Unit]
+  def start(id: String): F[Unit]
   def read(req: Req): F[Res]
   def write(req: Req): F[Res]
 }
@@ -22,7 +23,7 @@ object ClusterApi {
     cluster: Map[String, RaftProcess[F, Cmd, State]],
     clusterState: Ref[F, ClusterState[F]]
   ): ClusterApi[F, Cmd, State] = new ClusterApi[F, Cmd, State] {
-    override def start: F[Unit] = {
+    override def startAll: F[Unit] = {
       cluster.toList.traverse_ {
         case (id, proc) =>
           for {
@@ -42,10 +43,7 @@ object ClusterApi {
           } yield {}
       }
     }
-
-    override def sleep(duration: FiniteDuration): F[Unit] = Timer[F].sleep(duration)
-
-    override def stop: F[Unit] = cluster.toList.traverse_ {
+    override def stopAll: F[Unit] = cluster.toList.traverse_ {
       case (id, _) =>
         for {
           state <- clusterState.get
@@ -66,13 +64,36 @@ object ClusterApi {
               }
         } yield ()
     }
-
     override def read(req: Cmd): F[State] = {
       client.loopOverApi[F, Cmd, State](_.staleRead(req), cluster.mapValues(_.api), 200.millis)
     }
     override def write(req: Cmd): F[State] = {
       client.loopOverApi[F, Cmd, State](_.write(req), cluster.mapValues(_.api), 200.millis)
     }
+
+    override def stop(id: String): F[Unit] = {
+      for {
+        state <- clusterState.get
+        _ <- if (!state.running.contains(id)) {
+              Monad[F].unit
+            } else {
+              for {
+                terminators <- clusterState.get.map(_.terminators)
+                _ <- terminators.get(id) match {
+                      case None => Monad[F].unit
+                      case Some(t) => t
+                    }
+
+                _ <- clusterState.update { st =>
+                      st.copy(running = st.running - id, terminators = st.terminators - id)
+                    }
+              } yield ()
+            }
+      } yield ()
+
+    }
+
+    override def start(id: String): F[Unit] = ???
   }
 }
 

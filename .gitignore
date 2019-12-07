@@ -25,3 +25,6 @@ project/plugins/project/
 *.iml
 out
 gen
+
+.metals
+.vscode
