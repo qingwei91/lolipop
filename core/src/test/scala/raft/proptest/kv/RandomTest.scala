@@ -19,6 +19,7 @@ import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration._
 import scala.util.Random
 import java.time.Instant
+import raft.algebra.io.NetworkIO
 
 @SuppressWarnings(
   Array(
@@ -32,7 +33,6 @@ class RandomTest extends Specification with ScalaCheck {
   override def is: SpecStructure =
     s2"""
       KVStore should be linearizable
-        success - $testSuccessfulRun
         failure - $testLessThanHalfNodeFailed
       """
 
@@ -40,7 +40,7 @@ class RandomTest extends Specification with ScalaCheck {
   private implicit val timer: Timer[IO]           = IO.timer(global)
   private implicit val kvEq: Eq[KVResult[String]] = Eq.fromUniversalEquals[KVResult[String]]
 
-  private implicit val opsGen: Gen[List[KVOps]] = KVOps.gen(20)
+  private implicit val opsGen: Gen[List[KVOps]] = KVOps.gen(3)
   private implicit val multithreadedOps: Gen[List[(String, List[KVOps])]] = for {
     ops1 <- opsGen
     ops2 <- opsGen
@@ -71,13 +71,13 @@ class RandomTest extends Specification with ScalaCheck {
       3. Execute plan with fault scenario
      */
     val results = parTest(parFactor) { parId =>
-//      val rand = Random.nextLong()
-      val rand = 822240469433454521L
+      val rand = Random.nextLong()
 
       val opsPerThread: List[(String, List[KVOps])] = multithreadedOps(genParam, Seed(rand)).get
 
       for {
-        results     <- clusterResource.use(executeKVOps(opsPerThread)).time("Execution operations...")
+        results <- clusterResource.use(executeKVOps(opsPerThread)).time("Execution operations...")
+        _ = println(s"Results is ${results.find(_.ret.isLeft)}")
         checkResult <- computeLinearizability(parId, results)
       } yield {
         checkResult match {
@@ -102,23 +102,52 @@ class RandomTest extends Specification with ScalaCheck {
       2. Create operation plan
       3. Execute plan with fault scenario
      */
-    val results = parTest(parFactor) { parId =>
-      val rand = -8089229657390598373L
+    val results = parTest(1) { parId =>
+      val rand = Random.nextLong()
 
       val opsPerThread: List[(String, List[KVOps])] = multithreadedOps(genParam, Seed(rand)).get
 
       for {
-        results <- clusterResource.use { api =>
-          api.stop("0") *> 
-          api.stop("1") *> 
-          executeKVOps(opsPerThread)(api)
-                  }.time("Execution operations...")
+        results <- clusterResource
+                    .use { api =>
+                      val faultA = List(
+                        (api.stop("0"), api.stop("1")).parSequence,
+                        api.stop("0"),
+                        api.stop("1"),
+                        api.start("1")
+                      )
+
+                      val faultB = List(
+                        (api.stop("0"), api.stop("1")).parSequence,
+                        api.stop("0"),
+                        api.start("1")
+                      )
+
+                      val opsWithInjectedFault = opsPerThread
+                        .map {
+                          case ("001", opsA) => interleave(faultA, opsA.map(o => executeSingleOp("001", o, api)))
+                          case ("002", opsB) => interleave(faultB, opsB.map(o => executeSingleOp("002", o, api)))
+                        }
+                        .parFlatTraverse { ops =>
+                          ops
+                            .traverse {
+                              case Left(clusterOp) => clusterOp.map(Left(_))
+                              case Right(kvOp) => kvOp.map(Right(_))
+                            }
+                            .map(_.collect {
+                              case Right(fullOp) => fullOp
+                            })
+                        }
+                      opsWithInjectedFault
+                    }
+                    .time("Execution operations...")
+        _ = println(s"Results is ${results.mkString("\n")}")
         checkResult <- computeLinearizability(parId, results)
       } yield {
         checkResult match {
           case Linearizable(_) => success
           case NonLinearizable(longestAttempt, failed, exp) =>
-            failure(s"Failed result = ${results.sortBy(_.startTime).mkString("\n")}")
+            failure(s"Failed result = ${longestAttempt.mkString_("\n")}, exp=$exp, got $failed")
 
         }
       }
@@ -133,14 +162,14 @@ class RandomTest extends Specification with ScalaCheck {
     results: List[FullOperation[KVOps, KVResult[String]]]
   ): IO[LinearizedRes[FullOperation[KVOps, KVResult[String]]]] = {
     val history = History.fromList(results)
-    IO {
-      LinearizationCheck
-        .betterWingAndGong(
-          history,
-          KVOps.model,
-          Map.empty[String, String]
-        )
-    }.time(s"Linearization Check of $parId")
+
+    LinearizationCheck
+      .wAndG(
+        history,
+        KVOps.model,
+        Map.empty[String, String]
+      )
+      .time(s"Linearization Check of $parId")
       .timeout(20.seconds)
   }
 
@@ -148,7 +177,10 @@ class RandomTest extends Specification with ScalaCheck {
     for {
       pairs        <- stateMachines
       clusterState <- Ref[IO].of(ClusterState.init[IO])
-      allNodes     <- setupCluster(pairs)
+      networkProxy = (network: NetworkIO[IO, KVOps]) => {
+        new ProxiedNetwork(clusterState, network)
+      }
+      allNodes <- setupCluster(pairs, networkProxy)
       clusterApi = ClusterApi(allNodes, clusterState)
       _ <- clusterApi.startAll.time("Start cluster")
     } yield clusterApi
@@ -157,29 +189,41 @@ class RandomTest extends Specification with ScalaCheck {
   private val clusterResource: Resource[IO, ClusterApi[IO, KVOps, KVResult[String]]] =
     Resource.make(startCluster)(_.stopAll.time("Stop cluster"))
 
+  private def executeSingleOp(
+    threadId: String,
+    op: KVOps,
+    clusterApi: ClusterApi[IO, KVOps, KVResult[String]]
+  ): IO[FullOperation[KVOps, KVResult[String]]] = {
+    val apiRes = (op match {
+      case Put(_, _) | Delete(_) =>
+        clusterApi.write(op).map(Right(_): Either[Throwable, KVResult[String]])
+      case Get(_) => clusterApi.read(op).map(Right(_): Either[Throwable, KVResult[String]])
+    }).timeout(1.second).recover {
+      case err: Throwable =>
+        println(err)
+        Either.left[Throwable, KVResult[String]](err)
+    }
+
+    for {
+      start <- Timer[IO].clock.realTime(MILLISECONDS).map(Instant.ofEpochMilli)
+      res   <- apiRes
+      end   <- Timer[IO].clock.realTime(MILLISECONDS).map(Instant.ofEpochMilli)
+    } yield {
+      val realEnd = if (res.isLeft) {
+        Instant.MAX
+      } else {
+        end
+      }
+      FullOperation(threadId, op, res, start, realEnd)
+    }
+  }
   private def executeKVOps(opsPerThread: List[(String, List[KVOps])])(
     clusterApi: ClusterApi[IO, KVOps, KVResult[String]]
   ): IO[List[FullOperation[KVOps, KVResult[String]]]] = {
     opsPerThread.parFlatTraverse {
       case (threadId, ops) =>
         ops.traverse { op =>
-          val apiRes = (op match {
-            case Put(_, _) | Delete(_) =>
-              clusterApi.write(op).map(Right(_): Either[Throwable, KVResult[String]])
-            case Get(_) => clusterApi.read(op).map(Right(_): Either[Throwable, KVResult[String]])
-          }).timeout(1.second).recover {
-            case err: Throwable => 
-              println(err)
-              Either.left[Throwable, KVResult[String]](err)
-          }
-
-          for {
-            start <- Timer[IO].clock.realTime(MILLISECONDS).map(Instant.ofEpochMilli)
-            res   <- apiRes
-            end   <- Timer[IO].clock.realTime(MILLISECONDS).map(Instant.ofEpochMilli)
-          } yield {
-            FullOperation(threadId, op, res, start, end)
-          }
+          executeSingleOp(threadId, op, clusterApi)
         }
     }
   }

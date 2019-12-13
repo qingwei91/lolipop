@@ -1,15 +1,15 @@
 package raft
 
 import cats._
-import cats.effect.{Concurrent, ContextShift, Resource, Timer}
+import cats.effect.{ Concurrent, ContextShift, Resource, Timer }
 import fs2.Stream
 import fs2.concurrent._
 import raft.algebra.append._
-import raft.algebra.client.{ClientReadImpl, ClientWriteImpl}
+import raft.algebra.client.{ ClientReadImpl, ClientWriteImpl }
 import raft.algebra.election._
-import raft.algebra.event.{EventsLogger, RPCTaskScheduler}
-import raft.algebra.io.{LogsApi, MetadataIO, NetworkIO}
-import raft.algebra.{RaftPollerImpl, StateMachine}
+import raft.algebra.event.{ EventsLogger, RPCTaskScheduler }
+import raft.algebra.io.{ LogsApi, MetadataIO, NetworkIO }
+import raft.algebra.{ RaftPollerImpl, StateMachine }
 import raft.model._
 
 import scala.concurrent.duration._
@@ -99,19 +99,20 @@ object RaftProcess {
 
           val rpcTasks: Stream[F, Unit] = Stream(
             taskQueuePerPeer.values.toList.map { q =>
-              q.dequeue.evalMap { task =>
-                // TODO: another alternative is to cancel if there's new
-                // task instead of timeout, not sure if that is better
-                Concurrent
-                  .timeout(task, 500.millis)
-                  .recoverWith {
-                    case _: TimeoutException =>
-                      // todo: Missing details on which task that times
-                      // out, we need a way tag a task with meta data
-                      eventLogger.errorLogs("Task timed out")
-                    case err =>
-                      eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
-                  }
+              q.dequeue.evalMap {
+                task =>
+                  // TODO: another alternative is to cancel if there's new
+                  // task instead of timeout, not sure if that is better
+                  Concurrent
+                    .timeout(task, 500.millis)
+                    .recoverWith {
+                      case _: TimeoutException =>
+                        // todo: Missing details on which task that times
+                        // out, we need a way tag a task with meta data
+                        eventLogger.errorLogs("Task timed out")
+                      case err =>
+                        eventLogger.errorLogs(s"Unexpected error when evaluating rpc tasks: $err")
+                    }
               }
             }: _*
           ).parJoinUnbounded

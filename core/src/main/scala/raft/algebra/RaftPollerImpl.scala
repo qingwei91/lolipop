@@ -52,7 +52,7 @@ class RaftPollerImpl[F[_]: Monad: Concurrent, Cmd](
   private def startElection(nonLeader: NonLeader): F[Map[String, F[Unit]]] = {
     for {
       timeInMillis <- timer.clock.realTime(MILLISECONDS)
-      timeout        = Random.nextInt(timeoutBase) + (timeoutBase * 5)
+      timeout        = Random.nextInt(timeoutBase * 3) + (timeoutBase)
       timeoutReached = (timeInMillis - nonLeader.lastRPCTimeMillis) > timeout
 
       votingReq <- if (timeoutReached) {

@@ -4,12 +4,102 @@ package checker
 
 import cats.Eq
 import cats.data.Chain
+import cats.effect.Sync
+import cats.Monad
+import cats.effect.IO
+import scala.tools.cmd.Opt
+import cats.effect.Concurrent
 
 sealed trait LinearizedRes[+A]
 case class Linearizable[A](linearized: Chain[A]) extends LinearizedRes[A]
 case class NonLinearizable[OP, Re](longestStreak: Chain[OP], failedOp: OP, expected: Re) extends LinearizedRes[OP]
 
+@SuppressWarnings(Array("org.wartremover.warts.All"))
 object LinearizationCheck {
+
+  /**
+    * This only works if F's flatmap is cancellable, this is true for cats-effect
+    */
+  def cancellableLoop[F[_]: Monad, LCtx, A](step: LCtx => Either[LCtx, A])(init: LCtx): F[A] = {
+
+    def inner(in: LCtx, i: Int): F[A] = {
+      if (i > 2000) {
+        in.pure[F].flatMap(x => inner(x, 0))
+      } else {
+        step(in) match {
+          case Left(cont) => inner(cont, i + 1)
+          case Right(a) => a.pure[F]
+        }
+      }
+    }
+    inner(init, 0)
+  }
+
+  /**
+    * LoopCtx models a stack where prevCtx gives access to caller's context and
+    * hist,state,idx are params
+    * lastFailure is used to accumulate errors
+    */
+  case class LoopCtx[O, R, S](
+    prevCtx: Option[LoopCtx[O, R, S]],
+    hist: History[O, R],
+    state: S,
+    idx: Int,
+    lastFailure: Option[NonLinearizable[FullOperation[O, R], R]]
+  )
+
+  def wAndG[Op, Re: Eq, St](
+    history: History[Op, Re],
+    model: Model[Op, Re, St],
+    st: St
+  ) = {
+
+    val init = LoopCtx(None, history, st, 0, None)
+
+    def step(ctx: LoopCtx[Op, Re, St]): Either[LoopCtx[Op, Re, St], LinearizedRes[FullOperation[Op, Re]]] = {
+      import ctx._
+      if (hist.finished) {
+        Right(Linearizable(hist.linearized))
+      } else {
+        hist.minimumOps.get(idx) match {
+          case None =>
+            // ran out of options, bailed
+            // .get is safe assuming history is not empty
+            prevCtx match {
+              case None => Right(lastFailure.get)
+              case Some(lastCtx) => Left(lastCtx.copy(idx = lastCtx.idx + 1))
+            }
+
+          case Some(currOp) =>
+            val (nextState, expRe) = model.step(state, currOp.op)
+            currOp.ret match {
+              case Left(err) =>
+                /*
+                if op fail in actual setup, we can assume it completes and proceed, as failed
+                op span from start time to infinite time, meaning we can keep trying and eventually
+                we should find an instant where it linearized or never
+                 */
+
+                Left(LoopCtx(prevCtx, hist.trackError(currOp), state, 0, lastFailure))
+              case Right(actualRet) if actualRet === expRe =>
+                Left(LoopCtx(ctx.some, hist.linearize(currOp), nextState, 0, lastFailure))
+              case Right(actualRet) if actualRet =!= expRe =>
+                val lastErr = lastFailure match {
+                  case None => NonLinearizable(hist.linearized, currOp, expRe)
+                  case Some(lastF) =>
+                    if (lastF.longestStreak.size > hist.linearized.size) {
+                      lastF
+                    } else {
+                      NonLinearizable(hist.linearized, currOp, expRe)
+                    }
+                }
+                Left(LoopCtx(prevCtx, hist, state, idx + 1, Some(lastErr)))
+            }
+        }
+      }
+    }
+    cancellableLoop[IO, LoopCtx[Op, Re, St], LinearizedRes[FullOperation[Op, Re]]](step)(init)
+  }
 
   /**
     * The original form of W&G algo, it is recursive but not
@@ -30,7 +120,6 @@ object LinearizationCheck {
   val MODEL_CHECK_MATCH   = 1
   val MODEL_CHECK_UNMATCH = 2
 
-  @SuppressWarnings(Array("org.wartremover.warts.All"))
   def betterWingAndGong[Op, Re: Eq, St](
     history: History[Op, Re],
     model: Model[Op, Re, St],
@@ -68,25 +157,14 @@ object LinearizationCheck {
           val attempt = attemptSerialize(fo, currSt)
           attempt match {
             case (MODEL_CHECK_FAIL, st, _) =>
-              val assumeExecuted = loop(currHist.linearize(fo), st)
-
-              lastResult = assumeExecuted match {
-                case lin @ Linearizable(_) =>
-                  foundSolution = true
-                  lin
-                case unmatchA @ NonLinearizable(_, _, _) =>
-                  loop(currHist.skip(fo), st) match {
-                    case lin @ Linearizable(_) =>
-                      foundSolution = true
-                      lin
-                    case unmatchB @ NonLinearizable(_, _, _) =>
-                      if (unmatchA.longestStreak.size > unmatchB.longestStreak.size) {
-                        unmatchA
-                      } else {
-                        unmatchB
-                      }
-
-                  }
+              /* assume it completed and proceed
+              If it didn't complete, it will failed at some point, then we will
+              backtrack to next concurrent op and try that
+               */
+              lastResult = loop(currHist.linearize(fo), st)
+              lastResult match {
+                case Linearizable(_) => foundSolution          = true
+                case NonLinearizable(_, _, _) => foundSolution = false
               }
 
             case (MODEL_CHECK_UNMATCH, _, expRe) =>

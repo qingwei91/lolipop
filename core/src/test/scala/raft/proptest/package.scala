@@ -9,6 +9,7 @@ import io.circe.Json
 import io.circe.parser.parse
 import org.slf4j.LoggerFactory
 import raft.algebra.StateMachine
+import raft.algebra.io.NetworkIO
 import raft.algebra.append.{ AppendRPCHandler, AppendRPCHandlerImpl }
 import raft.algebra.election.{ VoteRPCHandler, VoteRPCHandlerImpl }
 import raft.model.{ ClusterConfig, Metadata, RaftLog, RaftNodeState }
@@ -46,7 +47,8 @@ package object proptest {
   }
 
   def setupCluster[F[_]: Sync: Concurrent: ContextShift: Timer, Cmd: Eq, St](
-    allIds: Map[String, StateMachine[F, Cmd, St]]
+    allIds: Map[String, StateMachine[F, Cmd, St]],
+    injectNetwork: NetworkIO[F, Cmd] => NetworkIO[F, Cmd]
   ): F[Map[String, RaftProcess[F, Cmd, St]]] = {
 
     // The whole construction is split into 2 steps
@@ -90,7 +92,7 @@ package object proptest {
       handlersMap = handlers.toMap
       appends     = handlersMap.mapValues(_.append)
       votes       = handlersMap.mapValues(_.vote)
-      network     = new InMemNetwork[F, Cmd, St](appends, votes)
+      network     = injectNetwork(new InMemNetwork[F, Cmd, St](appends, votes))
       allNodes <- handlers.traverse[F, (String, RaftProcess[F, Cmd, St])] {
                    case (id, node) =>
                      RaftProcess(
@@ -104,6 +106,44 @@ package object proptest {
                  }
     } yield {
       allNodes.toMap
+    }
+  }
+
+  def setupCluster[F[_]: Sync: Concurrent: ContextShift: Timer, Cmd: Eq, St](
+    allIds: Map[String, StateMachine[F, Cmd, St]]
+  ): F[Map[String, RaftProcess[F, Cmd, St]]] = {
+    setupCluster(allIds, identity)
+  }
+
+  def interleave[A, B](operationsA: List[A], operationsB: List[B]): List[Either[A, B]] = {
+    val sizeA = operationsA.size
+    val sizeB = operationsB.size
+    
+    def inner[I, J](
+      largeChunk: List[I],
+      smallChunk: List[J],
+      ratio: Int,
+      acc: List[Either[I, J]]
+    ): List[Either[I, J]] = {
+      if (largeChunk.isEmpty) {
+        acc ::: smallChunk.map(Right(_))
+      } else {
+        smallChunk match {
+          case h :: tail =>
+            val newAcc = (acc ::: largeChunk.take(ratio).map(Left(_))) :+ Right(h)
+            inner(largeChunk.drop(ratio), tail, ratio, newAcc)
+          case Nil =>
+            acc ::: largeChunk.map(Left(_))
+
+        }
+      }
+    }
+    if (sizeA > sizeB) {
+      val interleaveRatio = Math.max(sizeA / sizeB, 1)
+      inner(operationsA, operationsB, interleaveRatio, Nil)
+    } else {
+      val interleaveRatio = Math.max(sizeB / sizeA, 1)
+      inner(operationsB, operationsA, interleaveRatio, Nil).map(_.swap)
     }
   }
 
