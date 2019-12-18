@@ -4,15 +4,16 @@ package checker
 
 import cats.Eq
 import cats.data.Chain
-import cats.effect.Sync
+import cats.effect.{ Concurrent, ContextShift, IO, Sync }
 import cats.Monad
-import cats.effect.IO
+
 import scala.tools.cmd.Opt
-import cats.effect.Concurrent
+import scala.annotation.tailrec
 
 sealed trait LinearizedRes[+A]
 case class Linearizable[A](linearized: Chain[A]) extends LinearizedRes[A]
 case class NonLinearizable[OP, Re](longestStreak: Chain[OP], failedOp: OP, expected: Re) extends LinearizedRes[OP]
+case class LinearizationFailed[O, R](allFailures: List[NonLinearizable[O, R]]) extends LinearizedRes[O]
 
 @SuppressWarnings(Array("org.wartremover.warts.All"))
 object LinearizationCheck {
@@ -20,11 +21,13 @@ object LinearizationCheck {
   /**
     * This only works if F's flatmap is cancellable, this is true for cats-effect
     */
-  def cancellableLoop[F[_]: Monad, LCtx, A](step: LCtx => Either[LCtx, A])(init: LCtx): F[A] = {
+  def cancellableLoop[F[_], LCtx, A](
+    step: LCtx => Either[LCtx, A]
+  )(init: LCtx)(implicit cs: ContextShift[F], monad: Monad[F]): F[A] = {
 
     def inner(in: LCtx, i: Int): F[A] = {
       if (i > 2000) {
-        in.pure[F].flatMap(x => inner(x, 0))
+        cs.shift.flatMap(_ => inner(in, 0))
       } else {
         step(in) match {
           case Left(cont) => inner(cont, i + 1)
@@ -45,16 +48,16 @@ object LinearizationCheck {
     hist: History[O, R],
     state: S,
     idx: Int,
-    lastFailure: Option[NonLinearizable[FullOperation[O, R], R]]
+    lastFailures: List[NonLinearizable[FullOperation[O, R], R]]
   )
 
-  def wAndG[Op, Re: Eq, St](
+  def wAndG[F[_]: Monad: ContextShift, Op, Re: Eq, St](
     history: History[Op, Re],
     model: Model[Op, Re, St],
     st: St
-  ) = {
+  ): F[LinearizedRes[FullOperation[Op, Re]]] = {
 
-    val init = LoopCtx(None, history, st, 0, None)
+    val init = LoopCtx(None, history, st, 0, Nil)
 
     def step(ctx: LoopCtx[Op, Re, St]): Either[LoopCtx[Op, Re, St], LinearizedRes[FullOperation[Op, Re]]] = {
       import ctx._
@@ -66,7 +69,7 @@ object LinearizationCheck {
             // ran out of options, bailed
             // .get is safe assuming history is not empty
             prevCtx match {
-              case None => Right(lastFailure.get)
+              case None => Right(LinearizationFailed(lastFailures))
               case Some(lastCtx) => Left(lastCtx.copy(idx = lastCtx.idx + 1))
             }
 
@@ -80,25 +83,17 @@ object LinearizationCheck {
                 we should find an instant where it linearized or never
                  */
 
-                Left(LoopCtx(prevCtx, hist.trackError(currOp), state, 0, lastFailure))
+                Left(LoopCtx(prevCtx, hist.trackError(currOp), state, 0, lastFailures))
               case Right(actualRet) if actualRet === expRe =>
-                Left(LoopCtx(ctx.some, hist.linearize(currOp), nextState, 0, lastFailure))
+                Left(LoopCtx(ctx.some, hist.linearize(currOp), nextState, 0, lastFailures))
               case Right(actualRet) if actualRet =!= expRe =>
-                val lastErr = lastFailure match {
-                  case None => NonLinearizable(hist.linearized, currOp, expRe)
-                  case Some(lastF) =>
-                    if (lastF.longestStreak.size > hist.linearized.size) {
-                      lastF
-                    } else {
-                      NonLinearizable(hist.linearized, currOp, expRe)
-                    }
-                }
-                Left(LoopCtx(prevCtx, hist, state, idx + 1, Some(lastErr)))
+                val lastErr = NonLinearizable(hist.linearized, currOp, expRe)
+                Left(LoopCtx(prevCtx, hist, state, idx + 1, lastErr :: lastFailures))
             }
         }
       }
     }
-    cancellableLoop[IO, LoopCtx[Op, Re, St], LinearizedRes[FullOperation[Op, Re]]](step)(init)
+    cancellableLoop[F, LoopCtx[Op, Re, St], LinearizedRes[FullOperation[Op, Re]]](step)(init)
   }
 
   /**

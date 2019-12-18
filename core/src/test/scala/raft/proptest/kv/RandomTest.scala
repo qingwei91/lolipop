@@ -40,7 +40,7 @@ class RandomTest extends Specification with ScalaCheck {
   private implicit val timer: Timer[IO]           = IO.timer(global)
   private implicit val kvEq: Eq[KVResult[String]] = Eq.fromUniversalEquals[KVResult[String]]
 
-  private implicit val opsGen: Gen[List[KVOps]] = KVOps.gen(3)
+  private implicit val opsGen: Gen[List[KVOps]] = KVOps.gen(30)
   private implicit val multithreadedOps: Gen[List[(String, List[KVOps])]] = for {
     ops1 <- opsGen
     ops2 <- opsGen
@@ -164,13 +164,13 @@ class RandomTest extends Specification with ScalaCheck {
     val history = History.fromList(results)
 
     LinearizationCheck
-      .wAndG(
+      .wAndG[IO, KVOps, KVResult[String], Map[String, String]](
         history,
         KVOps.model,
         Map.empty[String, String]
       )
       .time(s"Linearization Check of $parId")
-      .timeout(20.seconds)
+      .timeout(5.seconds)
   }
 
   private val startCluster: IO[ClusterApi[IO, KVOps, KVResult[String]]] = {
