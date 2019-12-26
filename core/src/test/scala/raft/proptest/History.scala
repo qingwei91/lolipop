@@ -20,7 +20,6 @@ trait History[Op, Re] {
   type FO = FullOperation[Op, Re]
   def minimumOps: List[FO]
   def linearize(ops: FO): History[Op, Re]
-  def skip(ops: FO): History[Op, Re]
   def finished: Boolean
   def linearized: Chain[FO]
   def trackError(failedOp: FO): History[Op, Re]
@@ -40,12 +39,9 @@ case class ListHistory[O, R](
 ) extends History[O, R] {
   override def minimumOps: List[FO] = {
     /*
-    fixme:
-    logic is wrong as
-    1. it assumes operation within the same thread can never be concurrent
-    this is false in case of timeout
-    2. it always use the old op as starting point, but this is a bad starting point if
-    it timed out, as 2 event can be concurrent with it, but not necessarily concurrent between them
+    Note:
+    1. it is wrong to assume operation within the same thread can never be concurrent, as operation that timed out can be concurrent with all subsequent operations
+    2. it is a bad idea to pick starting point only by start time because if an operation timed out, then it is considered concurrent with many operations which can possess causal relationship, this massively increases search space
     eg. if A timed out, and C and B didn't then using A as starting point will include B and C as
     concurrent op, but B and C might have causal relationship between them
      */
@@ -66,11 +62,9 @@ case class ListHistory[O, R](
     ListHistory(remaining.filterNot(_ == ops), _linearized.append(ops), failedOps.filterNot(_ == ops))
   }
 
-  override def skip(ops: FO): History[O, R] = ListHistory(remaining.filterNot(_ == ops), _linearized, failedOps)
-
   override def finished: Boolean = remaining == Nil
 
-  override def linearized: Chain[FO] = _linearized
+  override val linearized: Chain[FO] = _linearized
   override def trackError(failedOp: FullOperation[O, R]): History[O, R] = {
     ListHistory(remaining.filterNot(_ == failedOp), _linearized, failedOp :: failedOps)
   }
