@@ -16,11 +16,18 @@ lazy val lolipop = project
     micrositeUrl := "https://qingwei91.github.io"
   )
   .enablePlugins(MicrositesPlugin)
-  .dependsOn(core, swaydbPersisent, examples)
-  .aggregate(core, swaydbPersisent, examples)
+  .dependsOn(core, swaydbPersisent, examples, linCheck)
+  .aggregate(core, swaydbPersisent, examples, linCheck)
 
 lazy val core = project
   .in(file("core"))
+  .settings(common)
+  .settings(
+    libraryDependencies ++= coreDeps
+  )
+
+lazy val linCheck = project
+  .in(file("lin-check"))
   .settings(common)
   .settings(
     libraryDependencies ++= coreDeps
@@ -153,5 +160,5 @@ lazy val coreDeps = Seq(
   "io.circe"       %% "circe-core"        % circeVersion % Test,
   "io.circe"       %% "circe-literal"     % circeVersion % Test,
   "io.circe"       %% "circe-generic"     % circeVersion % Test,
-  "io.circe"       %% "circe-parser"      % circeVersion % Test,
+  "io.circe"       %% "circe-parser"      % circeVersion % Test
 )

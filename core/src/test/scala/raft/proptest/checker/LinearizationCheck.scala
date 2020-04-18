@@ -2,13 +2,9 @@ package raft
 package proptest
 package checker
 
-import cats.Eq
+import cats.{ Eq, Monad }
 import cats.data.Chain
-import cats.effect.{ Concurrent, ContextShift, IO, Sync }
-import cats.Monad
-
-import scala.tools.cmd.Opt
-import scala.annotation.tailrec
+import cats.effect.ContextShift
 
 sealed trait LinearizedRes[+A]
 case class Linearizable[A](linearized: Chain[A]) extends LinearizedRes[A]
